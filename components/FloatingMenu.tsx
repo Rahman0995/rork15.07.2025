@@ -41,7 +41,7 @@ const menuItems: MenuItem[] = [
     id: 'analytics',
     title: 'Аналитика',
     icon: BarChart2,
-    route: '/analytics',
+    route: '/(tabs)/analytics',
     color: colors.primary,
     description: 'Статистика и отчеты',
   },
@@ -49,7 +49,7 @@ const menuItems: MenuItem[] = [
     id: 'calendar',
     title: 'Календарь',
     icon: Calendar,
-    route: '/calendar',
+    route: '/(tabs)/calendar',
     color: colors.secondary,
     description: 'События и планы',
   },
@@ -57,7 +57,7 @@ const menuItems: MenuItem[] = [
     id: 'reports',
     title: 'Отчеты',
     icon: FileText,
-    route: '/reports',
+    route: '/(tabs)/reports',
     color: colors.success,
     description: 'Создать и просмотреть',
   },
@@ -73,7 +73,7 @@ const menuItems: MenuItem[] = [
     id: 'chat',
     title: 'Чат',
     icon: MessageSquare,
-    route: '/chat',
+    route: '/(tabs)/chat',
     color: colors.info,
     description: 'Сообщения команды',
   },
@@ -248,7 +248,7 @@ export const FloatingMenu: React.FC<FloatingMenuProps> = ({ visible, onClose }) 
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.settingsButton}
-              onPress={() => handleItemPress('/profile')}
+              onPress={() => handleItemPress('/(tabs)/profile')}
             >
               <Settings size={16} color={colors.textSecondary} />
               <Text style={styles.settingsText}>Настройки</Text>
