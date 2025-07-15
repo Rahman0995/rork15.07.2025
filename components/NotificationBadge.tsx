@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { colors } from '@/constants/colors';
 
 interface NotificationBadgeProps {
   count: number;
   size?: number;
-  style?: any;
+  style?: ViewStyle;
 }
 
 export const NotificationBadge: React.FC<NotificationBadgeProps> = ({ 
@@ -21,10 +21,10 @@ export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
     <View style={[
       styles.badge,
       { 
-        width: size, 
         height: size, 
         borderRadius: size / 2,
         minWidth: size,
+        paddingHorizontal: size * 0.2, // добавляем отступы для длинного текста
       },
       style
     ]}>
