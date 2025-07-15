@@ -133,14 +133,14 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   content: {
     flexDirection: 'row',
@@ -158,15 +158,15 @@ const styles = StyleSheet.create({
   },
   outlineButton: {
     backgroundColor: colors.card,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   dangerButton: {
     backgroundColor: colors.error,
   },
   disabledButton: {
-    backgroundColor: colors.inactive,
-    borderColor: colors.inactive,
+    backgroundColor: colors.backgroundTertiary,
+    borderColor: colors.borderLight,
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '600',
-    letterSpacing: 0.2,
+    letterSpacing: -0.1,
   },
   primaryText: {
     color: colors.white,
@@ -184,25 +184,25 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   outlineText: {
-    color: colors.text,
+    color: colors.textSecondary,
   },
   dangerText: {
     color: colors.white,
   },
   disabledText: {
-    color: colors.white,
+    color: colors.textTertiary,
   },
   smallButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
   },
   mediumButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-  },
-  largeButton: {
     paddingVertical: 16,
     paddingHorizontal: 24,
+  },
+  largeButton: {
+    paddingVertical: 18,
+    paddingHorizontal: 28,
   },
   smallText: {
     fontSize: 13,

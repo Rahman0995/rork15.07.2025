@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
@@ -12,8 +12,10 @@ import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { colors } from '@/constants/colors';
 import { formatDate } from '@/utils/dateUtils';
-import { FileText, CheckSquare, Plus, ArrowRight, Calendar, Users, TrendingUp } from 'lucide-react-native';
+import { FileText, CheckSquare, Plus, ArrowRight, Calendar, Users, TrendingUp, Shield, Activity, Clock } from 'lucide-react-native';
 import { Task, Report } from '@/types';
+
+const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -103,28 +105,32 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Header Section */}
-        <LinearGradient
-        colors={[colors.primary, colors.primaryLight]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
-        <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.greeting}>Добро пожаловать,</Text>
-            <Text style={styles.name}>{user.rank} {user.name}</Text>
-          </View>
-          <View style={styles.dateContainer}>
-            <Calendar size={16} color={colors.white} />
-            <Text style={styles.date}>{formatDate(new Date().toISOString())}</Text>
-            {backendTest && (
-              <View style={styles.backendStatus}>
-                <Text style={styles.backendStatusText}>✓ Backend</Text>
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <View style={styles.userInfo}>
+              <View style={styles.avatarContainer}>
+                <Shield size={24} color={colors.primary} />
               </View>
-            )}
+              <View style={styles.userDetails}>
+                <Text style={styles.greeting}>Добро пожаловать</Text>
+                <Text style={styles.name}>{user.rank} {user.name}</Text>
+              </View>
+            </View>
+            <View style={styles.dateContainer}>
+              <Calendar size={16} color={colors.textSecondary} />
+              <Text style={styles.date}>{formatDate(new Date().toISOString())}</Text>
+            </View>
           </View>
+          
+          {backendTest && (
+            <View style={styles.statusContainer}>
+              <View style={styles.statusIndicator}>
+                <Activity size={12} color={colors.success} />
+                <Text style={styles.statusText}>Система активна</Text>
+              </View>
+            </View>
+          )}
         </View>
-      </LinearGradient>
 
       {/* Quick Stats */}
       <Animated.View 
@@ -137,27 +143,42 @@ export default function HomeScreen() {
         ]}
       >
         <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
-          <View style={styles.statIconContainer}>
+          <View style={[styles.statIconContainer, { backgroundColor: colors.primarySoft }]}>
             <CheckSquare size={20} color={colors.primary} />
           </View>
-          <Text style={styles.statNumber}>{userTasks.length}</Text>
-          <Text style={styles.statLabel}>Активных задач</Text>
+          <View style={styles.statContent}>
+            <Text style={styles.statNumber}>{userTasks.length}</Text>
+            <Text style={styles.statLabel}>Активных задач</Text>
+          </View>
+          <View style={styles.statTrend}>
+            <Clock size={14} color={colors.textTertiary} />
+          </View>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
-          <View style={styles.statIconContainer}>
+          <View style={[styles.statIconContainer, { backgroundColor: colors.secondarySoft }]}>
             <FileText size={20} color={colors.secondary} />
           </View>
-          <Text style={styles.statNumber}>{reports.length}</Text>
-          <Text style={styles.statLabel}>Отчетов</Text>
+          <View style={styles.statContent}>
+            <Text style={styles.statNumber}>{reports.length}</Text>
+            <Text style={styles.statLabel}>Отчетов</Text>
+          </View>
+          <View style={styles.statTrend}>
+            <TrendingUp size={14} color={colors.success} />
+          </View>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/analytics')}>
-          <View style={styles.statIconContainer}>
+          <View style={[styles.statIconContainer, { backgroundColor: colors.successSoft }]}>
             <TrendingUp size={20} color={colors.success} />
           </View>
-          <Text style={styles.statNumber}>85%</Text>
-          <Text style={styles.statLabel}>Выполнено</Text>
+          <View style={styles.statContent}>
+            <Text style={styles.statNumber}>85%</Text>
+            <Text style={styles.statLabel}>Выполнено</Text>
+          </View>
+          <View style={styles.statTrend}>
+            <ArrowRight size={14} color={colors.textTertiary} />
+          </View>
         </TouchableOpacity>
       </Animated.View>
       
@@ -282,50 +303,78 @@ const styles = StyleSheet.create({
   
   // Header Styles
   header: {
+    backgroundColor: colors.card,
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
-  headerContent: {
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  avatarContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primarySoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  userDetails: {
+    flex: 1,
   },
   greeting: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 4,
+    color: colors.textSecondary,
+    marginBottom: 2,
+    fontWeight: '500',
   },
   name: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    color: colors.white,
-    letterSpacing: -0.5,
+    color: colors.text,
+    letterSpacing: -0.3,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: colors.backgroundSecondary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  date: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginLeft: 6,
+    fontWeight: '600',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.successSoft,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
-  date: {
-    fontSize: 13,
-    color: colors.white,
+  statusText: {
+    fontSize: 12,
+    color: colors.success,
     marginLeft: 6,
-    fontWeight: '500',
-  },
-  backendStatus: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  backendStatusText: {
-    fontSize: 11,
-    color: colors.white,
     fontWeight: '600',
   },
   
@@ -333,87 +382,97 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 24,
     gap: 12,
-    marginTop: -10,
   },
   statCard: {
     flex: 1,
     backgroundColor: colors.card,
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.backgroundSecondary,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
   },
+  statContent: {
+    flex: 1,
+    width: '100%',
+  },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   statLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textSecondary,
-    textAlign: 'center',
     fontWeight: '600',
+    lineHeight: 16,
+  },
+  statTrend: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
   },
   
   // Section Styles
   section: {
-    marginBottom: 24,
+    marginBottom: 32,
     paddingHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   sectionIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
   },
   sectionAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
     backgroundColor: colors.backgroundSecondary,
   },
   sectionActionText: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.primary,
-    fontWeight: '700',
-    marginRight: 6,
+    fontWeight: '600',
+    marginRight: 4,
   },
   
   // Cards Container
@@ -424,36 +483,35 @@ const styles = StyleSheet.create({
   // Empty State
   emptyStateContainer: {
     backgroundColor: colors.card,
-    borderRadius: 20,
-    padding: 40,
+    borderRadius: 16,
+    padding: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.borderLight,
-    borderStyle: 'dashed',
   },
   emptyIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   emptyDescription: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 300,
+    lineHeight: 20,
+    maxWidth: 280,
   },
   
   // Create Button
@@ -479,12 +537,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: 12,
+    borderRadius: 16,
+    marginTop: 16,
   },
   backendTestText: {
     color: colors.white,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
 });

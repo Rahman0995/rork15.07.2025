@@ -163,12 +163,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
   searchContainer: {
     flex: 1,
@@ -184,7 +185,8 @@ const styles = StyleSheet.create({
     top: 12,
   },
   filtersContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
   filtersHeader: {
     flexDirection: 'row',
@@ -203,26 +205,31 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   filterButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: colors.card,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.backgroundSecondary,
     marginRight: 8,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   activeFilterButton: {
     backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filterButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textSecondary,
-  },
-  activeFilterButtonText: {
-    color: 'white',
     fontWeight: '500',
   },
+  activeFilterButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+  },
   listContent: {
-    paddingBottom: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
   },
   loadingContainer: {
     flex: 1,
@@ -251,17 +258,19 @@ const styles = StyleSheet.create({
   approvalButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: colors.primarySoft,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 12,
     position: 'relative',
-    marginRight: 8,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
   approvalButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.primary,
-    fontWeight: '500',
+    fontWeight: '600',
     marginLeft: 6,
   },
   badge: {

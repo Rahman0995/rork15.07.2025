@@ -17,40 +17,40 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.inactive,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
           backgroundColor: colors.card,
           borderTopColor: colors.borderLight,
           borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 84,
+          paddingTop: 12,
+          paddingBottom: 12,
+          height: 88,
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 8,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 1,
+          shadowRadius: 12,
+          elevation: 12,
         },
         headerStyle: {
           backgroundColor: colors.card,
           borderBottomColor: colors.borderLight,
           borderBottomWidth: 1,
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 4,
-          elevation: 2,
+          shadowColor: colors.shadowLight,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 1,
+          shadowRadius: 3,
+          elevation: 1,
         },
         headerTitleStyle: {
           color: colors.text,
           fontWeight: '700',
-          fontSize: 18,
-          letterSpacing: -0.3,
+          fontSize: 17,
+          letterSpacing: -0.2,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 6,
         },
       }}
     >
@@ -58,35 +58,35 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Главная",
-          tabBarIcon: ({ color }) => <Home size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Home size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="reports"
         options={{
           title: "Отчеты",
-          tabBarIcon: ({ color }) => <FileText size={22} color={color} />,
+          tabBarIcon: ({ color }) => <FileText size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
           title: "Чат",
-          tabBarIcon: ({ color }) => <MessageSquare size={22} color={color} />,
+          tabBarIcon: ({ color }) => <MessageSquare size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="analytics"
         options={{
           title: "Аналитика",
-          tabBarIcon: ({ color }) => <TrendingUp size={22} color={color} />,
+          tabBarIcon: ({ color }) => <TrendingUp size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
           title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -95,7 +95,7 @@ export default function TabLayout() {
           title: "Уведомления",
           tabBarIcon: ({ color }) => (
             <View style={{ position: 'relative' }}>
-              <Bell size={22} color={color} />
+              <Bell size={20} color={color} />
               <NotificationBadge count={unreadCount} />
             </View>
           ),
@@ -105,14 +105,14 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Профиль",
-          tabBarIcon: ({ color }) => <User size={22} color={color} />,
+          tabBarIcon: ({ color }) => <User size={20} color={color} />,
         }}
       />
       <Tabs.Screen
         name="backend-test"
         options={{
           title: "Backend",
-          tabBarIcon: ({ color }) => <Server size={22} color={color} />,
+          tabBarIcon: ({ color }) => <Server size={20} color={color} />,
         }}
       />
     </Tabs>

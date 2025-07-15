@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '@/store/authStore';
@@ -77,7 +77,7 @@ export default function LoginScreen() {
         <View style={styles.inner}>
           <View style={styles.logoContainer}>
             <View style={styles.logoBackground}>
-              <Shield size={40} color={colors.primary} />
+              <Shield size={32} color={colors.primary} />
             </View>
             <Text style={styles.logoText}>Военная Часть</Text>
             <Text style={styles.subtitle}>Система управления</Text>
@@ -121,13 +121,12 @@ export default function LoginScreen() {
               style={styles.loginButton}
             />
             
-            <Button
-              title="Демо вход (Полковник)"
-              onPress={fillDemoCredentials}
-              variant="outline"
-              fullWidth
+            <TouchableOpacity 
               style={styles.demoButton}
-            />
+              onPress={fillDemoCredentials}
+            >
+              <Text style={styles.demoButtonText}>Демо вход (Полковник)</Text>
+            </TouchableOpacity>
           </View>
           
           <Text style={styles.version}>Версия 1.0.0</Text>
@@ -149,66 +148,88 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 60,
+    marginTop: 80,
   },
   logoBackground: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary + '10',
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   logoText: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: colors.text,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 8,
+    fontWeight: '500',
   },
   formContainer: {
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderRadius: 20,
+    padding: 28,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '700',
     color: colors.text,
-    marginBottom: 24,
+    marginBottom: 28,
     textAlign: 'center',
+    letterSpacing: -0.3,
   },
   errorContainer: {
-    backgroundColor: colors.error + '10',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
+    backgroundColor: colors.errorSoft,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.errorLight,
   },
   errorText: {
     color: colors.error,
     fontSize: 14,
+    fontWeight: '500',
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   loginButton: {
-    marginTop: 8,
+    marginTop: 12,
   },
   demoButton: {
-    marginTop: 12,
+    marginTop: 16,
+    backgroundColor: colors.backgroundSecondary,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  demoButtonText: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    fontWeight: '600',
   },
   version: {
     textAlign: 'center',
-    color: colors.textSecondary,
-    marginBottom: 16,
+    color: colors.textTertiary,
+    marginBottom: 20,
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
