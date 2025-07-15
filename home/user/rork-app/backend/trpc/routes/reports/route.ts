@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../../backend/trpc/create-context';
 import { mockReports, getReport, getUserReports, getUnitReports } from '../../../../constants/mockData';
 import type { Report, ReportStatus, ReportComment, ReportApproval } from '../../../../types';
 

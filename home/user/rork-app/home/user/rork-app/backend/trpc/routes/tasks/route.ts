@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../../backend/trpc/create-context';
 import { mockTasks, getTask, getUserTasks } from '../../../../constants/mockData';
 import type { Task, TaskStatus, TaskPriority } from '../../../../types';
 
@@ -12,7 +12,7 @@ export const getTasksProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { assignedTo?: string; createdBy?: string; status?: TaskStatus; priority?: TaskPriority; limit?: number; offset?: number } }) => {
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
@@ -20,7 +20,7 @@ export const getTasksProcedure = publicProcedure
     }
     
     if (input?.createdBy) {
-      tasks = tasks.filter(task => task.assignedBy === input.createdBy);
+      tasks = tasks.filter(task => task.createdBy === input.createdBy);
     }
     
     if (input?.status) {
@@ -32,7 +32,7 @@ export const getTasksProcedure = publicProcedure
     }
     
     // Сортировка по приоритету и дате создания
-    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    const priorityOrder: { [key in TaskPriority]: number } = { high: 3, medium: 2, low: 1 };
     tasks.sort((a, b) => {
       const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
       if (priorityDiff !== 0) return priorityDiff;
@@ -53,7 +53,7 @@ export const getTasksProcedure = publicProcedure
 
 export const getTaskByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: { id: string } }) => {
     const task = getTask(input.id);
     if (!task) {
       throw new Error('Task not found');
@@ -70,17 +70,18 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; assignedTo: string; createdBy: string; dueDate: string; priority?: TaskPriority } }) => {
     const newTask: Task = {
       id: `task_${Date.now()}`,
       title: input.title,
       description: input.description,
       assignedTo: input.assignedTo,
-      assignedBy: input.createdBy,
+      createdBy: input.createdBy,
       dueDate: input.dueDate,
       status: 'pending',
       priority: input.priority || 'medium',
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     
     mockTasks.push(newTask);
@@ -97,8 +98,8 @@ export const updateTaskProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
+  .mutation(({ input }: { input: { id: string; title?: string; description?: string; assignedTo?: string; dueDate?: string; status?: TaskStatus; priority?: TaskPriority } }) => {
+    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -112,6 +113,7 @@ export const updateTaskProcedure = publicProcedure
       ...(input.dueDate && { dueDate: input.dueDate }),
       ...(input.status && { status: input.status }),
       ...(input.priority && { priority: input.priority }),
+      updatedAt: new Date().toISOString(),
     };
     
     // Если задача завершена, добавляем время завершения
@@ -125,8 +127,8 @@ export const updateTaskProcedure = publicProcedure
 
 export const deleteTaskProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
+  .mutation(({ input }: { input: { id: string } }) => {
+    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -137,28 +139,28 @@ export const deleteTaskProcedure = publicProcedure
 
 export const getTaskStatsProcedure = publicProcedure
   .input(z.object({ userId: z.string().optional() }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { userId?: string } }) => {
     let tasks = mockTasks;
     
     if (input?.userId) {
-      tasks = tasks.filter(task => task.assignedTo === input.userId || task.assignedBy === input.userId);
+      tasks = tasks.filter((task: Task) => task.assignedTo === input.userId || task.createdBy === input.userId);
     }
     
     const stats = {
       total: tasks.length,
-      pending: tasks.filter(task => task.status === 'pending').length,
-      inProgress: tasks.filter(task => task.status === 'in_progress').length,
-      completed: tasks.filter(task => task.status === 'completed').length,
-      cancelled: tasks.filter(task => task.status === 'cancelled').length,
-      overdue: tasks.filter(task => 
+      pending: tasks.filter((task: Task) => task.status === 'pending').length,
+      inProgress: tasks.filter((task: Task) => task.status === 'in_progress').length,
+      completed: tasks.filter((task: Task) => task.status === 'completed').length,
+      cancelled: tasks.filter((task: Task) => task.status === 'cancelled').length,
+      overdue: tasks.filter((task: Task) => 
         task.status !== 'completed' && 
         task.status !== 'cancelled' && 
         new Date(task.dueDate) < new Date()
       ).length,
       byPriority: {
-        high: tasks.filter(task => task.priority === 'high').length,
-        medium: tasks.filter(task => task.priority === 'medium').length,
-        low: tasks.filter(task => task.priority === 'low').length,
+        high: tasks.filter((task: Task) => task.priority === 'high').length,
+        medium: tasks.filter((task: Task) => task.priority === 'medium').length,
+        low: tasks.filter((task: Task) => task.priority === 'low').length,
       },
     };
     

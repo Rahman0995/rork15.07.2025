@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../../backend/trpc/create-context';
 import { mockTasks, getTask, getUserTasks } from '../../../../constants/mockData';
 import type { Task, TaskStatus, TaskPriority } from '../../../../types';
 

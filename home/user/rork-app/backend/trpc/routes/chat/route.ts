@@ -1,18 +1,18 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../../backend/trpc/create-context';
 import { mockChats, mockChatMessages, getUserChats, getChatMessages } from '../../../../constants/mockData';
 import type { ChatMessage, Chat, MessageType } from '../../../../types';
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: { userId: string } }) => {
     return getUserChats(input.userId);
   });
 
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .query(({ input }) => {
-    const chat = mockChats.find(c => c.id === input.chatId);
+  .query(({ input }: { input: { chatId: string } }) => {
+    const chat = mockChats.find((c: Chat) => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
     }
@@ -25,11 +25,11 @@ export const getChatMessagesProcedure = publicProcedure
     limit: z.number().optional().default(50),
     offset: z.number().optional().default(0),
   }))
-  .query(({ input }) => {
+  .query(({ input }: { input: { chatId: string; limit: number; offset: number } }) => {
     const messages = getChatMessages(input.chatId);
     
     // Сортировка по времени (старые первыми)
-    const sortedMessages = messages.sort((a, b) => 
+    const sortedMessages = messages.sort((a: ChatMessage, b: ChatMessage) => 
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
     
