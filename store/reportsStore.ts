@@ -96,7 +96,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const { createNotification } = useNotificationsStore.getState();
       
       // Notify all approvers
-      for (const approverId of transformedReport.approvers || []) {
+      for (const approverId of transformedReport.approvers ?? []) {
         await createNotification({
           type: 'report_created',
           title: 'Новый отчет на утверждение',
@@ -178,7 +178,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           report.id === reportId ? {
             ...report,
             status: 'approved' as ReportStatus,
-            approvals: [...(report.approvals || []), approval],
+            approvals: [...(report.approvals ?? []), approval],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -226,7 +226,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           report.id === reportId ? {
             ...report,
             status: 'rejected' as ReportStatus,
-            approvals: [...(report.approvals || []), approval],
+            approvals: [...(report.approvals ?? []), approval],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -274,7 +274,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           report.id === reportId ? {
             ...report,
             status: 'needs_revision' as ReportStatus,
-            approvals: [...(report.approvals || []), approval],
+            approvals: [...(report.approvals ?? []), approval],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -321,7 +321,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         reports: state.reports.map(report => 
           report.id === reportId ? {
             ...report,
-            comments: [...(report.comments || []), comment],
+            comments: [...(report.comments ?? []), comment],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -364,7 +364,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
             content,
             attachments,
             status: 'pending' as ReportStatus,
-            revisions: [...(report.revisions || []), revision],
+            revisions: [...(report.revisions ?? []), revision],
             currentRevision: revision.version,
             updatedAt: new Date().toISOString(),
           } : report
@@ -374,7 +374,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       
       // Notify approvers about the revision
       const { createNotification } = useNotificationsStore.getState();
-      for (const approverId of report.approvers || []) {
+      for (const approverId of report.approvers ?? []) {
         await createNotification({
           type: 'report_revised',
           title: 'Отчет доработан',
@@ -395,7 +395,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     if (!currentUser) return [];
     
     return get().reports.filter(report => 
-      report.approvers?.includes(currentUser.id) && 
+      (report.approvers ?? []).includes(currentUser.id) && 
       (report.status === 'pending' || report.status === 'needs_revision')
     );
   },
