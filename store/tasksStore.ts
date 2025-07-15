@@ -47,6 +47,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     return get().tasks.find(task => task.id === id);
   },
   createTask: async (taskData) => {
+    console.log('Creating task:', taskData);
     set({ isLoading: true, error: null });
     try {
       // Simulate API call
@@ -63,22 +64,31 @@ export const useTasksStore = create<TasksState>((set, get) => ({
         isLoading: false,
       }));
       
-      // Create notification for assigned user
-      const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
-      await createNotification({
-        type: 'task_assigned',
-        title: 'Новая задача',
-        body: `Вам назначена задача: ${newTask.title}`,
-        userId: newTask.assignedTo,
-        read: false,
-        data: { taskId: newTask.id }
-      });
+      console.log('Task created successfully:', newTask);
       
-      // Schedule reminder
-      await scheduleTaskReminder(newTask.id, newTask.title, newTask.dueDate);
+      // Create notification for assigned user
+      try {
+        const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
+        await createNotification({
+          type: 'task_assigned',
+          title: 'Новая задача',
+          body: `Вам назначена задача: ${newTask.title}`,
+          userId: newTask.assignedTo,
+          read: false,
+          data: { taskId: newTask.id }
+        });
+        
+        // Schedule reminder
+        await scheduleTaskReminder(newTask.id, newTask.title, newTask.dueDate);
+      } catch (notificationError) {
+        console.warn('Failed to create notification:', notificationError);
+        // Don't fail the task creation if notification fails
+      }
       
     } catch (error) {
+      console.error('Error creating task:', error);
       set({ error: 'Ошибка при создании задачи', isLoading: false });
+      throw error; // Re-throw to handle in component
     }
   },
   updateTaskStatus: async (id: string, status: TaskStatus) => {
@@ -102,8 +112,12 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       
       // Cancel reminder if task is completed or cancelled
       if (status === 'completed' || status === 'cancelled') {
-        const { cancelTaskReminder } = useNotificationsStore.getState();
-        await cancelTaskReminder(id);
+        try {
+          const { cancelTaskReminder } = useNotificationsStore.getState();
+          await cancelTaskReminder(id);
+        } catch (notificationError) {
+          console.warn('Failed to cancel task reminder:', notificationError);
+        }
       }
       
     } catch (error) {
@@ -141,8 +155,12 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       }));
       
       // Cancel reminder
-      const { cancelTaskReminder } = useNotificationsStore.getState();
-      await cancelTaskReminder(id);
+      try {
+        const { cancelTaskReminder } = useNotificationsStore.getState();
+        await cancelTaskReminder(id);
+      } catch (notificationError) {
+        console.warn('Failed to cancel task reminder:', notificationError);
+      }
     } catch (error) {
       set({ error: 'Ошибка при удалении задачи', isLoading: false });
     }

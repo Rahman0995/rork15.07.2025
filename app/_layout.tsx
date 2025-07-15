@@ -38,12 +38,33 @@ function RootLayoutNav() {
     if (!isNavigationReady || !isInitialized) return;
 
     const inAuthGroup = segments[0] === '(tabs)';
+    const inProtectedRoute = inAuthGroup || 
+      segments[0] === 'task' || 
+      segments[0] === 'report' || 
+      segments[0] === 'chat' || 
+      segments[0] === 'event' || 
+      segments[0] === 'settings' || 
+      segments[0] === 'reports';
 
-    if (!isAuthenticated && inAuthGroup) {
+    console.log('Navigation check:', {
+      segments,
+      isAuthenticated,
+      inAuthGroup,
+      inProtectedRoute,
+      isNavigationReady,
+      isInitialized
+    });
+
+    // Only redirect if we're not already in the middle of navigation
+    const currentRoute = segments.join('/');
+    
+    if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
       // Redirect to login if not authenticated and trying to access protected routes
+      console.log('Redirecting to login - not authenticated');
       router.replace('/login');
-    } else if (isAuthenticated && !inAuthGroup) {
-      // Redirect to tabs if authenticated and not in protected routes
+    } else if (isAuthenticated && segments[0] === 'login') {
+      // Redirect to tabs if authenticated and on login page
+      console.log('Redirecting to tabs - authenticated on login page');
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);

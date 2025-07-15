@@ -114,8 +114,13 @@ export default function CreateTaskScreen() {
   };
   
   const handleSubmit = async () => {
-    if (!validateForm() || !user) return;
+    console.log('handleSubmit called');
+    if (!validateForm() || !user) {
+      console.log('Validation failed or no user');
+      return;
+    }
     
+    console.log('Starting task creation...');
     try {
       await createTask({
         title,
@@ -127,18 +132,27 @@ export default function CreateTaskScreen() {
         priority,
       });
       
+      console.log('Task creation completed, showing success alert');
       Alert.alert(
         'Успешно',
         'Задача успешно создана',
         [
           {
             text: 'OK',
-            onPress: () => router.back(),
+            onPress: () => {
+              // Navigate back to the previous screen or home if no previous screen
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(tabs)');
+              }
+            },
           },
         ]
       );
     } catch (error) {
-      Alert.alert('Ошибка', 'Не удалось создать задачу');
+      console.error('Error creating task:', error);
+      Alert.alert('Ошибка', 'Не удалось создать задачу. Попробуйте еще раз.');
     }
   };
   
@@ -256,7 +270,13 @@ export default function CreateTaskScreen() {
         <View style={styles.buttonsContainer}>
           <Button
             title="Отмена"
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(tabs)');
+              }
+            }}
             variant="outline"
             style={styles.cancelButton}
           />
@@ -264,6 +284,7 @@ export default function CreateTaskScreen() {
             title="Создать задачу"
             onPress={handleSubmit}
             loading={isLoading}
+            disabled={isLoading}
             style={styles.submitButton}
           />
         </View>
