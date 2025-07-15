@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { View } from "react-native";
-import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar } from "lucide-react-native";
+import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp, Server } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -76,6 +76,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="analytics"
+        options={{
+          title: "Аналитика",
+          tabBarIcon: ({ color }) => <TrendingUp size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: "Календарь",
+          tabBarIcon: ({ color }) => <Calendar size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="notifications"
         options={{
           title: "Уведомления",
@@ -88,24 +102,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: "Аналитика",
-          tabBarIcon: ({ color }) => <BarChart2 size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: "Профиль",
           tabBarIcon: ({ color }) => <User size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="backend-test"
+        options={{
+          title: "Backend",
+          tabBarIcon: ({ color }) => <Server size={22} color={color} />,
         }}
       />
     </Tabs>

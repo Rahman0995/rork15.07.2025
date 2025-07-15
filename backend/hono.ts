@@ -22,7 +22,21 @@ app.use(
 
 // Simple health check endpoint
 app.get("/", (c) => {
-  return c.json({ status: "ok", message: "API is running" });
+  return c.json({ 
+    status: "ok", 
+    message: "API is running",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0"
+  });
+});
+
+// Health check endpoint
+app.get("/health", (c) => {
+  return c.json({ 
+    status: "healthy", 
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
 });
 
 export default app;

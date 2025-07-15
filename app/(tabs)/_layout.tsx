@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { View } from "react-native";
-import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp } from "lucide-react-native";
+import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp, Server } from "lucide-react-native";
 import { colors } from "@/constants/colors";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -106,6 +106,13 @@ export default function TabLayout() {
         options={{
           title: "Профиль",
           tabBarIcon: ({ color }) => <User size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="backend-test"
+        options={{
+          title: "Backend",
+          tabBarIcon: ({ color }) => <Server size={22} color={color} />,
         }}
       />
     </Tabs>

@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { useTasksStore } from '@/store/tasksStore';
 import { useReportsStore } from '@/store/reportsStore';
+import { trpc } from '@/lib/trpc';
 import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/Button';
@@ -22,6 +23,12 @@ export default function HomeScreen() {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
+  
+  // Test tRPC connection
+  const { data: backendTest, isLoading: backendLoading } = trpc.example.hi.useQuery(
+    { name: user?.name || 'Anonymous' },
+    { enabled: isAuthenticated }
+  );
   
   useEffect(() => {
     if (isAuthenticated) {
@@ -110,6 +117,11 @@ export default function HomeScreen() {
           <View style={styles.dateContainer}>
             <Calendar size={16} color={colors.white} />
             <Text style={styles.date}>{formatDate(new Date().toISOString())}</Text>
+            {backendTest && (
+              <View style={styles.backendStatus}>
+                <Text style={styles.backendStatusText}>✓ Backend</Text>
+              </View>
+            )}
           </View>
         </View>
       </LinearGradient>
@@ -215,6 +227,14 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.emptyTitle}>Нет отчетов</Text>
             <Text style={styles.emptyDescription}>Создайте первый отчет для вашего подразделения</Text>
+            {backendTest && (
+              <TouchableOpacity 
+                style={styles.backendTestButton}
+                onPress={() => router.push('/(tabs)/backend-test')}
+              >
+                <Text style={styles.backendTestText}>Те��тировать Backend</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </View>
@@ -295,6 +315,18 @@ const styles = StyleSheet.create({
     color: colors.white,
     marginLeft: 6,
     fontWeight: '500',
+  },
+  backendStatus: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  backendStatusText: {
+    fontSize: 11,
+    color: colors.white,
+    fontWeight: '600',
   },
   
   // Stats Section
@@ -442,5 +474,17 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  backendTestButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 12,
+  },
+  backendTestText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
