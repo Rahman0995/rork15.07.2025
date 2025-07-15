@@ -165,7 +165,7 @@ export default function AnalyticsScreen() {
   );
   
   const renderOverviewTab = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.tabContent}>
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <View style={styles.statIconContainer}>
@@ -218,11 +218,11 @@ export default function AnalyticsScreen() {
         <Text style={styles.chartTitle}>Производительность за неделю</Text>
         <LineChart data={performanceData} height={180} />
       </View>
-    </ScrollView>
+    </View>
   );
   
   const renderUnitsTab = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.tabContent}>
       <View style={styles.chartCard}>
         <Text style={styles.chartTitle}>Эффективность подразделений</Text>
         <BarChart data={barChartData} height={220} />
@@ -259,11 +259,11 @@ export default function AnalyticsScreen() {
           </View>
         </View>
       ))}
-    </ScrollView>
+    </View>
   );
   
   const renderUsersTab = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.tabContent}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Рейтинг пользователей</Text>
         <Text style={styles.sectionSubtitle}>
@@ -283,11 +283,11 @@ export default function AnalyticsScreen() {
           }}
         />
       ))}
-    </ScrollView>
+    </View>
   );
   
   const renderTrendsTab = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.tabContent}>
       <View style={styles.chartCard}>
         <Text style={styles.chartTitle}>Динамика выполнения задач</Text>
         <LineChart 
@@ -342,7 +342,7 @@ export default function AnalyticsScreen() {
           </View>
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
   
   return (
@@ -391,12 +391,12 @@ export default function AnalyticsScreen() {
         {renderTabButton('trends', 'Тренды', <TrendingUp size={16} color={activeTab === 'trends' ? 'white' : colors.primary} />)}
       </View>
       
-      <View style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {activeTab === 'overview' && renderOverviewTab()}
         {activeTab === 'units' && renderUnitsTab()}
         {activeTab === 'users' && renderUsersTab()}
         {activeTab === 'trends' && renderTrendsTab()}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -491,6 +491,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+  },
+  tabContent: {
+    flex: 1,
   },
   statsGrid: {
     flexDirection: 'row',
