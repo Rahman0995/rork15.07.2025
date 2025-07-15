@@ -48,7 +48,7 @@ function RootLayoutNav() {
       segments[0] === 'notifications' || 
       segments[0] === 'calendar' || 
       segments[0] === 'profile' || 
-      (segments.length === 0 && isAuthenticated); // Home route
+      (segments.length === 0 && isAuthenticated === true); // Home route
 
     console.log('Navigation check:', {
       segments,
