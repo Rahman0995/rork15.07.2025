@@ -54,7 +54,7 @@ export const hiProcedure = publicProcedure
   .input(z.object({
     name: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { name?: string } }) => {
     return {
       hello: input?.name || "World",
       message: "Hello from tRPC!",
@@ -67,7 +67,7 @@ export const getTasksProcedure = publicProcedure
   .input(z.object({
     userId: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { userId?: string } }) => {
     // Filter tasks by user if provided
     if (input?.userId) {
       return mockTasks.filter(task => task.assignedTo === input.userId);
@@ -79,7 +79,7 @@ export const getReportsProcedure = publicProcedure
   .input(z.object({
     authorId: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { authorId?: string } }) => {
     // Filter reports by author if provided
     if (input?.authorId) {
       return mockReports.filter(report => report.authorId === input.authorId);
@@ -95,7 +95,7 @@ export const createTaskProcedure = publicProcedure
     assignedTo: z.string(),
     dueDate: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignedTo: string; dueDate: string } }) => {
     const newTask = {
       id: Date.now().toString(),
       ...input,
@@ -114,7 +114,7 @@ export const createReportProcedure = publicProcedure
     content: z.string(),
     authorId: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string } }) => {
     const newReport = {
       id: Date.now().toString(),
       ...input,
