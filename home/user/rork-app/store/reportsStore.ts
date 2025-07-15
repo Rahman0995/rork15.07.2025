@@ -329,7 +329,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const revision: ReportRevision = {
         id: `${Date.now()}`,
         reportId,
-        version: report.currentRevision + 1,
+        version: (report.currentRevision || 1) + 1,
         title,
         content,
         attachments,

@@ -73,7 +73,7 @@ export const createTaskProcedure = publicProcedure
   .input(z.object({
     title: z.string(),
     description: z.string(),
-    priority: z.enum(['low', 'medium', 'high']),
+    priority: z.enum(['high', 'medium', 'low']),
     assignedTo: z.string(),
     dueDate: z.string(),
   }))
