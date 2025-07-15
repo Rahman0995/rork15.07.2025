@@ -1,0 +1,246 @@
+import { z } from 'zod';
+import { publicProcedure } from '../../create-context';
+import { mockReports, getReport, getUserReports, getUnitReports } from '../../../constants/mockData';
+import type { Report, ReportStatus, ReportComment, ReportApproval } from '../../../types';
+
+export const getReportsProcedure = publicProcedure
+  .input(z.object({
+    status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
+    authorId: z.string().optional(),
+    unit: z.string().optional(),
+    limit: z.number().optional(),
+    offset: z.number().optional(),
+  }).optional())
+  .query(({ input }) => {
+    let reports = [...mockReports];
+    
+    if (input?.status) {
+      reports = reports.filter(report => report.status === input.status);
+    }
+    
+    if (input?.authorId) {
+      reports = reports.filter(report => report.authorId === input.authorId);
+    }
+    
+    if (input?.unit) {
+      reports = reports.filter(report => report.unit === input.unit);
+    }
+    
+    // Sort by creation date (newest first)
+    reports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    if (input?.offset || input?.limit) {
+      const offset = input.offset || 0;
+      const limit = input.limit || 10;
+      reports = reports.slice(offset, offset + limit);
+    }
+    
+    return {
+      reports,
+      total: mockReports.length,
+    };
+  });
+
+export const getReportByIdProcedure = publicProcedure
+  .input(z.object({ id: z.string() }))
+  .query(({ input }) => {
+    const report = getReport(input.id);
+    if (!report) {
+      throw new Error('Report not found');
+    }
+    return report;
+  });
+
+export const createReportProcedure = publicProcedure
+  .input(z.object({
+    title: z.string().min(1),
+    content: z.string().min(1),
+    authorId: z.string(),
+    type: z.enum(['text', 'file', 'video']).optional().default('text'),
+    unit: z.string().optional(),
+    priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
+    dueDate: z.string().optional(),
+    approvers: z.array(z.string()).optional().default([]),
+    attachments: z.array(z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.enum(['file', 'image', 'video']),
+      url: z.string(),
+    })).optional().default([]),
+  }))
+  .mutation(({ input }) => {
+    const reportId = `report_${Date.now()}`;
+    const newReport: Report = {
+      id: reportId,
+      title: input.title,
+      content: input.content,
+      authorId: input.authorId,
+      author: input.authorId, // For backward compatibility
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'draft',
+      type: input.type || 'text',
+      attachments: input.attachments || [],
+      unit: input.unit || '',
+      priority: input.priority || 'medium',
+      dueDate: input.dueDate,
+      approvers: input.approvers || [],
+      currentApprover: input.approvers?.[0],
+      approvals: [],
+      comments: [],
+      revisions: [{
+        id: `rev_${Date.now()}`,
+        reportId: reportId,
+        version: 1,
+        title: input.title,
+        content: input.content,
+        attachments: input.attachments || [],
+        createdAt: new Date().toISOString(),
+        createdBy: input.authorId,
+        authorId: input.authorId,
+      }],
+      currentRevision: 1,
+    };
+    
+    mockReports.push(newReport);
+    return newReport;
+  });
+
+export const updateReportProcedure = publicProcedure
+  .input(z.object({
+    id: z.string(),
+    title: z.string().optional(),
+    content: z.string().optional(),
+    status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
+    priority: z.enum(['low', 'medium', 'high']).optional(),
+    dueDate: z.string().optional(),
+    attachments: z.array(z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.enum(['file', 'image', 'video']),
+      url: z.string(),
+    })).optional(),
+  }))
+  .mutation(({ input }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.id);
+    if (reportIndex === -1) {
+      throw new Error('Report not found');
+    }
+    
+    const currentReport = mockReports[reportIndex];
+    const updatedReport = {
+      ...currentReport,
+      ...input,
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // If content or title changed, create new revision
+    if (input.title || input.content) {
+      const newRevision = {
+        id: `rev_${Date.now()}`,
+        reportId: input.id,
+        version: (currentReport.currentRevision || 1) + 1,
+        title: input.title || currentReport.title,
+        content: input.content || currentReport.content,
+        attachments: input.attachments || currentReport.attachments || [],
+        createdAt: new Date().toISOString(),
+        createdBy: currentReport.authorId,
+        authorId: currentReport.authorId,
+        changes: 'Updated content',
+      };
+      
+      updatedReport.revisions = [...(currentReport.revisions || []), newRevision];
+      updatedReport.currentRevision = newRevision.version;
+    }
+    
+    mockReports[reportIndex] = updatedReport;
+    return updatedReport;
+  });
+
+export const deleteReportProcedure = publicProcedure
+  .input(z.object({ id: z.string() }))
+  .mutation(({ input }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.id);
+    if (reportIndex === -1) {
+      throw new Error('Report not found');
+    }
+    
+    const deletedReport = mockReports.splice(reportIndex, 1)[0];
+    return { success: true, deletedReport };
+  });
+
+export const addReportCommentProcedure = publicProcedure
+  .input(z.object({
+    reportId: z.string(),
+    authorId: z.string(),
+    content: z.string().min(1),
+    isRevision: z.boolean().optional().default(false),
+    attachments: z.array(z.object({
+      id: z.string(),
+      name: z.string(),
+      type: z.enum(['file', 'image', 'video']),
+      url: z.string(),
+    })).optional(),
+  }))
+  .mutation(({ input }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
+    if (reportIndex === -1) {
+      throw new Error('Report not found');
+    }
+    
+    const newComment: ReportComment = {
+      id: `comment_${Date.now()}`,
+      reportId: input.reportId,
+      authorId: input.authorId,
+      content: input.content,
+      createdAt: new Date().toISOString(),
+      isRevision: input.isRevision || false,
+      attachments: input.attachments,
+    };
+    
+    const report = mockReports[reportIndex];
+    report.comments = [...(report.comments || []), newComment];
+    report.updatedAt = new Date().toISOString();
+    
+    return newComment;
+  });
+
+export const approveReportProcedure = publicProcedure
+  .input(z.object({
+    reportId: z.string(),
+    approverId: z.string(),
+    status: z.enum(['approved', 'rejected', 'needs_revision']),
+    comment: z.string().optional(),
+  }))
+  .mutation(({ input }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
+    if (reportIndex === -1) {
+      throw new Error('Report not found');
+    }
+    
+    const newApproval: ReportApproval = {
+      id: `approval_${Date.now()}`,
+      reportId: input.reportId,
+      approverId: input.approverId,
+      status: input.status,
+      comment: input.comment,
+      createdAt: new Date().toISOString(),
+    };
+    
+    const report = mockReports[reportIndex];
+    report.approvals = [...(report.approvals || []), newApproval];
+    report.status = input.status;
+    report.updatedAt = new Date().toISOString();
+    
+    return newApproval;
+  });
+
+export const getReportsForApprovalProcedure = publicProcedure
+  .input(z.object({ approverId: z.string() }))
+  .query(({ input }) => {
+    return mockReports.filter(report => 
+      report.status === 'pending' && 
+      report.approvers?.includes(input.approverId) &&
+      report.currentApprover === input.approverId
+    );
+  });
