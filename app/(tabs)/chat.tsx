@@ -81,10 +81,11 @@ export default function ChatScreen() {
           data={listData}
           renderItem={({ item }) => {
             if (item.type === 'header') {
-              return renderSectionHeader(item.title);
+              return <View key={item.id}>{renderSectionHeader(item.title)}</View>;
             } else {
               return (
                 <ChatListItem 
+                  key={item.id}
                   chat={item} 
                   currentUserId={user.id} 
                   onPress={navigateToChat} 

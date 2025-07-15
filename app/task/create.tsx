@@ -141,14 +141,8 @@ export default function CreateTaskScreen() {
             text: 'OK',
             onPress: () => {
               console.log('Success alert OK pressed');
-              // Navigate back to the previous screen or home if no previous screen
-              if (router.canGoBack()) {
-                console.log('Going back');
-                router.back();
-              } else {
-                console.log('Replacing with tabs');
-                router.replace('/(tabs)');
-              }
+              // Navigate back to the home screen
+              router.replace('/(tabs)');
             },
           },
         ]
@@ -275,13 +269,7 @@ export default function CreateTaskScreen() {
             title="Отмена"
             onPress={() => {
               console.log('Cancel button pressed');
-              if (router.canGoBack()) {
-                console.log('Going back from cancel');
-                router.back();
-              } else {
-                console.log('Replacing with tabs from cancel');
-                router.replace('/(tabs)');
-              }
+              router.replace('/(tabs)');
             }}
             variant="outline"
             style={styles.cancelButton}

@@ -133,7 +133,7 @@ export default function ReportsScreen() {
         <FlatList
           data={filteredReports}
           renderItem={({ item }) => (
-            <ReportCard report={item} onPress={navigateToReport} />
+            <ReportCard key={item.id} report={item} onPress={navigateToReport} />
           )}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
