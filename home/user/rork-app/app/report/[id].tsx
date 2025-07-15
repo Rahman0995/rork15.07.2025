@@ -58,7 +58,7 @@ export default function ReportDetailScreen() {
   const report = getReportById(id);
   const author = report ? getUser(report.authorId) : null;
   
-  const canApprove = currentUser && report?.approvers.includes(currentUser.id);
+  const canApprove = currentUser && report?.approvers?.includes(currentUser.id);
   const isAuthor = currentUser && report?.authorId === currentUser.id;
   const canRevise = isAuthor && report?.status === 'needs_revision';
   
@@ -193,14 +193,14 @@ export default function ReportDetailScreen() {
         <Text style={styles.contentText}>{report.content}</Text>
       </View>
       
-      {report.attachments.length > 0 && (
+      {report.attachments && report.attachments.length > 0 && (
         <View style={styles.attachmentsContainer}>
           <View style={styles.attachmentsHeader}>
             <Paperclip size={20} color={colors.textSecondary} />
             <Text style={styles.attachmentsTitle}>Вложения</Text>
           </View>
           
-          {report.attachments.map((attachment, index) => (
+          {report.attachments?.map((attachment, index) => (
             <View key={index} style={styles.attachmentItem}>
               <View style={styles.attachmentInfo}>
                 <FileText size={20} color={colors.primary} />
@@ -216,14 +216,14 @@ export default function ReportDetailScreen() {
       
       {/* Revision History */}
       <ReportRevisionHistory 
-        revisions={report.revisions} 
-        currentRevision={report.currentRevision} 
+        revisions={report.revisions || []} 
+        currentRevision={report.currentRevision || 1} 
       />
       
       {/* Comments */}
       <ReportComments 
         reportId={report.id} 
-        comments={report.comments} 
+        comments={report.comments || []} 
       />
       
       {/* Approval Actions */}

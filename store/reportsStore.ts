@@ -347,7 +347,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const revision: ReportRevision = {
         id: `${Date.now()}`,
         reportId,
-        version: report.currentRevision + 1,
+        version: (report.currentRevision || 1) + 1,
         title,
         content,
         attachments,
@@ -374,7 +374,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       
       // Notify approvers about the revision
       const { createNotification } = useNotificationsStore.getState();
-      for (const approverId of report.approvers) {
+      for (const approverId of report.approvers || []) {
         await createNotification({
           type: 'report_revised',
           title: 'Отчет доработан',
@@ -395,7 +395,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     if (!currentUser) return [];
     
     return get().reports.filter(report => 
-      report.approvers.includes(currentUser.id) && 
+      report.approvers?.includes(currentUser.id) && 
       (report.status === 'pending' || report.status === 'needs_revision')
     );
   },
@@ -456,7 +456,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     return get().reports.filter(report => 
       report.title.toLowerCase().includes(lowercaseQuery) ||
       report.content.toLowerCase().includes(lowercaseQuery) ||
-      report.unit.toLowerCase().includes(lowercaseQuery)
+      report.unit?.toLowerCase().includes(lowercaseQuery)
     );
   },
   

@@ -112,6 +112,7 @@ const mockTasks: CalendarTask[] = [
     status: 'pending',
     priority: 'high',
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     isAllDay: true
@@ -126,6 +127,7 @@ const mockTasks: CalendarTask[] = [
     status: 'in_progress',
     priority: 'medium',
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     isAllDay: false
@@ -296,8 +298,8 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     const events = get().getEventsByDate(date);
     const tasks = get().getTasksByDate(date);
     return [...events, ...tasks].sort((a, b) => {
-      const aDate = 'startDate' in a && a.startDate ? new Date(a.startDate) : new Date(a.dueDate);
-      const bDate = 'startDate' in b && b.startDate ? new Date(b.startDate) : new Date(b.dueDate);
+      const aDate = 'startDate' in a && a.startDate ? new Date(a.startDate) : new Date((a as CalendarTask).dueDate);
+      const bDate = 'startDate' in b && b.startDate ? new Date(b.startDate) : new Date((b as CalendarTask).dueDate);
       return aDate.getTime() - bDate.getTime();
     });
   },

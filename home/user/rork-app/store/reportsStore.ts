@@ -79,7 +79,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const { createNotification } = useNotificationsStore.getState();
       
       // Notify all approvers
-      for (const approverId of newReport.approvers) {
+      for (const approverId of newReport.approvers || []) {
         await createNotification({
           type: 'report_created',
           title: 'Новый отчет на утверждение',
@@ -127,7 +127,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: notificationType,
           title,
           body,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId: report.id }
         });
@@ -160,7 +160,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           report.id === reportId ? {
             ...report,
             status: 'approved' as ReportStatus,
-            approvals: [...report.approvals, approval],
+            approvals: [...(report.approvals || []), approval],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -175,7 +175,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: 'report_approved',
           title: 'Отчет утвержден',
           body: `Ваш отчет "${report.title}" был утвержден`,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId }
         });
@@ -208,7 +208,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           report.id === reportId ? {
             ...report,
             status: 'rejected' as ReportStatus,
-            approvals: [...report.approvals, approval],
+            approvals: [...(report.approvals || []), approval],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -223,7 +223,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: 'report_rejected',
           title: 'Отчет отклонен',
           body: `Ваш отчет "${report.title}" был отклонен`,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId }
         });
@@ -256,7 +256,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           report.id === reportId ? {
             ...report,
             status: 'needs_revision' as ReportStatus,
-            approvals: [...report.approvals, approval],
+            approvals: [...(report.approvals || []), approval],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -271,7 +271,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: 'report_revision_requested',
           title: 'Требуется доработка отчета',
           body: `Ваш отчет "${report.title}" требует доработки`,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId }
         });
@@ -303,7 +303,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         reports: state.reports.map(report => 
           report.id === reportId ? {
             ...report,
-            comments: [...report.comments, comment],
+            comments: [...(report.comments || []), comment],
             updatedAt: new Date().toISOString(),
           } : report
         ),
@@ -346,7 +346,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
             content,
             attachments,
             status: 'pending' as ReportStatus,
-            revisions: [...report.revisions, revision],
+            revisions: [...(report.revisions || []), revision],
             currentRevision: revision.version,
             updatedAt: new Date().toISOString(),
           } : report
@@ -356,7 +356,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       
       // Notify approvers about the revision
       const { createNotification } = useNotificationsStore.getState();
-      for (const approverId of report.approvers) {
+      for (const approverId of report.approvers || []) {
         await createNotification({
           type: 'report_revised',
           title: 'Отчет доработан',
@@ -377,7 +377,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     if (!currentUser) return [];
     
     return get().reports.filter(report => 
-      report.approvers.includes(currentUser.id) && 
+      report.approvers?.includes(currentUser.id) && 
       (report.status === 'pending' || report.status === 'needs_revision')
     );
   },
@@ -386,7 +386,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return [];
     
-    return get().reports.filter(report => report.author === currentUser.id);
+    return get().reports.filter(report => report.authorId === currentUser.id);
   },
   
   deleteReport: async (reportId: string) => {
@@ -438,7 +438,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     return get().reports.filter(report => 
       report.title.toLowerCase().includes(lowercaseQuery) ||
       report.content.toLowerCase().includes(lowercaseQuery) ||
-      report.unit.toLowerCase().includes(lowercaseQuery)
+      report.unit?.toLowerCase().includes(lowercaseQuery)
     );
   },
   
