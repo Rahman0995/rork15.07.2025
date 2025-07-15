@@ -233,7 +233,7 @@ export const FloatingMenu: React.FC<FloatingMenuProps> = ({ visible, onClose }) 
                     onPress={() => handleItemPress(item.route)}
                     activeOpacity={0.7}
                   >
-                    <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
+                    <View style={[styles.iconContainer, { backgroundColor: item.color + '15' }]}>
                       <IconComponent size={24} color={item.color} />
                     </View>
                     <Text style={styles.itemTitle}>{item.title}</Text>
