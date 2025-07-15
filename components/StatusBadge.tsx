@@ -76,8 +76,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'medium
     <View style={[
       styles.container, 
       { 
-        backgroundColor: statusColor + '15',
-        borderColor: statusColor + '30',
+        backgroundColor: `${statusColor}15`,
+        borderColor: `${statusColor}30`,
       },
       size === 'small' && styles.smallContainer
     ]}>
