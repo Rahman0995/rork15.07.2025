@@ -5,13 +5,13 @@ import type { ChatMessage, Chat, MessageType } from '../../../../types';
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .query(({ input }: { input: { userId: string } }) => {
+  .query(({ input }) => {
     return getUserChats(input.userId);
   });
 
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .query(({ input }: { input: { chatId: string } }) => {
+  .query(({ input }) => {
     const chat = mockChats.find((c: Chat) => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
@@ -25,10 +25,10 @@ export const getChatMessagesProcedure = publicProcedure
     limit: z.number().optional().default(50),
     offset: z.number().optional().default(0),
   }))
-  .query(({ input }: { input: { chatId: string; limit: number; offset: number } }) => {
+  .query(({ input }) => {
     const messages = getChatMessages(input.chatId);
     
-    // Сортировка по времени (старые первыми)
+    // Sort by time (oldest first)
     const sortedMessages = messages.sort((a: ChatMessage, b: ChatMessage) => 
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
@@ -71,18 +71,18 @@ export const sendMessageProcedure = publicProcedure
       read: false,
     };
     
-    // Добавляем сообщение в чат
+    // Add message to chat
     if (!mockChatMessages[input.chatId]) {
       mockChatMessages[input.chatId] = [];
     }
     mockChatMessages[input.chatId].push(newMessage);
     
-    // Обновляем последнее сообщение в чате
-    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
+    // Update last message in chat
+    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex !== -1) {
       mockChats[chatIndex].lastMessage = newMessage;
       
-      // Увеличиваем счетчик непрочитанных для других участников
+      // Increase unread count for other participants
       mockChats[chatIndex].unreadCount += 1;
     }
     
@@ -103,8 +103,8 @@ export const markMessagesAsReadProcedure = publicProcedure
     
     let updatedCount = 0;
     
-    messages.forEach(message => {
-      // Отмечаем как прочитанные либо конкретные сообщения, либо все сообщения не от текущего пользователя
+    messages.forEach((message: ChatMessage) => {
+      // Mark as read either specific messages or all messages not from current user
       if (message.senderId !== input.userId && !message.read) {
         if (!input.messageIds || input.messageIds.includes(message.id)) {
           message.read = true;
@@ -113,8 +113,8 @@ export const markMessagesAsReadProcedure = publicProcedure
       }
     });
     
-    // Обновляем счетчик непрочитанных в чате
-    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
+    // Update unread count in chat
+    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex !== -1) {
       mockChats[chatIndex].unreadCount = Math.max(0, mockChats[chatIndex].unreadCount - updatedCount);
     }
@@ -135,7 +135,7 @@ export const createChatProcedure = publicProcedure
       isGroup: input.isGroup,
       unreadCount: 0,
       ...(input.name && { name: input.name }),
-    };
+    } as Chat;
     
     mockChats.push(newChat);
     mockChatMessages[newChat.id] = [];
@@ -146,7 +146,7 @@ export const createChatProcedure = publicProcedure
 export const deleteChatProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
   .mutation(({ input }) => {
-    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex === -1) {
       throw new Error('Chat not found');
     }
@@ -161,11 +161,11 @@ export const getUnreadCountProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
   .query(({ input }) => {
     const userChats = getUserChats(input.userId);
-    const totalUnread = userChats.reduce((total, chat) => total + chat.unreadCount, 0);
+    const totalUnread = userChats.reduce((total: number, chat: Chat) => total + chat.unreadCount, 0);
     
     return {
       totalUnread,
-      chatCounts: userChats.map(chat => ({
+      chatCounts: userChats.map((chat: Chat) => ({
         chatId: chat.id,
         unreadCount: chat.unreadCount,
       })),

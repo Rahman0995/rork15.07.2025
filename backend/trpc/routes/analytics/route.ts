@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockReports } from '../../../constants/mockData';
-import { mockTasks } from '../../../constants/mockData';
+import { mockReports, mockTasks } from '../../../constants/mockData';
+import type { Report, Task } from '../../../types';
 
 export const getReportsAnalyticsProcedure = publicProcedure
   .input(z.object({
@@ -103,31 +103,31 @@ export const getUserActivityProcedure = publicProcedure
     endDate: z.string().optional(),
   }))
   .query(({ input }) => {
-    let userReports = mockReports.filter(r => r.authorId === input.userId);
-    let userTasks = mockTasks.filter(t => t.assignedTo === input.userId || t.createdBy === input.userId);
+    let userReports = mockReports.filter((r: Report) => r.authorId === input.userId);
+    let userTasks = mockTasks.filter((t: Task) => t.assignedTo === input.userId || t.createdBy === input.userId);
     
     if (input.startDate) {
-      userReports = userReports.filter(r => new Date(r.createdAt) >= new Date(input.startDate!));
-      userTasks = userTasks.filter(t => new Date(t.createdAt) >= new Date(input.startDate!));
+      userReports = userReports.filter((r: Report) => new Date(r.createdAt) >= new Date(input.startDate!));
+      userTasks = userTasks.filter((t: Task) => new Date(t.createdAt) >= new Date(input.startDate!));
     }
     
     if (input.endDate) {
-      userReports = userReports.filter(r => new Date(r.createdAt) <= new Date(input.endDate!));
-      userTasks = userTasks.filter(t => new Date(t.createdAt) <= new Date(input.endDate!));
+      userReports = userReports.filter((r: Report) => new Date(r.createdAt) <= new Date(input.endDate!));
+      userTasks = userTasks.filter((t: Task) => new Date(t.createdAt) <= new Date(input.endDate!));
     }
     
     const activity = {
       reports: {
         total: userReports.length,
-        approved: userReports.filter(r => r.status === 'approved').length,
-        pending: userReports.filter(r => r.status === 'pending').length,
-        rejected: userReports.filter(r => r.status === 'rejected').length,
+        approved: userReports.filter((r: Report) => r.status === 'approved').length,
+        pending: userReports.filter((r: Report) => r.status === 'pending').length,
+        rejected: userReports.filter((r: Report) => r.status === 'rejected').length,
       },
       tasks: {
         total: userTasks.length,
-        completed: userTasks.filter(t => t.status === 'completed').length,
-        pending: userTasks.filter(t => t.status === 'pending').length,
-        overdue: userTasks.filter(t => 
+        completed: userTasks.filter((t: Task) => t.status === 'completed').length,
+        pending: userTasks.filter((t: Task) => t.status === 'pending').length,
+        overdue: userTasks.filter((t: Task) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
           new Date(t.dueDate) < new Date()
@@ -144,22 +144,22 @@ export const getDashboardStatsProcedure = publicProcedure
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    const recentReports = mockReports.filter(r => new Date(r.createdAt) >= weekAgo);
-    const recentTasks = mockTasks.filter(t => new Date(t.createdAt) >= weekAgo);
+    const recentReports = mockReports.filter((r: Report) => new Date(r.createdAt) >= weekAgo);
+    const recentTasks = mockTasks.filter((t: Task) => new Date(t.createdAt) >= weekAgo);
     
     const stats = {
       reports: {
         total: mockReports.length,
         recent: recentReports.length,
-        pending: mockReports.filter(r => r.status === 'pending').length,
-        approved: mockReports.filter(r => r.status === 'approved').length,
+        pending: mockReports.filter((r: Report) => r.status === 'pending').length,
+        approved: mockReports.filter((r: Report) => r.status === 'approved').length,
       },
       tasks: {
         total: mockTasks.length,
         recent: recentTasks.length,
-        pending: mockTasks.filter(t => t.status === 'pending').length,
-        completed: mockTasks.filter(t => t.status === 'completed').length,
-        overdue: mockTasks.filter(t => 
+        pending: mockTasks.filter((t: Task) => t.status === 'pending').length,
+        completed: mockTasks.filter((t: Task) => t.status === 'completed').length,
+        overdue: mockTasks.filter((t: Task) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
           new Date(t.dueDate) < now
@@ -169,7 +169,7 @@ export const getDashboardStatsProcedure = publicProcedure
         reportsThisWeek: recentReports.length,
         tasksThisWeek: recentTasks.length,
         completionRate: mockTasks.length > 0 ? 
-          (mockTasks.filter(t => t.status === 'completed').length / mockTasks.length) * 100 : 0,
+          (mockTasks.filter((t: Task) => t.status === 'completed').length / mockTasks.length) * 100 : 0,
       },
     };
     
@@ -177,7 +177,7 @@ export const getDashboardStatsProcedure = publicProcedure
   });
 
 // Helper functions
-function generateTimelineData(items: any[]) {
+function generateTimelineData(items: (Report | Task)[]) {
   const timeline: Record<string, number> = {};
   
   items.forEach(item => {
@@ -190,7 +190,7 @@ function generateTimelineData(items: any[]) {
     .map(([date, count]) => ({ date, count }));
 }
 
-function generateUserActivityTimeline(reports: any[], tasks: any[]) {
+function generateUserActivityTimeline(reports: Report[], tasks: Task[]) {
   const timeline: Record<string, { reports: number; tasks: number }> = {};
   
   reports.forEach(report => {

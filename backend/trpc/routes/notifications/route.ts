@@ -105,7 +105,12 @@ export const createNotificationProcedure = publicProcedure
     message: z.string(),
     type: z.enum(['task', 'report', 'chat', 'system']),
     userId: z.string(),
-    data: z.record(z.any()).optional(),
+    data: z.union([
+      z.object({ taskId: z.string() }),
+      z.object({ reportId: z.string() }),
+      z.object({ chatId: z.string() }),
+      z.record(z.any())
+    ]).optional(),
   }))
   .mutation(({ input }) => {
     const newNotification = {
@@ -116,10 +121,10 @@ export const createNotificationProcedure = publicProcedure
       userId: input.userId,
       read: false,
       createdAt: new Date().toISOString(),
-      data: input.data,
+      data: input.data || {},
     };
     
-    mockNotifications.push(newNotification);
+    mockNotifications.push(newNotification as any);
     return newNotification;
   });
 

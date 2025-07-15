@@ -19,7 +19,7 @@ export const getReportsProcedure = publicProcedure
     }
     
     if (input?.authorId) {
-      reports = reports.filter(report => report.authorId === input.authorId);
+      reports = reports.filter((report: Report) => report.authorId === input.authorId);
     }
     
     if (input?.unit) {
@@ -122,7 +122,7 @@ export const updateReportProcedure = publicProcedure
     })).optional(),
   }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.id);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -160,7 +160,7 @@ export const updateReportProcedure = publicProcedure
 export const deleteReportProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.id);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -183,7 +183,7 @@ export const addReportCommentProcedure = publicProcedure
     })).optional(),
   }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -213,7 +213,7 @@ export const approveReportProcedure = publicProcedure
     comment: z.string().optional(),
   }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -238,7 +238,7 @@ export const approveReportProcedure = publicProcedure
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
   .query(({ input }) => {
-    return mockReports.filter(report => 
+    return mockReports.filter((report: Report) => 
       report.status === 'pending' && 
       report.approvers?.includes(input.approverId) &&
       report.currentApprover === input.approverId

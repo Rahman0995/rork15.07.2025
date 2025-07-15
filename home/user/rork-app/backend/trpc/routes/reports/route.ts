@@ -19,14 +19,14 @@ export const getReportsProcedure = publicProcedure
     }
     
     if (input?.authorId) {
-      reports = reports.filter(report => report.author === input.authorId);
+      reports = reports.filter((report: Report) => report.authorId === input.authorId);
     }
     
     if (input?.unit) {
       reports = reports.filter(report => report.unit === input.unit);
     }
     
-    // Сортировка по дате создания (новые первыми)
+    // Sort by creation date (newest first)
     reports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
     if (input?.offset || input?.limit) {
@@ -74,7 +74,8 @@ export const createReportProcedure = publicProcedure
       id: reportId,
       title: input.title,
       content: input.content,
-      author: input.authorId,
+      authorId: input.authorId,
+      // author: input.authorId, // For backward compatibility - removed as it's not in the type
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',
@@ -121,7 +122,7 @@ export const updateReportProcedure = publicProcedure
     })).optional(),
   }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.id);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -133,7 +134,7 @@ export const updateReportProcedure = publicProcedure
       updatedAt: new Date().toISOString(),
     };
     
-    // Если изменился контент или заголовок, создаем новую ревизию
+    // If content or title changed, create new revision
     if (input.title || input.content) {
       const newRevision = {
         id: `rev_${Date.now()}`,
@@ -143,8 +144,8 @@ export const updateReportProcedure = publicProcedure
         content: input.content || currentReport.content,
         attachments: input.attachments || currentReport.attachments || [],
         createdAt: new Date().toISOString(),
-        createdBy: currentReport.author,
-        authorId: currentReport.author,
+        createdBy: currentReport.authorId,
+        authorId: currentReport.authorId,
         changes: 'Updated content',
       };
       
@@ -159,7 +160,7 @@ export const updateReportProcedure = publicProcedure
 export const deleteReportProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.id);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -182,7 +183,7 @@ export const addReportCommentProcedure = publicProcedure
     })).optional(),
   }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -212,7 +213,7 @@ export const approveReportProcedure = publicProcedure
     comment: z.string().optional(),
   }))
   .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
+    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -237,7 +238,7 @@ export const approveReportProcedure = publicProcedure
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
   .query(({ input }) => {
-    return mockReports.filter(report => 
+    return mockReports.filter((report: Report) => 
       report.status === 'pending' && 
       report.approvers?.includes(input.approverId) &&
       report.currentApprover === input.approverId

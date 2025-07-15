@@ -1,93 +1,78 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 
-interface MediaFile {
-  id: string;
-  name: string;
-  type: 'image' | 'video' | 'document' | 'audio';
-  url: string;
-  size: number;
-  mimeType: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  metadata?: {
-    width?: number;
-    height?: number;
-    duration?: number;
-  };
-}
-
-// Mock данные для медиа файлов
-const mockMediaFiles: MediaFile[] = [
+const mockFiles = [
   {
     id: '1',
-    name: 'report_photo.jpg',
-    type: 'image',
-    url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
-    size: 245760,
-    mimeType: 'image/jpeg',
-    uploadedBy: '2',
-    uploadedAt: new Date(2025, 7, 10).toISOString(),
-    metadata: { width: 800, height: 600 },
+    name: 'security-report.pdf',
+    type: 'file' as const,
+    url: 'https://example.com/files/security-report.pdf',
+    size: 1024000, // 1MB
+    uploadedBy: '1',
+    createdAt: new Date().toISOString(),
+    metadata: {
+      mimeType: 'application/pdf',
+      originalName: 'security-report.pdf',
+    },
   },
   {
     id: '2',
-    name: 'training_video.mp4',
-    type: 'video',
-    url: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-    size: 1048576,
-    mimeType: 'video/mp4',
-    uploadedBy: '3',
-    uploadedAt: new Date(2025, 7, 8).toISOString(),
-    metadata: { width: 1280, height: 720, duration: 30 },
-  },
-  {
-    id: '3',
-    name: 'equipment_manual.pdf',
-    type: 'document',
-    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-    size: 524288,
-    mimeType: 'application/pdf',
-    uploadedBy: '1',
-    uploadedAt: new Date(2025, 7, 5).toISOString(),
+    name: 'equipment-photo.jpg',
+    type: 'image' as const,
+    url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+    size: 512000, // 512KB
+    uploadedBy: '2',
+    createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+    metadata: {
+      mimeType: 'image/jpeg',
+      originalName: 'equipment-photo.jpg',
+      dimensions: { width: 800, height: 600 },
+    },
   },
 ];
 
 export const uploadFileProcedure = publicProcedure
   .input(z.object({
     name: z.string(),
-    type: z.enum(['image', 'video', 'document', 'audio']),
+    type: z.enum(['file', 'image', 'video']),
     size: z.number(),
-    mimeType: z.string(),
     uploadedBy: z.string(),
-    base64Data: z.string().optional(), // В реальном приложении файл будет загружаться через FormData
+    mimeType: z.string(),
+    // In a real implementation, this would be a file upload
+    data: z.string().optional(), // Base64 or file path
   }))
   .mutation(({ input }) => {
-    // В реальном приложении здесь будет загрузка файла в облачное хранилище
-    const newFile: MediaFile = {
+    const newFile = {
       id: `file_${Date.now()}`,
       name: input.name,
-      type: input.type,
-      url: `https://mock-storage.com/files/${Date.now()}_${input.name}`,
+      type: input.type as 'file' | 'image' | 'video',
+      url: `https://example.com/files/${input.name}`, // Mock URL
       size: input.size,
-      mimeType: input.mimeType,
       uploadedBy: input.uploadedBy,
-      uploadedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      metadata: input.type === 'image' ? {
+        mimeType: input.mimeType,
+        originalName: input.name,
+        dimensions: { width: 800, height: 600 },
+      } : {
+        mimeType: input.mimeType,
+        originalName: input.name,
+      },
     };
     
-    mockMediaFiles.push(newFile);
+    mockFiles.push(newFile as any);
     return newFile;
   });
 
 export const getFilesProcedure = publicProcedure
   .input(z.object({
-    type: z.enum(['image', 'video', 'document', 'audio']).optional(),
+    type: z.enum(['file', 'image', 'video']).optional(),
     uploadedBy: z.string().optional(),
-    limit: z.number().optional().default(20),
-    offset: z.number().optional().default(0),
+    limit: z.number().optional(),
+    offset: z.number().optional(),
   }).optional())
   .query(({ input }) => {
-    let files = [...mockMediaFiles];
+    let files = [...mockFiles];
     
     if (input?.type) {
       files = files.filter(file => file.type === input.type);
@@ -97,21 +82,25 @@ export const getFilesProcedure = publicProcedure
       files = files.filter(file => file.uploadedBy === input.uploadedBy);
     }
     
-    // Сортировка по дате загрузки (новые первыми)
-    files.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+    // Sort by creation date (newest first)
+    files.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
-    const paginatedFiles = files.slice(input?.offset || 0, (input?.offset || 0) + (input?.limit || 20));
+    if (input?.offset || input?.limit) {
+      const offset = input.offset || 0;
+      const limit = input.limit || 20;
+      files = files.slice(offset, offset + limit);
+    }
     
     return {
-      files: paginatedFiles,
-      total: files.length,
+      files,
+      total: mockFiles.length,
     };
   });
 
 export const getFileByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .query(({ input }) => {
-    const file = mockMediaFiles.find(f => f.id === input.id);
+    const file = mockFiles.find(f => f.id === input.id);
     if (!file) {
       throw new Error('File not found');
     }
@@ -119,27 +108,24 @@ export const getFileByIdProcedure = publicProcedure
   });
 
 export const deleteFileProcedure = publicProcedure
-  .input(z.object({ 
+  .input(z.object({
     id: z.string(),
-    userId: z.string(), // Проверка прав доступа
+    userId: z.string(), // Only the uploader or admin can delete
   }))
   .mutation(({ input }) => {
-    const fileIndex = mockMediaFiles.findIndex(f => f.id === input.id);
+    const fileIndex = mockFiles.findIndex(f => f.id === input.id);
     if (fileIndex === -1) {
       throw new Error('File not found');
     }
     
-    const file = mockMediaFiles[fileIndex];
+    const file = mockFiles[fileIndex];
     
-    // Проверка прав доступа (только загрузивший может удалить)
+    // Check permissions (simplified - in real app, check user roles)
     if (file.uploadedBy !== input.userId) {
-      throw new Error('Access denied');
+      throw new Error('Permission denied');
     }
     
-    const deletedFile = mockMediaFiles.splice(fileIndex, 1)[0];
-    
-    // В реальном приложении здесь будет удаление файла из облачного хранилища
-    
+    const deletedFile = mockFiles.splice(fileIndex, 1)[0];
     return { success: true, deletedFile };
   });
 
@@ -150,33 +136,47 @@ export const generateUploadUrlProcedure = publicProcedure
     fileSize: z.number(),
   }))
   .mutation(({ input }) => {
-    // В реальном приложении здесь будет генерация подписанного URL для прямой загрузки в S3/CloudStorage
+    // In a real implementation, this would generate a signed URL for direct upload
+    // to cloud storage (AWS S3, Google Cloud Storage, etc.)
+    const uploadUrl = `https://example.com/upload/${Date.now()}_${input.fileName}`;
+    const fileId = `file_${Date.now()}`;
+    
     return {
-      uploadUrl: `https://mock-storage.com/upload/${Date.now()}_${input.fileName}`,
-      fileId: `file_${Date.now()}`,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 минут
+      uploadUrl,
+      fileId,
+      expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
     };
   });
 
 export const getStorageStatsProcedure = publicProcedure
-  .input(z.object({ userId: z.string().optional() }).optional())
+  .input(z.object({
+    userId: z.string().optional(),
+  }).optional())
   .query(({ input }) => {
-    let files = mockMediaFiles;
+    let files = mockFiles;
     
     if (input?.userId) {
-      files = files.filter(f => f.uploadedBy === input.userId);
+      files = files.filter(file => file.uploadedBy === input.userId);
     }
     
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-    const typeStats = files.reduce((acc, file) => {
-      acc[file.type] = (acc[file.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const filesByType = {
+      image: files.filter(f => f.type === 'image').length,
+      file: files.filter(f => f.type === 'file').length,
+      video: files.filter(f => f.type === 'video').length,
+    };
+    
+    const sizeByType = {
+      image: files.filter(f => f.type === 'image').reduce((sum, f) => sum + (f.type === 'image' ? f.size : 0), 0),
+      file: files.filter(f => f.type === 'file').reduce((sum, f) => sum + (f.type === 'file' ? f.size : 0), 0),
+      video: files.filter(f => f.type === 'video').reduce((sum, f) => sum + (f.type === 'video' ? f.size : 0), 0),
+    };
     
     return {
       totalFiles: files.length,
       totalSize,
-      typeStats,
-      averageFileSize: files.length > 0 ? Math.round(totalSize / files.length) : 0,
+      filesByType,
+      sizeByType,
+      averageFileSize: files.length > 0 ? totalSize / files.length : 0,
     };
   });

@@ -78,7 +78,7 @@ export const sendMessageProcedure = publicProcedure
     mockChatMessages[input.chatId].push(newMessage);
     
     // Update last message in chat
-    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex !== -1) {
       mockChats[chatIndex].lastMessage = newMessage;
       
@@ -103,7 +103,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     
     let updatedCount = 0;
     
-    messages.forEach(message => {
+    messages.forEach((message: ChatMessage) => {
       // Mark as read either specific messages or all messages not from current user
       if (message.senderId !== input.userId && !message.read) {
         if (!input.messageIds || input.messageIds.includes(message.id)) {
@@ -114,7 +114,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     });
     
     // Update unread count in chat
-    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex !== -1) {
       mockChats[chatIndex].unreadCount = Math.max(0, mockChats[chatIndex].unreadCount - updatedCount);
     }
@@ -146,7 +146,7 @@ export const createChatProcedure = publicProcedure
 export const deleteChatProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
   .mutation(({ input }) => {
-    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex === -1) {
       throw new Error('Chat not found');
     }
@@ -161,11 +161,11 @@ export const getUnreadCountProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
   .query(({ input }) => {
     const userChats = getUserChats(input.userId);
-    const totalUnread = userChats.reduce((total, chat) => total + chat.unreadCount, 0);
+    const totalUnread = userChats.reduce((total: number, chat: Chat) => total + chat.unreadCount, 0);
     
     return {
       totalUnread,
-      chatCounts: userChats.map(chat => ({
+      chatCounts: userChats.map((chat: Chat) => ({
         chatId: chat.id,
         unreadCount: chat.unreadCount,
       })),

@@ -45,18 +45,22 @@ export const uploadFileProcedure = publicProcedure
     const newFile = {
       id: `file_${Date.now()}`,
       name: input.name,
-      type: input.type,
+      type: input.type as 'file' | 'image' | 'video',
       url: `https://example.com/files/${input.name}`, // Mock URL
       size: input.size,
       uploadedBy: input.uploadedBy,
       createdAt: new Date().toISOString(),
-      metadata: {
+      metadata: input.type === 'image' ? {
+        mimeType: input.mimeType,
+        originalName: input.name,
+        dimensions: { width: 800, height: 600 },
+      } : {
         mimeType: input.mimeType,
         originalName: input.name,
       },
     };
     
-    mockFiles.push(newFile);
+    mockFiles.push(newFile as any);
     return newFile;
   });
 
@@ -163,9 +167,9 @@ export const getStorageStatsProcedure = publicProcedure
     };
     
     const sizeByType = {
-      image: files.filter(f => f.type === 'image').reduce((sum, f) => sum + f.size, 0),
-      file: files.filter(f => f.type === 'file').reduce((sum, f) => sum + f.size, 0),
-      video: files.filter(f => f.type === 'video').reduce((sum, f) => sum + f.size, 0),
+      image: files.filter(f => f.type === 'image').reduce((sum, f) => sum + (f.type === 'image' ? f.size : 0), 0),
+      file: files.filter(f => f.type === 'file').reduce((sum, f) => sum + (f.type === 'file' ? f.size : 0), 0),
+      video: files.filter(f => f.type === 'video').reduce((sum, f) => sum + (f.type === 'video' ? f.size : 0), 0),
     };
     
     return {

@@ -20,7 +20,7 @@ export const getTasksProcedure = publicProcedure
     }
     
     if (input?.createdBy) {
-      tasks = tasks.filter(task => task.assignedBy === input.createdBy);
+      tasks = tasks.filter(task => task.createdBy === input.createdBy);
     }
     
     if (input?.status) {
@@ -31,8 +31,8 @@ export const getTasksProcedure = publicProcedure
       tasks = tasks.filter(task => task.priority === input.priority);
     }
     
-    // Сортировка по приоритету и дате создания
-    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    // Sort by priority and creation date
+    const priorityOrder: Record<TaskPriority, number> = { high: 3, medium: 2, low: 1 };
     tasks.sort((a, b) => {
       const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
       if (priorityDiff !== 0) return priorityDiff;
@@ -76,11 +76,12 @@ export const createTaskProcedure = publicProcedure
       title: input.title,
       description: input.description,
       assignedTo: input.assignedTo,
-      assignedBy: input.createdBy,
+      createdBy: input.createdBy,
       dueDate: input.dueDate,
       status: 'pending',
       priority: input.priority || 'medium',
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     
     mockTasks.push(newTask);
@@ -98,7 +99,7 @@ export const updateTaskProcedure = publicProcedure
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
   .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
+    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -112,9 +113,10 @@ export const updateTaskProcedure = publicProcedure
       ...(input.dueDate && { dueDate: input.dueDate }),
       ...(input.status && { status: input.status }),
       ...(input.priority && { priority: input.priority }),
+      updatedAt: new Date().toISOString(),
     };
     
-    // Если задача завершена, добавляем время завершения
+    // If task is completed, add completion time
     if (input.status === 'completed' && currentTask.status !== 'completed') {
       updatedTask.completedAt = new Date().toISOString();
     }
@@ -126,7 +128,7 @@ export const updateTaskProcedure = publicProcedure
 export const deleteTaskProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
+    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -141,24 +143,24 @@ export const getTaskStatsProcedure = publicProcedure
     let tasks = mockTasks;
     
     if (input?.userId) {
-      tasks = tasks.filter(task => task.assignedTo === input.userId || task.assignedBy === input.userId);
+      tasks = tasks.filter((task: Task) => task.assignedTo === input.userId || task.createdBy === input.userId);
     }
     
     const stats = {
       total: tasks.length,
-      pending: tasks.filter(task => task.status === 'pending').length,
-      inProgress: tasks.filter(task => task.status === 'in_progress').length,
-      completed: tasks.filter(task => task.status === 'completed').length,
-      cancelled: tasks.filter(task => task.status === 'cancelled').length,
-      overdue: tasks.filter(task => 
+      pending: tasks.filter((task: Task) => task.status === 'pending').length,
+      inProgress: tasks.filter((task: Task) => task.status === 'in_progress').length,
+      completed: tasks.filter((task: Task) => task.status === 'completed').length,
+      cancelled: tasks.filter((task: Task) => task.status === 'cancelled').length,
+      overdue: tasks.filter((task: Task) => 
         task.status !== 'completed' && 
         task.status !== 'cancelled' && 
         new Date(task.dueDate) < new Date()
       ).length,
       byPriority: {
-        high: tasks.filter(task => task.priority === 'high').length,
-        medium: tasks.filter(task => task.priority === 'medium').length,
-        low: tasks.filter(task => task.priority === 'low').length,
+        high: tasks.filter((task: Task) => task.priority === 'high').length,
+        medium: tasks.filter((task: Task) => task.priority === 'medium').length,
+        low: tasks.filter((task: Task) => task.priority === 'low').length,
       },
     };
     

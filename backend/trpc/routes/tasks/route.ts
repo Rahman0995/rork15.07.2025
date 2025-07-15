@@ -99,7 +99,7 @@ export const updateTaskProcedure = publicProcedure
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
   .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
+    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -128,7 +128,7 @@ export const updateTaskProcedure = publicProcedure
 export const deleteTaskProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
+    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -143,24 +143,24 @@ export const getTaskStatsProcedure = publicProcedure
     let tasks = mockTasks;
     
     if (input?.userId) {
-      tasks = tasks.filter(task => task.assignedTo === input.userId || task.createdBy === input.userId);
+      tasks = tasks.filter((task: Task) => task.assignedTo === input.userId || task.createdBy === input.userId);
     }
     
     const stats = {
       total: tasks.length,
-      pending: tasks.filter(task => task.status === 'pending').length,
-      inProgress: tasks.filter(task => task.status === 'in_progress').length,
-      completed: tasks.filter(task => task.status === 'completed').length,
-      cancelled: tasks.filter(task => task.status === 'cancelled').length,
-      overdue: tasks.filter(task => 
+      pending: tasks.filter((task: Task) => task.status === 'pending').length,
+      inProgress: tasks.filter((task: Task) => task.status === 'in_progress').length,
+      completed: tasks.filter((task: Task) => task.status === 'completed').length,
+      cancelled: tasks.filter((task: Task) => task.status === 'cancelled').length,
+      overdue: tasks.filter((task: Task) => 
         task.status !== 'completed' && 
         task.status !== 'cancelled' && 
         new Date(task.dueDate) < new Date()
       ).length,
       byPriority: {
-        high: tasks.filter(task => task.priority === 'high').length,
-        medium: tasks.filter(task => task.priority === 'medium').length,
-        low: tasks.filter(task => task.priority === 'low').length,
+        high: tasks.filter((task: Task) => task.priority === 'high').length,
+        medium: tasks.filter((task: Task) => task.priority === 'medium').length,
+        low: tasks.filter((task: Task) => task.priority === 'low').length,
       },
     };
     
