@@ -51,8 +51,9 @@ export default function ReportsScreen() {
     router.push(`/report/${report.id}`);
   };
   
-  const renderStatusFilter = (status: ReportStatus | 'all', label: string) => (
+  const renderStatusFilter = (status: ReportStatus | 'all', label: string, key: string) => (
     <TouchableOpacity
+      key={key}
       style={[
         styles.filterButton,
         statusFilter === status && styles.activeFilterButton
@@ -88,7 +89,7 @@ export default function ReportsScreen() {
               onPress={() => router.push('/reports/approvals')}
             >
               <CheckCircle2 size={16} color={colors.primary} />
-              <Text style={[styles.approvalButtonText, { marginLeft: 6 }]}>Утверждение</Text>
+              <Text style={styles.approvalButtonText}>Утверждение</Text>
               {reportsForApproval.length > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{reportsForApproval.length}</Text>
@@ -119,7 +120,7 @@ export default function ReportsScreen() {
             { key: 'needs_revision', label: 'Доработка' },
             { key: 'draft', label: 'Черновики' }
           ].map(item => 
-            renderStatusFilter(item.key as ReportStatus | 'all', item.label)
+            renderStatusFilter(item.key as ReportStatus | 'all', item.label, item.key)
           )}
         </View>
       </View>
@@ -207,6 +208,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: colors.card,
     marginRight: 8,
+    marginBottom: 8,
   },
   activeFilterButton: {
     backgroundColor: colors.primary,
@@ -260,6 +262,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primary,
     fontWeight: '500',
+    marginLeft: 6,
   },
   badge: {
     backgroundColor: colors.error,
