@@ -122,7 +122,7 @@ export default function ProfileScreen() {
         {renderMenuItem(
           <Settings size={20} color={colors.primary} />,
           'Настройки аккаунта',
-          () => {}
+          () => router.push('/settings/account')
         )}
         
         {renderMenuItem(
@@ -134,7 +134,7 @@ export default function ProfileScreen() {
         {renderMenuItem(
           <HelpCircle size={20} color={colors.primary} />,
           'Помощь и поддержка',
-          () => {}
+          () => router.push('/settings/help')
         )}
       </View>
       
