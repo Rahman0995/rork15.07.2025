@@ -45,7 +45,7 @@ function RootLayoutNav() {
       segments[0] === 'event' || 
       segments[0] === 'settings' || 
       segments[0] === 'reports' || 
-      (segments.length === 0 && isAuthenticated); // Home route
+      (segments.length < 1 && isAuthenticated); // Home route
 
     console.log('Navigation check:', {
       segments,
@@ -66,7 +66,7 @@ function RootLayoutNav() {
       // Redirect to tabs if authenticated and on login page
       console.log('Redirecting to tabs - authenticated on login page');
       router.replace('/(tabs)');
-    } else if (isAuthenticated && segments.length === 0) {
+    } else if (isAuthenticated && segments.length < 1) {
       // Redirect to tabs if authenticated and on root
       console.log('Redirecting to tabs - authenticated on root');
       router.replace('/(tabs)');
