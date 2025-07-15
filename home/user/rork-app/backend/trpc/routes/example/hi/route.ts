@@ -54,7 +54,7 @@ export const hiProcedure = publicProcedure
   .input(z.object({
     name: z.string().optional(),
   }).optional())
-  .query(({ input }: { input?: { name?: string } }) => {
+  .query(({ input }) => {
     return {
       hello: input?.name || "World",
       message: "Hello from tRPC!",
@@ -67,7 +67,7 @@ export const getTasksProcedure = publicProcedure
   .input(z.object({
     userId: z.string().optional(),
   }).optional())
-  .query(({ input }: { input?: { userId?: string } }) => {
+  .query(({ input }) => {
     // Filter tasks by user if provided
     if (input?.userId) {
       return mockTasks.filter(task => task.assignedTo === input.userId);
@@ -79,7 +79,7 @@ export const getReportsProcedure = publicProcedure
   .input(z.object({
     authorId: z.string().optional(),
   }).optional())
-  .query(({ input }: { input?: { authorId?: string } }) => {
+  .query(({ input }) => {
     // Filter reports by author if provided
     if (input?.authorId) {
       return mockReports.filter(report => report.authorId === input.authorId);
@@ -95,7 +95,7 @@ export const createTaskProcedure = publicProcedure
     assignedTo: z.string(),
     dueDate: z.string(),
   }))
-  .mutation(({ input }: { input: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignedTo: string; dueDate: string } }) => {
+  .mutation(({ input }) => {
     const newTask = {
       id: Date.now().toString(),
       ...input,
@@ -104,7 +104,8 @@ export const createTaskProcedure = publicProcedure
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    mockTasks.push(newTask);
+    // In a real app, you would save to database
+    // mockTasks.push(newTask);
     return newTask;
   });
 
@@ -114,7 +115,7 @@ export const createReportProcedure = publicProcedure
     content: z.string(),
     authorId: z.string(),
   }))
-  .mutation(({ input }: { input: { title: string; content: string; authorId: string } }) => {
+  .mutation(({ input }) => {
     const newReport = {
       id: Date.now().toString(),
       ...input,

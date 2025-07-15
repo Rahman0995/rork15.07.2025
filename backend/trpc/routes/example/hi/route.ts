@@ -3,9 +3,9 @@ import { publicProcedure } from "../../create-context";
 
 export const hiProcedure = publicProcedure
   .input(z.object({ name: z.string().optional() }))
-  .query(({ input }: { input: { name?: string } | undefined }) => {
+  .query(({ input }) => {
     return {
-      message: `Hello ${input.name || 'World'}!`,
+      message: `Hello ${input?.name || 'World'}!`,
       timestamp: new Date().toISOString(),
     };
   });
