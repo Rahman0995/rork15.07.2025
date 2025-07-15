@@ -182,8 +182,6 @@ export default function HomeScreen() {
             <Text style={styles.emptyDescription}>Создайте новую задачу или дождитесь назначения</Text>
           </View>
         )}
-        
-
       </View>
       
       {/* Reports Section */}
@@ -219,8 +217,6 @@ export default function HomeScreen() {
             <Text style={styles.emptyDescription}>Создайте первый отчет для вашего подразделения</Text>
           </View>
         )}
-        
-
       </View>
       </ScrollView>
       
