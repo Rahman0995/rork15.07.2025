@@ -106,19 +106,38 @@ export default function AnalyticsScreen() {
   ];
   
   const handleExport = (type: 'pdf' | 'excel') => {
-    const exportData = {
-      title: `Аналитический отчет - ${new Date().toLocaleDateString('ru-RU')}`,
-      data: {
-        overview: {
-          totalReports,
-          totalTasks,
-          taskCompletionRate,
-          reportApprovalRate,
-        },
-        units: unitsData,
-        users: userStats,
+    // Convert analytics data to array format for export
+    const analyticsArray = [
+      {
+        section: 'Общая статистика',
+        totalReports,
+        totalTasks,
+        taskCompletionRate: `${taskCompletionRate}%`,
+        reportApprovalRate: `${reportApprovalRate}%`,
         timeRange,
       },
+      ...unitsData.map(unit => ({
+        section: 'Подразделения',
+        name: unit.name,
+        reports: unit.reports,
+        tasks: unit.tasks,
+        completion: `${unit.completion}%`,
+        trend: `${unit.trend > 0 ? '+' : ''}${unit.trend}%`,
+      })),
+      ...userStats.map(stats => ({
+        section: 'Пользователи',
+        name: stats.user.name,
+        tasksCompleted: stats.tasksCompleted,
+        tasksTotal: stats.tasksTotal,
+        reportsSubmitted: stats.reportsSubmitted,
+        completionRate: `${stats.completionRate}%`,
+        trend: `${stats.trendValue > 0 ? '+' : ''}${stats.trendValue}%`,
+      })),
+    ];
+    
+    const exportData = {
+      title: `Аналитический отчет - ${new Date().toLocaleDateString('ru-RU')}`,
+      data: analyticsArray,
       type,
     };
     
@@ -654,10 +673,6 @@ const styles = StyleSheet.create({
   trendLabel: {
     fontSize: 14,
     color: colors.text,
-  },
-  trendValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   trendText: {
     fontSize: 14,
