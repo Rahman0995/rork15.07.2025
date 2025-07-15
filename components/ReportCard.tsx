@@ -14,7 +14,7 @@ interface ReportCardProps {
 }
 
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
-  const author = getUser(report.author);
+  const author = getUser(report.authorId);
 
   return (
     <TouchableOpacity 
@@ -51,12 +51,12 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
       
       <View style={styles.footer}>
         <View style={styles.metaContainer}>
-          <Text style={styles.unit}>{report.unit}</Text>
-          {report.attachments.length > 0 && (
+          <Text style={styles.unit}>{report.unit || 'Общий'}</Text>
+          {report.attachments && report.attachments.length > 0 && (
             <View style={styles.attachments}>
               <Paperclip size={14} color={colors.textTertiary} />
               <Text style={styles.attachmentsText}>
-                {report.attachments.length}
+                {report.attachments?.length || 0}
               </Text>
             </View>
           )}

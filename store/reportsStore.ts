@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Report, ReportStatus, ReportComment, ReportApproval, ReportRevision } from '@/types';
-import { mockReports } from '@/constants/mockData';
+import { trpcClient } from '@/lib/trpc';
 import { useNotificationsStore } from './notificationsStore';
 import { useAuthStore } from '@/store/authStore';
 
@@ -42,11 +42,25 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   fetchReports: async () => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      set({ reports: mockReports, isLoading: false });
+      const reports = await trpcClient.reports.getAll.query();
+      // Transform backend data to match frontend interface
+      const transformedReports = reports.map(report => ({
+        ...report,
+        author: report.authorId, // Map authorId to author for compatibility
+        type: 'text' as const,
+        attachments: [],
+        unit: 'default',
+        priority: 'medium' as const,
+        approvers: [],
+        approvals: [],
+        comments: [],
+        revisions: [],
+        currentRevision: 1,
+      }));
+      set({ reports: transformedReports, isLoading: false });
     } catch (error) {
-      set({ error: 'Ошибка при загрузке отчетов', isLoading: false });
+      console.warn('Failed to fetch reports from backend, using empty array:', error);
+      set({ reports: [], isLoading: false });
     }
   },
   getReportById: (id: string) => {
@@ -55,23 +69,28 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   createReport: async (reportData) => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const newReport = await trpcClient.reports.create.mutate({
+        title: reportData.title,
+        content: reportData.content,
+      });
       
-      const now = new Date().toISOString();
-      const newReport: Report = {
-        id: `${Date.now()}`,
-        createdAt: now,
-        updatedAt: now,
+      // Transform backend data to match frontend interface
+      const transformedReport: Report = {
+        ...newReport,
+        author: newReport.authorId,
+        type: 'text' as const,
+        attachments: [],
+        unit: 'default',
+        priority: 'medium' as const,
+        approvers: [],
         approvals: [],
         comments: [],
         revisions: [],
         currentRevision: 1,
-        ...reportData,
       };
       
       set(state => ({
-        reports: [newReport, ...state.reports],
+        reports: [transformedReport, ...state.reports],
         isLoading: false,
       }));
       
@@ -79,18 +98,19 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const { createNotification } = useNotificationsStore.getState();
       
       // Notify all approvers
-      for (const approverId of newReport.approvers) {
+      for (const approverId of transformedReport.approvers) {
         await createNotification({
           type: 'report_created',
           title: 'Новый отчет на утверждение',
-          body: `Отчет "${newReport.title}" ожидает вашего утверждения`,
+          body: `Отчет "${transformedReport.title}" ожидает вашего утверждения`,
           userId: approverId,
           read: false,
-          data: { reportId: newReport.id }
+          data: { reportId: transformedReport.id }
         });
       }
       
     } catch (error) {
+      console.error('Error creating report:', error);
       set({ error: 'Ошибка при создании отчета', isLoading: false });
     }
   },
@@ -127,7 +147,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: notificationType,
           title,
           body,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId: report.id }
         });
@@ -175,7 +195,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: 'report_approved',
           title: 'Отчет утвержден',
           body: `Ваш отчет "${report.title}" был утвержден`,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId }
         });
@@ -223,7 +243,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: 'report_rejected',
           title: 'Отчет отклонен',
           body: `Ваш отчет "${report.title}" был отклонен`,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId }
         });
@@ -271,7 +291,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: 'report_revision_requested',
           title: 'Требуется доработка отчета',
           body: `Ваш отчет "${report.title}" требует доработки`,
-          userId: report.author,
+          userId: report.authorId,
           read: false,
           data: { reportId }
         });
@@ -386,7 +406,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     const currentUser = useAuthStore.getState().user;
     if (!currentUser) return [];
     
-    return get().reports.filter(report => report.author === currentUser.id);
+    return get().reports.filter(report => report.authorId === currentUser.id);
   },
   
   deleteReport: async (reportId: string) => {

@@ -14,7 +14,7 @@ interface TaskCardProps {
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress }) => {
   const assignedTo = getUser(task.assignedTo);
-  const assignedBy = getUser(task.assignedBy);
+  const assignedBy = getUser(task.createdBy);
   
   const getDaysUntil = (dateString: string): number => {
     const date = new Date(dateString);

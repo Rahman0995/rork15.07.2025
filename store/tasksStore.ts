@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Task, TaskStatus } from '@/types';
-import { mockTasks } from '@/constants/mockData';
+import { trpcClient } from '@/lib/trpc';
 import { useNotificationsStore } from './notificationsStore';
 
 interface TasksState {
@@ -36,11 +36,11 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      set({ tasks: mockTasks, isLoading: false });
+      const tasks = await trpcClient.tasks.getAll.query();
+      set({ tasks, isLoading: false });
     } catch (error) {
-      set({ error: 'Ошибка при загрузке задач', isLoading: false });
+      console.warn('Failed to fetch tasks from backend, using empty array:', error);
+      set({ tasks: [], isLoading: false });
     }
   },
   getTaskById: (id: string) => {
@@ -50,14 +50,13 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     console.log('Creating task:', taskData);
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newTask: Task = {
-        id: `${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        ...taskData,
-      };
+      const newTask = await trpcClient.tasks.create.mutate({
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.priority,
+        assignedTo: taskData.assignedTo,
+        dueDate: taskData.dueDate,
+      });
       
       set(state => ({
         tasks: [newTask, ...state.tasks],
@@ -184,7 +183,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   },
   
   getTasksAssignedBy: (userId: string) => {
-    return get().tasks.filter(task => task.assignedBy === userId);
+    return get().tasks.filter(task => task.createdBy === userId);
   },
   
   searchTasks: (query: string) => {
