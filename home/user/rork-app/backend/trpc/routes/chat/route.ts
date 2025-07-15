@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 import { mockChats, mockChatMessages, getUserChats, getChatMessages } from '../../../../constants/mockData';
 import type { ChatMessage, Chat, MessageType } from '../../../../types';
 
@@ -12,7 +12,7 @@ export const getChatsProcedure = publicProcedure
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
   .query(({ input }) => {
-    const chat = mockChats.find((c: Chat) => c.id === input.chatId);
+    const chat = mockChats.find(c => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
     }
@@ -29,7 +29,7 @@ export const getChatMessagesProcedure = publicProcedure
     const messages = getChatMessages(input.chatId);
     
     // Sort by time (oldest first)
-    const sortedMessages = messages.sort((a: ChatMessage, b: ChatMessage) => 
+    const sortedMessages = messages.sort((a, b) => 
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
     

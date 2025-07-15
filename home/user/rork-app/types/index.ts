@@ -58,21 +58,21 @@ export interface Report {
   id: string;
   title: string;
   content: string;
-  author: string;
+  authorId: string; // Changed from 'author' to 'authorId' to match backend
   createdAt: string;
   updatedAt: string;
   status: ReportStatus;
-  type: ReportType;
-  attachments: Attachment[];
-  unit: string;
-  priority: 'low' | 'medium' | 'high';
+  type?: ReportType;
+  attachments?: Attachment[];
+  unit?: string;
+  priority?: 'low' | 'medium' | 'high';
   dueDate?: string;
-  approvers: string[]; // List of user IDs who can approve this report
+  approvers?: string[]; // List of user IDs who can approve this report
   currentApprover?: string; // Current approver in the workflow
-  approvals: ReportApproval[];
-  comments: ReportComment[];
-  revisions: ReportRevision[];
-  currentRevision: number;
+  approvals?: ReportApproval[];
+  comments?: ReportComment[];
+  revisions?: ReportRevision[];
+  currentRevision?: number;
 }
 
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
@@ -83,11 +83,12 @@ export interface Task {
   title: string;
   description: string;
   assignedTo: string;
-  assignedBy: string;
+  createdBy: string; // Changed from 'assignedBy' to 'createdBy' to match backend
   dueDate: string;
   status: TaskStatus;
   priority: TaskPriority;
   createdAt: string;
+  updatedAt: string; // Added to match backend
   completedAt?: string;
 }
 

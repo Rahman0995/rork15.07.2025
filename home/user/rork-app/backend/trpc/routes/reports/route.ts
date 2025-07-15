@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 import { mockReports, getReport, getUserReports, getUnitReports } from '../../../../constants/mockData';
 import type { Report, ReportStatus, ReportComment, ReportApproval } from '../../../../types';
 
@@ -19,7 +19,7 @@ export const getReportsProcedure = publicProcedure
     }
     
     if (input?.authorId) {
-      reports = reports.filter((report: Report) => report.authorId === input.authorId);
+      reports = reports.filter(report => report.authorId === input.authorId);
     }
     
     if (input?.unit) {
@@ -75,7 +75,6 @@ export const createReportProcedure = publicProcedure
       title: input.title,
       content: input.content,
       authorId: input.authorId,
-      // author: input.authorId, // For backward compatibility - removed as it's not in the type
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',

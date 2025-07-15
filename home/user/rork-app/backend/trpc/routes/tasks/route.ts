@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 import { mockTasks, getTask, getUserTasks } from '../../../../constants/mockData';
 import type { Task, TaskStatus, TaskPriority } from '../../../../types';
 
@@ -77,6 +77,8 @@ export const createTaskProcedure = publicProcedure
       description: input.description,
       assignedTo: input.assignedTo,
       createdBy: input.createdBy,
+      updatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       dueDate: input.dueDate,
       status: 'pending',
       priority: input.priority || 'medium',

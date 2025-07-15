@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 
 const mockNotifications = [
   {
@@ -105,12 +105,7 @@ export const createNotificationProcedure = publicProcedure
     message: z.string(),
     type: z.enum(['task', 'report', 'chat', 'system']),
     userId: z.string(),
-    data: z.union([
-      z.object({ taskId: z.string() }),
-      z.object({ reportId: z.string() }),
-      z.object({ chatId: z.string() }),
-      z.record(z.any())
-    ]).optional(),
+    data: z.record(z.unknown()).optional(),
   }))
   .mutation(({ input }) => {
     const newNotification = {
@@ -124,7 +119,7 @@ export const createNotificationProcedure = publicProcedure
       data: input.data || {},
     };
     
-    mockNotifications.push(newNotification as any);
+    mockNotifications.push(newNotification);
     return newNotification;
   });
 

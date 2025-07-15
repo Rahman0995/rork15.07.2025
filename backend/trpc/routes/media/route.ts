@@ -60,7 +60,7 @@ export const uploadFileProcedure = publicProcedure
       },
     };
     
-    mockFiles.push(newFile as any);
+    mockFiles.push(newFile);
     return newFile;
   });
 

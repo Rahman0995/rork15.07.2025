@@ -1,3 +1,5 @@
+# Создать новую версию файла
+cat > app.json << 'EOF'
 {
   "expo": {
     "name": "Military Unit Management Application",
@@ -41,3 +43,4 @@
     }
   }
 }
+EOF
