@@ -38,6 +38,7 @@ function RootLayoutNav() {
     if (!isNavigationReady || !isInitialized) return;
 
     const inProtectedRoute = 
+      segments[0] === '(tabs)' ||
       segments[0] === 'task' || 
       segments[0] === 'report' || 
       segments[0] === 'chat' || 
@@ -68,7 +69,7 @@ function RootLayoutNav() {
     } else if (isAuthenticated && segments[0] === 'login') {
       // Redirect to home if authenticated and on login page
       console.log('Redirecting to home - authenticated on login page');
-      router.replace('/');
+      router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);
 
@@ -97,13 +98,7 @@ function RootLayoutNav() {
       headerTintColor: colors.primary,
     }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="index" options={{ title: "Главная" }} />
-      <Stack.Screen name="reports" options={{ title: "Отчеты" }} />
-      <Stack.Screen name="chat" options={{ title: "Чат" }} />
-      <Stack.Screen name="analytics" options={{ title: "Аналитика" }} />
-      <Stack.Screen name="notifications" options={{ title: "Уведомления" }} />
-      <Stack.Screen name="calendar" options={{ title: "Календарь" }} />
-      <Stack.Screen name="profile" options={{ title: "Профиль" }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="report/[id]" options={{ title: "Отчет" }} />
       <Stack.Screen name="report/create" options={{ title: "Создать отчет" }} />
       <Stack.Screen name="task/[id]" options={{ title: "Задача" }} />
