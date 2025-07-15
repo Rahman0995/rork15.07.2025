@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import type { CalendarEvent, EventType, EventStatus } from '@/types';
+import type { CalendarEvent, EventType, EventStatus } from '../../../../types';
 
 // Mock данные для событий календаря
 const mockEvents: CalendarEvent[] = [

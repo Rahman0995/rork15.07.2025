@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockUsers, getUser, getUnitUsers } from '@/constants/mockData';
+import { mockUsers, getUser, getUnitUsers } from '../../../../constants/mockData';
 
 export const getUsersProcedure = publicProcedure
   .query(() => {

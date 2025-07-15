@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockReports, mockTasks, mockUsers } from '@/constants/mockData';
+import { mockReports, mockTasks, mockUsers } from '../../../../constants/mockData';
 
 export const getReportsAnalyticsProcedure = publicProcedure
   .input(z.object({

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockChats, mockChatMessages, getUserChats, getChatMessages } from '@/constants/mockData';
-import type { ChatMessage, Chat, MessageType } from '@/types';
+import { mockChats, mockChatMessages, getUserChats, getChatMessages } from '../../../../constants/mockData';
+import type { ChatMessage, Chat, MessageType } from '../../../../types';
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))

@@ -3,6 +3,7 @@ import { Report, ReportStatus, ReportComment, ReportApproval, ReportRevision } f
 import { mockReports } from '@/constants/mockData';
 import { useNotificationsStore } from './notificationsStore';
 import { useAuthStore } from '@/store/authStore';
+import { trpcClient } from '@/lib/trpc';
 
 interface ReportsState {
   reports: Report[];

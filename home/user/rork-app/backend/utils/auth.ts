@@ -1,8 +1,8 @@
 // Утилиты для аутентификации и авторизации
 // В реальном приложении здесь будет работа с JWT токенами, bcrypt для хеширования паролей и т.д.
 
-import { mockUsers } from '@/constants/mockData';
-import type { User, UserRole } from '@/types';
+import { mockUsers } from '../../constants/mockData';
+import type { User, UserRole } from '../../types';
 
 // Mock функции для демонстрации
 export function hashPassword(password: string): string {
