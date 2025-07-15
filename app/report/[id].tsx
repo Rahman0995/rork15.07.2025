@@ -131,7 +131,7 @@ export default function ReportDetailScreen() {
   }
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} nestedScrollEnabled={true}>
       <Stack.Screen 
         options={{ 
           title: 'Отчет',

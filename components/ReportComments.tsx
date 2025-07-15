@@ -89,6 +89,7 @@ export const ReportComments: React.FC<ReportCommentsProps> = ({
           keyExtractor={(item) => item.id}
           style={styles.commentsList}
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
         />
       ) : (
         <Text style={styles.noComments}>Комментариев пока нет</Text>
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
   commentsList: {
     maxHeight: 300,
     marginBottom: 16,
+    nestedScrollEnabled: true,
   },
   noComments: {
     fontSize: 14,

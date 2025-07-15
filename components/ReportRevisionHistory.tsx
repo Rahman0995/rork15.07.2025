@@ -116,6 +116,7 @@ export const ReportRevisionHistory: React.FC<ReportRevisionHistoryProps> = ({
           keyExtractor={(item) => item.id}
           style={styles.revisionsList}
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
         />
       )}
     </View>
@@ -147,6 +148,8 @@ const styles = StyleSheet.create({
   revisionsList: {
     paddingHorizontal: 16,
     paddingBottom: 16,
+    maxHeight: 400,
+    nestedScrollEnabled: true,
   },
   revisionItem: {
     borderLeftWidth: 3,
