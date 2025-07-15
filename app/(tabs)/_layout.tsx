@@ -87,20 +87,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: "Аналитика",
-          tabBarIcon: ({ color }) => <BarChart2 size={22} color={color} />,
-        }}
-      />
+
       <Tabs.Screen
         name="profile"
         options={{

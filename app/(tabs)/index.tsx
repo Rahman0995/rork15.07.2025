@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { useTasksStore } from '@/store/tasksStore';
@@ -7,6 +8,7 @@ import { useReportsStore } from '@/store/reportsStore';
 import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/Button';
+import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { colors } from '@/constants/colors';
 import { formatDate } from '@/utils/dateUtils';
 import { FileText, CheckSquare, Plus, ArrowRight, Calendar, Users, TrendingUp } from 'lucide-react-native';
@@ -17,11 +19,28 @@ export default function HomeScreen() {
   const { user, isAuthenticated, isInitialized } = useAuthStore();
   const { tasks, fetchTasks, isLoading: tasksLoading } = useTasksStore();
   const { reports, fetchReports, isLoading: reportsLoading } = useReportsStore();
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useState(new Animated.Value(50))[0];
   
   useEffect(() => {
     if (isAuthenticated) {
       fetchTasks();
       fetchReports();
+      
+      // Animate content appearance
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
   }, [isAuthenticated]);
   
@@ -62,35 +81,49 @@ export default function HomeScreen() {
   }
   
   return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      refreshControl={
-        <RefreshControl 
-          refreshing={tasksLoading || reportsLoading} 
-          onRefresh={handleRefresh}
-          colors={[colors.primary]}
-          tintColor={colors.primary}
-        />
-      }
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl 
+            refreshing={tasksLoading || reportsLoading} 
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
       {/* Header Section */}
-      <View style={styles.header}>
+      <LinearGradient
+        colors={[colors.primary, colors.primaryLight]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>Добро пожаловать,</Text>
             <Text style={styles.name}>{user.rank} {user.name}</Text>
           </View>
           <View style={styles.dateContainer}>
-            <Calendar size={16} color={colors.textSecondary} />
+            <Calendar size={16} color={colors.white} />
             <Text style={styles.date}>{formatDate(new Date().toISOString())}</Text>
           </View>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Quick Stats */}
-      <View style={styles.statsContainer}>
+      <Animated.View 
+        style={[
+          styles.statsContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
         <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
           <View style={styles.statIconContainer}>
             <CheckSquare size={20} color={colors.primary} />
@@ -114,7 +147,7 @@ export default function HomeScreen() {
           <Text style={styles.statNumber}>85%</Text>
           <Text style={styles.statLabel}>Выполнено</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
       
       {/* Tasks Section */}
       <View style={styles.section}>
@@ -150,13 +183,7 @@ export default function HomeScreen() {
           </View>
         )}
         
-        <TouchableOpacity 
-          style={styles.createButton}
-          onPress={() => router.push('/task/create')}
-        >
-          <Plus size={18} color={colors.primary} />
-          <Text style={styles.createButtonText}>Создать задачу</Text>
-        </TouchableOpacity>
+
       </View>
       
       {/* Reports Section */}
@@ -193,15 +220,19 @@ export default function HomeScreen() {
           </View>
         )}
         
-        <TouchableOpacity 
-          style={styles.createButton}
-          onPress={() => router.push('/report/create')}
-        >
-          <Plus size={18} color={colors.primary} />
-          <Text style={styles.createButtonText}>Создать отчет</Text>
-        </TouchableOpacity>
+
       </View>
-    </ScrollView>
+      </ScrollView>
+      
+      {/* Floating Action Button */}
+      <FloatingActionButton onPress={() => setIsMenuVisible(true)} />
+      
+      {/* Floating Menu */}
+      <FloatingMenu 
+        visible={isMenuVisible} 
+        onClose={() => setIsMenuVisible(false)} 
+      />
+    </View>
   );
 }
 
@@ -210,8 +241,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  scrollContainer: {
+    flex: 1,
+  },
   contentContainer: {
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   authContainer: {
     flex: 1,
@@ -232,12 +266,9 @@ const styles = StyleSheet.create({
   
   // Header Styles
   header: {
-    backgroundColor: colors.card,
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
   headerContent: {
     flexDirection: 'row',
@@ -246,26 +277,26 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 4,
   },
   name: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.text,
+    color: colors.white,
     letterSpacing: -0.5,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   date: {
     fontSize: 13,
-    color: colors.textSecondary,
+    color: colors.white,
     marginLeft: 6,
     fontWeight: '500',
   },
@@ -276,46 +307,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     gap: 12,
+    marginTop: -10,
   },
   statCard: {
     flex: 1,
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
     shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   statIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: colors.text,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textSecondary,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   
   // Section Styles
   section: {
-    marginBottom: 32,
+    marginBottom: 24,
     paddingHorizontal: 20,
   },
   sectionHeader: {
@@ -329,33 +359,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: colors.text,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   sectionAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 24,
     backgroundColor: colors.backgroundSecondary,
   },
   sectionActionText: {
     fontSize: 14,
     color: colors.primary,
-    fontWeight: '600',
-    marginRight: 4,
+    fontWeight: '700',
+    marginRight: 6,
   },
   
   // Cards Container
@@ -366,36 +396,36 @@ const styles = StyleSheet.create({
   // Empty State
   emptyStateContainer: {
     backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 32,
+    borderRadius: 20,
+    padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.borderLight,
     borderStyle: 'dashed',
   },
   emptyIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: colors.text,
-    marginBottom: 8,
+    marginBottom: 12,
     textAlign: 'center',
   },
   emptyDescription: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 280,
+    lineHeight: 22,
+    maxWidth: 300,
   },
   
   // Create Button

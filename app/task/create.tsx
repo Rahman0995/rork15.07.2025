@@ -142,7 +142,7 @@ export default function CreateTaskScreen() {
             onPress: () => {
               console.log('Success alert OK pressed');
               // Navigate back to the home screen
-              router.replace('/(tabs)');
+              router.replace('/(tabs)/');
             },
           },
         ]
@@ -269,7 +269,7 @@ export default function CreateTaskScreen() {
             title="Отмена"
             onPress={() => {
               console.log('Cancel button pressed');
-              router.replace('/(tabs)');
+              router.replace('/(tabs)/');
             }}
             variant="outline"
             style={styles.cancelButton}
