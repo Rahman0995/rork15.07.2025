@@ -95,8 +95,8 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-      {/* Header Section */}
-      <LinearGradient
+        {/* Header Section */}
+        <LinearGradient
         colors={[colors.primary, colors.primaryLight]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
