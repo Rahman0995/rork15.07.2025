@@ -37,14 +37,18 @@ function RootLayoutNav() {
   useEffect(() => {
     if (!isNavigationReady || !isInitialized) return;
 
-    const inAuthGroup = segments[0] === '(tabs)';
-    const inProtectedRoute = inAuthGroup || 
+    const inProtectedRoute = 
       segments[0] === 'task' || 
       segments[0] === 'report' || 
       segments[0] === 'chat' || 
       segments[0] === 'event' || 
       segments[0] === 'settings' || 
-      segments[0] === 'reports';
+      segments[0] === 'reports' || 
+      segments[0] === 'analytics' || 
+      segments[0] === 'notifications' || 
+      segments[0] === 'calendar' || 
+      segments[0] === 'profile' || 
+      (segments.length === 0 && isAuthenticated); // Home route
 
     console.log('Navigation check:', {
       segments,
@@ -63,9 +67,9 @@ function RootLayoutNav() {
       console.log('Redirecting to login - not authenticated');
       router.replace('/login');
     } else if (isAuthenticated && segments[0] === 'login') {
-      // Redirect to tabs if authenticated and on login page
-      console.log('Redirecting to tabs - authenticated on login page');
-      router.replace('/(tabs)');
+      // Redirect to home if authenticated and on login page
+      console.log('Redirecting to home - authenticated on login page');
+      router.replace('/');
     }
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);
 
@@ -94,7 +98,13 @@ function RootLayoutNav() {
       headerTintColor: colors.primary,
     }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ title: "Главная" }} />
+      <Stack.Screen name="reports" options={{ title: "Отчеты" }} />
+      <Stack.Screen name="chat" options={{ title: "Чат" }} />
+      <Stack.Screen name="analytics" options={{ title: "Аналитика" }} />
+      <Stack.Screen name="notifications" options={{ title: "Уведомления" }} />
+      <Stack.Screen name="calendar" options={{ title: "Календарь" }} />
+      <Stack.Screen name="profile" options={{ title: "Профиль" }} />
       <Stack.Screen name="report/[id]" options={{ title: "Отчет" }} />
       <Stack.Screen name="report/create" options={{ title: "Создать отчет" }} />
       <Stack.Screen name="task/[id]" options={{ title: "Задача" }} />
