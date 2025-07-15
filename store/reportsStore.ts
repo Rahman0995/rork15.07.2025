@@ -46,7 +46,6 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       // Transform backend data to match frontend interface
       const transformedReports = reports.map(report => ({
         ...report,
-        author: report.authorId, // Map authorId to author for compatibility
         type: 'text' as const,
         attachments: [],
         unit: 'default',
@@ -77,7 +76,6 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       // Transform backend data to match frontend interface
       const transformedReport: Report = {
         ...newReport,
-        author: newReport.authorId,
         type: 'text' as const,
         attachments: [],
         unit: 'default',
@@ -98,7 +96,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const { createNotification } = useNotificationsStore.getState();
       
       // Notify all approvers
-      for (const approverId of transformedReport.approvers) {
+      for (const approverId of transformedReport.approvers || []) {
         await createNotification({
           type: 'report_created',
           title: 'Новый отчет на утверждение',

@@ -14,7 +14,7 @@ interface TaskCardProps {
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress }) => {
   const assignedTo = getUser(task.assignedTo);
-  const assignedBy = getUser(task.assignedBy);
+  const assignedBy = getUser(task.createdBy);
   
   const getDaysUntil = (dateString: string): number => {
     const date = new Date(dateString);
@@ -100,15 +100,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
     shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   completedContainer: {
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.success,
-    opacity: 0.8,
+    backgroundColor: colors.successSoft,
+    borderColor: colors.successLight,
+    opacity: 0.9,
   },
   header: {
     flexDirection: 'row',
@@ -122,22 +122,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 8,
-    lineHeight: 24,
-    letterSpacing: -0.3,
+    lineHeight: 22,
+    letterSpacing: -0.2,
   },
   completedTitle: {
     textDecorationLine: 'line-through',
     color: colors.textSecondary,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 20,
-    lineHeight: 22,
+    marginBottom: 16,
+    lineHeight: 20,
   },
   footer: {
     flexDirection: 'column',
@@ -164,9 +164,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   dueDate: {
     fontSize: 12,

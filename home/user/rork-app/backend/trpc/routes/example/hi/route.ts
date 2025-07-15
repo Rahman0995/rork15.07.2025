@@ -1,30 +1,39 @@
 import { z } from "zod";
 import { publicProcedure } from "../../../create-context";
 
-// Mock data for demonstration
+export const hiProcedure = publicProcedure
+  .input(z.object({ name: z.string().optional() }))
+  .query(({ input }: { input?: { name?: string } }) => {
+    return {
+      message: `Hello ${input?.name || 'World'}!`,
+      timestamp: new Date().toISOString(),
+    };
+  });
+
+// Mock data for tasks and reports
 const mockTasks = [
   {
     id: '1',
-    title: 'Подготовить отчет о безопасности',
-    description: 'Составить ежемесячный отчет о состоянии безопасности подразделения',
-    status: 'in_progress' as const,
-    priority: 'high' as const,
-    assignedTo: 'user1',
-    createdBy: 'commander1',
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    title: 'Проверить оборудование',
+    description: 'Провести плановую проверку оборудования в секторе А',
+    status: 'pending' as const,
+    priority: 'high' as 'high',
+    assignedTo: '1',
+    createdBy: '2',
+    dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: '2',
-    title: 'Проверка оборудования',
-    description: 'Провести плановую проверку технического состояния оборудования',
-    status: 'pending' as const,
+    title: 'Составить отчет',
+    description: 'Подготовить еженедельный отчет о состоянии объекта',
+    status: 'in_progress' as const,
     priority: 'medium' as const,
-    assignedTo: 'user1',
-    createdBy: 'commander1',
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
+    assignedTo: '1',
+    createdBy: '2',
+    dueDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
+    createdAt: new Date(Date.now() - 86400000).toISOString(), // Yesterday
     updatedAt: new Date().toISOString(),
   },
 ];
@@ -32,58 +41,31 @@ const mockTasks = [
 const mockReports = [
   {
     id: '1',
-    title: 'Отчет о дежурстве',
-    content: 'Дежурство прошло без происшествий. Все системы функционируют нормально.',
+    title: 'Отчет о безопасности',
+    content: 'Все системы безопасности функционируют в штатном режиме',
     status: 'approved' as const,
-    authorId: 'user1',
-    createdAt: new Date().toISOString(),
+    authorId: '1',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
     updatedAt: new Date().toISOString(),
   },
   {
     id: '2',
     title: 'Еженедельный отчет',
-    content: 'Сводка за неделю: выполнено 15 задач, 3 в процессе выполнения.',
+    content: 'Сводка событий за неделю',
     status: 'pending' as const,
-    authorId: 'user1',
+    authorId: '1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
 ];
 
-export const hiProcedure = publicProcedure
-  .input(z.object({
-    name: z.string().optional(),
-  }).optional())
-  .query(({ input }: { input?: { name?: string } }) => {
-    return {
-      hello: input?.name || "World",
-      message: "Hello from tRPC!",
-      version: "1.0.0",
-      date: new Date().toISOString(),
-    };
-  });
-
 export const getTasksProcedure = publicProcedure
-  .input(z.object({
-    userId: z.string().optional(),
-  }).optional())
-  .query(({ input }: { input?: { userId?: string } }) => {
-    // Filter tasks by user if provided
-    if (input?.userId) {
-      return mockTasks.filter(task => task.assignedTo === input.userId);
-    }
+  .query(() => {
     return mockTasks;
   });
 
 export const getReportsProcedure = publicProcedure
-  .input(z.object({
-    authorId: z.string().optional(),
-  }).optional())
-  .query(({ input }: { input?: { authorId?: string } }) => {
-    // Filter reports by author if provided
-    if (input?.authorId) {
-      return mockReports.filter(report => report.authorId === input.authorId);
-    }
+  .query(() => {
     return mockReports;
   });
 
@@ -95,17 +77,16 @@ export const createTaskProcedure = publicProcedure
     assignedTo: z.string(),
     dueDate: z.string(),
   }))
-  .mutation(({ input }: { input: { title: string; description: string; priority: 'low' | 'medium' | 'high'; assignedTo: string; dueDate: string } }) => {
+  .mutation(({ input }) => {
     const newTask = {
-      id: Date.now().toString(),
+      id: String(mockTasks.length + 1),
       ...input,
-      createdBy: 'system', // Default creator
       status: 'pending' as const,
+      createdBy: '1', // Mock current user
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    // In a real app, you would save to database
-    // mockTasks.push(newTask);
+    mockTasks.push(newTask);
     return newTask;
   });
 
@@ -113,13 +94,13 @@ export const createReportProcedure = publicProcedure
   .input(z.object({
     title: z.string(),
     content: z.string(),
-    authorId: z.string(),
   }))
-  .mutation(({ input }: { input: { title: string; content: string; authorId: string } }) => {
+  .mutation(({ input }) => {
     const newReport = {
-      id: Date.now().toString(),
+      id: String(mockReports.length + 1),
       ...input,
       status: 'pending' as const,
+      authorId: '1', // Mock current user
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

@@ -14,7 +14,7 @@ interface ReportCardProps {
 }
 
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
-  const author = getUser(report.author);
+  const author = getUser(report.authorId);
 
   return (
     <TouchableOpacity 
@@ -51,8 +51,8 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
       
       <View style={styles.footer}>
         <View style={styles.metaContainer}>
-          <Text style={styles.unit}>{report.unit}</Text>
-          {report.attachments.length > 0 && (
+          <Text style={styles.unit}>{report.unit || 'Общий'}</Text>
+          {report.attachments && report.attachments.length > 0 && (
             <View style={styles.attachments}>
               <Paperclip size={14} color={colors.textTertiary} />
               <Text style={styles.attachmentsText}>
@@ -75,10 +75,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
     shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
@@ -123,17 +123,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.text,
     marginBottom: 8,
-    lineHeight: 24,
-    letterSpacing: -0.3,
+    lineHeight: 22,
+    letterSpacing: -0.2,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 20,
   },
   footer: {
     flexDirection: 'row',
@@ -145,21 +145,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   unit: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.secondary,
     fontWeight: '600',
-    backgroundColor: colors.backgroundSecondary,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: colors.secondarySoft,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   attachments: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.backgroundSecondary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     marginLeft: 12,
   },
   attachmentsText: {

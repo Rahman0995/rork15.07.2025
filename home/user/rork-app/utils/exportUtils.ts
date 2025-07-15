@@ -4,7 +4,7 @@ import { Report, Task, CalendarEvent } from '@/types';
 
 export interface ExportData {
   title: string;
-  data: any;
+  data: any[];
   type: 'pdf' | 'excel' | 'csv' | 'json';
   filename?: string;
 }
@@ -71,7 +71,7 @@ export const exportToCSV = async (data: ExportData, options: ExportOptions = {})
       csvContent += headers.join(',') + '\n';
     }
     
-    data.data.forEach((row: any) => {
+    data.data.forEach(row => {
       const values = headers.map(header => {
         const value = row[header];
         // Escape commas and quotes in CSV
@@ -174,7 +174,7 @@ export const exportReports = async (reports: Report[], title: string = 'Отче
     data: reports.map(report => ({
       id: report.id,
       title: report.title,
-      author: report.author,
+      author: report.authorId,
       status: report.status,
       priority: report.priority,
       unit: report.unit,
@@ -195,7 +195,7 @@ export const exportTasks = async (tasks: Task[], title: string = 'Задачи')
       title: task.title,
       description: task.description,
       assignedTo: task.assignedTo,
-      assignedBy: task.assignedBy,
+      assignedBy: task.createdBy,
       status: task.status,
       priority: task.priority,
       dueDate: new Date(task.dueDate).toLocaleDateString('ru-RU'),

@@ -56,7 +56,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
             <View style={styles.attachments}>
               <Paperclip size={14} color={colors.textTertiary} />
               <Text style={styles.attachmentsText}>
-                {report.attachments?.length || 0}
+                {report.attachments.length}
               </Text>
             </View>
           )}

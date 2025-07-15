@@ -17,7 +17,7 @@ const mockTasks = [
     title: 'Проверить оборудование',
     description: 'Провести плановую проверку оборудования в секторе А',
     status: 'pending' as const,
-    priority: 'high' as const,
+    priority: 'high' as 'high',
     assignedTo: '1',
     createdBy: '2',
     dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow

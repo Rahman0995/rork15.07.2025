@@ -16,8 +16,8 @@ import { useAuthStore } from '@/store/authStore';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { ReportComments } from '../../components/ReportComments';
-import { ReportRevisionHistory } from '../../components/ReportRevisionHistory';
+import { ReportComments } from '@/components/ReportComments';
+import { ReportRevisionHistory } from '@/components/ReportRevisionHistory';
 import { colors } from '@/constants/colors';
 import { formatDateTime } from '@/utils/dateUtils';
 import { getUser } from '@/constants/mockData';
@@ -46,7 +46,7 @@ export default function ReportDetailScreen() {
     submitRevision,
     isLoading 
   } = useReportsStore();
-  const currentUser = useAuthStore(state => state.user);
+  const { user: currentUser } = useAuthStore();
   
   const [showRevisionModal, setShowRevisionModal] = useState(false);
   const [revisionTitle, setRevisionTitle] = useState('');
@@ -56,10 +56,10 @@ export default function ReportDetailScreen() {
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'revision' | null>(null);
   
   const report = getReportById(id);
-  const author = report ? getUser(report.author) : null;
+  const author = report ? getUser(report.authorId) : null;
   
   const canApprove = currentUser && report?.approvers.includes(currentUser.id);
-  const isAuthor = currentUser && report?.author === currentUser.id;
+  const isAuthor = currentUser && report?.authorId === currentUser.id;
   const canRevise = isAuthor && report?.status === 'needs_revision';
   
   const handleAction = (type: 'approve' | 'reject' | 'revision') => {
@@ -131,7 +131,7 @@ export default function ReportDetailScreen() {
   }
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} nestedScrollEnabled={true}>
       <Stack.Screen 
         options={{ 
           title: 'Отчет',
@@ -222,8 +222,8 @@ export default function ReportDetailScreen() {
       
       {/* Comments */}
       <ReportComments 
-        reportId={id}
-        comments={report.comments}
+        reportId={report.id} 
+        comments={report.comments} 
       />
       
       {/* Approval Actions */}

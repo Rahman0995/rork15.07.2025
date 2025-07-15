@@ -56,10 +56,10 @@ export default function ReportDetailScreen() {
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'revision' | null>(null);
   
   const report = getReportById(id);
-  const author = report ? getUser(report.author) : null;
+  const author = report ? getUser(report.authorId) : null;
   
   const canApprove = currentUser && report?.approvers.includes(currentUser.id);
-  const isAuthor = currentUser && report?.author === currentUser.id;
+  const isAuthor = currentUser && report?.authorId === currentUser.id;
   const canRevise = isAuthor && report?.status === 'needs_revision';
   
   const handleAction = (type: 'approve' | 'reject' | 'revision') => {

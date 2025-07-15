@@ -174,7 +174,7 @@ export const exportReports = async (reports: Report[], title: string = 'Отче
     data: reports.map(report => ({
       id: report.id,
       title: report.title,
-      author: report.author,
+      author: report.authorId,
       status: report.status,
       priority: report.priority,
       unit: report.unit,
@@ -195,7 +195,7 @@ export const exportTasks = async (tasks: Task[], title: string = 'Задачи')
       title: task.title,
       description: task.description,
       assignedTo: task.assignedTo,
-      assignedBy: task.assignedBy,
+      assignedBy: task.createdBy,
       status: task.status,
       priority: task.priority,
       dueDate: new Date(task.dueDate).toLocaleDateString('ru-RU'),

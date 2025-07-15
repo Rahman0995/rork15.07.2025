@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Task, TaskStatus } from '@/types';
-import { mockTasks } from '@/constants/mockData';
+import { trpcClient } from '@/lib/trpc';
 import { useNotificationsStore } from './notificationsStore';
 
 interface TasksState {
@@ -36,49 +36,58 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      set({ tasks: mockTasks, isLoading: false });
+      const tasks = await trpcClient.tasks.getAll.query();
+      set({ tasks, isLoading: false });
     } catch (error) {
-      set({ error: 'Ошибка при загрузке задач', isLoading: false });
+      console.warn('Failed to fetch tasks from backend, using empty array:', error);
+      set({ tasks: [], isLoading: false });
     }
   },
   getTaskById: (id: string) => {
     return get().tasks.find(task => task.id === id);
   },
   createTask: async (taskData) => {
+    console.log('Creating task:', taskData);
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const newTask: Task = {
-        id: `${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        ...taskData,
-      };
+      const newTask = await trpcClient.tasks.create.mutate({
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.priority,
+        assignedTo: taskData.assignedTo,
+        dueDate: taskData.dueDate,
+      });
       
       set(state => ({
         tasks: [newTask, ...state.tasks],
         isLoading: false,
       }));
       
-      // Create notification for assigned user
-      const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
-      await createNotification({
-        type: 'task_assigned',
-        title: 'Новая задача',
-        body: `Вам назначена задача: ${newTask.title}`,
-        userId: newTask.assignedTo,
-        read: false,
-        data: { taskId: newTask.id }
-      });
+      console.log('Task created successfully:', newTask);
       
-      // Schedule reminder
-      await scheduleTaskReminder(newTask.id, newTask.title, newTask.dueDate);
+      // Create notification for assigned user
+      try {
+        const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
+        await createNotification({
+          type: 'task_assigned',
+          title: 'Новая задача',
+          body: `Вам назначена задача: ${newTask.title}`,
+          userId: newTask.assignedTo,
+          read: false,
+          data: { taskId: newTask.id }
+        });
+        
+        // Schedule reminder
+        await scheduleTaskReminder(newTask.id, newTask.title, newTask.dueDate);
+      } catch (notificationError) {
+        console.warn('Failed to create notification:', notificationError);
+        // Don't fail the task creation if notification fails
+      }
       
     } catch (error) {
+      console.error('Error creating task:', error);
       set({ error: 'Ошибка при создании задачи', isLoading: false });
+      throw error; // Re-throw to handle in component
     }
   },
   updateTaskStatus: async (id: string, status: TaskStatus) => {
@@ -102,8 +111,12 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       
       // Cancel reminder if task is completed or cancelled
       if (status === 'completed' || status === 'cancelled') {
-        const { cancelTaskReminder } = useNotificationsStore.getState();
-        await cancelTaskReminder(id);
+        try {
+          const { cancelTaskReminder } = useNotificationsStore.getState();
+          await cancelTaskReminder(id);
+        } catch (notificationError) {
+          console.warn('Failed to cancel task reminder:', notificationError);
+        }
       }
       
     } catch (error) {
@@ -141,8 +154,12 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       }));
       
       // Cancel reminder
-      const { cancelTaskReminder } = useNotificationsStore.getState();
-      await cancelTaskReminder(id);
+      try {
+        const { cancelTaskReminder } = useNotificationsStore.getState();
+        await cancelTaskReminder(id);
+      } catch (notificationError) {
+        console.warn('Failed to cancel task reminder:', notificationError);
+      }
     } catch (error) {
       set({ error: 'Ошибка при удалении задачи', isLoading: false });
     }
@@ -166,7 +183,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   },
   
   getTasksAssignedBy: (userId: string) => {
-    return get().tasks.filter(task => task.assignedBy === userId);
+    return get().tasks.filter(task => task.createdBy === userId);
   },
   
   searchTasks: (query: string) => {

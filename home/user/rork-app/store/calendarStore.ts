@@ -107,7 +107,7 @@ const mockTasks: CalendarTask[] = [
     title: 'Подготовка отчета о готовности',
     description: 'Составить еженедельный отчет о готовности подразделения',
     assignedTo: mockUsers[1].id,
-    assignedBy: mockUsers[0].id,
+    createdBy: mockUsers[0].id,
     dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
     status: 'pending',
     priority: 'high',
@@ -121,7 +121,7 @@ const mockTasks: CalendarTask[] = [
     title: 'Проверка оборудования',
     description: 'Провести техническое обслуживание оборудования связи',
     assignedTo: mockUsers[2].id,
-    assignedBy: mockUsers[0].id,
+    createdBy: mockUsers[0].id,
     dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     status: 'in_progress',
     priority: 'medium',
@@ -296,26 +296,8 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     const events = get().getEventsByDate(date);
     const tasks = get().getTasksByDate(date);
     return [...events, ...tasks].sort((a, b) => {
-      let aDate: Date;
-      let bDate: Date;
-      
-      // Handle CalendarEvent (has startDate) vs CalendarTask (has dueDate)
-      if ('dueDate' in a) {
-        // This is a CalendarTask
-        aDate = a.startDate ? new Date(a.startDate) : new Date(a.dueDate);
-      } else {
-        // This is a CalendarEvent
-        aDate = new Date(a.startDate);
-      }
-      
-      if ('dueDate' in b) {
-        // This is a CalendarTask
-        bDate = b.startDate ? new Date(b.startDate) : new Date(b.dueDate);
-      } else {
-        // This is a CalendarEvent
-        bDate = new Date(b.startDate);
-      }
-      
+      const aDate = 'startDate' in a && a.startDate ? new Date(a.startDate) : new Date(a.dueDate);
+      const bDate = 'startDate' in b && b.startDate ? new Date(b.startDate) : new Date(b.dueDate);
       return aDate.getTime() - bDate.getTime();
     });
   },
