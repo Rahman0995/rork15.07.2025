@@ -53,7 +53,6 @@ function RootLayoutNav() {
     console.log('Navigation check:', {
       segments,
       isAuthenticated,
-      inAuthGroup,
       inProtectedRoute,
       isNavigationReady,
       isInitialized

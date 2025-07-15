@@ -4,7 +4,7 @@ import { Report, Task, CalendarEvent } from '@/types';
 
 export interface ExportData {
   title: string;
-  data: any[];
+  data: any;
   type: 'pdf' | 'excel' | 'csv' | 'json';
   filename?: string;
 }
