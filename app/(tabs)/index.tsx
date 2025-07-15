@@ -232,7 +232,7 @@ export default function HomeScreen() {
                 style={styles.backendTestButton}
                 onPress={() => router.push('/(tabs)/backend-test')}
               >
-                <Text style={styles.backendTestText}>Те��тировать Backend</Text>
+                <Text style={styles.backendTestText}>Тестировать Backend</Text>
               </TouchableOpacity>
             )}
           </View>
