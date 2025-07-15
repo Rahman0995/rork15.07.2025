@@ -132,7 +132,7 @@ export default function HomeScreen() {
           )}
         </View>
 
-      {/* Quick Stats */}
+        {/* Quick Stats */}
       <Animated.View 
         style={[
           styles.statsContainer,
