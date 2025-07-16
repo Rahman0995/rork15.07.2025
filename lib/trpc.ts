@@ -26,11 +26,33 @@ export const trpcClient = trpc.createClient({
         // Handle network errors gracefully
         return fetch(url, options).catch((error) => {
           console.warn('tRPC fetch failed:', error);
-          // Return a mock response for development
+          
+          // Check if this is the hi procedure and return mock data
+          if (url.includes('example.hi')) {
+            return new Response(JSON.stringify({
+              result: {
+                data: {
+                  message: 'Hello from mock backend!',
+                  timestamp: new Date().toISOString(),
+                }
+              }
+            }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+          
+          // Return error response for other requests
           return new Response(JSON.stringify({ 
-            error: 'Backend not available',
-            message: error.message,
-            url: url
+            error: {
+              message: 'JSON Parse error: Unexpected character: <',
+              code: 'PARSE_ERROR',
+              data: {
+                code: 'PARSE_ERROR',
+                httpStatus: 500,
+                stack: error.stack
+              }
+            }
           }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }

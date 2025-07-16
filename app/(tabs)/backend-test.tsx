@@ -9,9 +9,21 @@ export default function BackendTestScreen() {
   const { user } = useAuthStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  // Use test user if no user is logged in
+  const testUser = user || {
+    id: 'test-user',
+    name: 'Иванов А.П.',
+    rank: 'Полковник',
+    unit: 'Батальон А'
+  };
+  
   const { data: backendTest, isLoading, error, refetch } = trpc.example.hi.useQuery(
-    { name: user?.name || 'Test User' },
-    { enabled: !!user }
+    { name: testUser?.name || 'Test User' },
+    { 
+      enabled: true, // Always enabled for testing
+      retry: 1,
+      retryDelay: 1000,
+    }
   );
 
   const handleRefresh = async () => {
@@ -73,7 +85,7 @@ export default function BackendTestScreen() {
           <View style={styles.responseContainer}>
             <Text style={styles.responseLabel}>Ответ сервера:</Text>
             <View style={styles.responseBox}>
-              <Text style={styles.responseText}>{backendTest}</Text>
+              <Text style={styles.responseText}>{JSON.stringify(backendTest, null, 2)}</Text>
             </View>
           </View>
         )}
@@ -92,15 +104,15 @@ export default function BackendTestScreen() {
         <Text style={styles.infoTitle}>Информация о подключении</Text>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Пользователь:</Text>
-          <Text style={styles.infoValue}>{user?.name || 'Не авторизован'}</Text>
+          <Text style={styles.infoValue}>{testUser?.name || 'Не авторизован'}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Роль:</Text>
-          <Text style={styles.infoValue}>{user?.rank || 'Не определена'}</Text>
+          <Text style={styles.infoValue}>{testUser?.rank || 'Не определена'}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Подразделение:</Text>
-          <Text style={styles.infoValue}>{user?.unit || 'Не указано'}</Text>
+          <Text style={styles.infoValue}>{testUser?.unit || 'Не указано'}</Text>
         </View>
       </View>
     </ScrollView>
