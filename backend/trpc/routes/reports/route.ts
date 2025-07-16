@@ -201,7 +201,7 @@ export const updateReportProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const reportIndex = mockReports.findIndex(report => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
@@ -222,7 +222,7 @@ export const updateReportProcedure = publicProcedure
 
 export const deleteReportProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const reportIndex = mockReports.findIndex(report => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
@@ -245,7 +245,7 @@ export const addReportCommentProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
@@ -275,7 +275,7 @@ export const approveReportProcedure = publicProcedure
     status: z.enum(['approved', 'rejected', 'needs_revision']),
     comment: z.string().optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
