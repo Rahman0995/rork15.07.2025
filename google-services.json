@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "497081882207",
+    "project_id": "ahmat-4cfd5",
+    "storage_bucket": "ahmat-4cfd5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:497081882207:android:1712d72a98c94d78602dea",
+        "android_client_info": {
+          "package_name": "com.news.sever"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvHLKzLWu17d9oD18oaXrLFGxZfd1fLJY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
