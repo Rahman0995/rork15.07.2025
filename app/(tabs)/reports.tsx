@@ -175,9 +175,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 12,
@@ -186,9 +183,8 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderBottomColor: colors.borderLight,
   },
   searchContainer: {
-    flex: 1,
-    marginRight: 12,
     position: 'relative',
+    marginBottom: 12,
   },
   searchInput: {
     marginBottom: 0,
@@ -199,10 +195,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     top: 12,
   },
   filtersContainer: {
-    marginBottom: 16,
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
     backgroundColor: colors.backgroundSecondary,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
   filtersHeader: {
     flexDirection: 'row',
@@ -216,16 +213,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginRight: 8,
   },
   filtersRow: {
-    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    marginHorizontal: -4,
   },
   filterButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 18,
     backgroundColor: colors.card,
-    marginRight: 8,
+    marginHorizontal: 4,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: colors.borderLight,
@@ -250,7 +247,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 120,
   },
   loadingContainer: {
@@ -277,6 +274,8 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
   approvalButton: {
     flexDirection: 'row',
@@ -286,15 +285,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 12,
     position: 'relative',
-    marginRight: 12,
+    marginRight: 8,
     borderWidth: 1,
     borderColor: colors.primary,
+    flex: 1,
+    maxWidth: 140,
   },
   approvalButtonText: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.primary,
     fontWeight: '600',
-    marginLeft: 6,
+    marginLeft: 4,
+    flex: 1,
   },
   badge: {
     backgroundColor: colors.error,
