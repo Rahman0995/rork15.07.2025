@@ -19,7 +19,11 @@
       "bundleIdentifier": "app.rork.militaryunitmanagement",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
-    
+        "plugins": [
+      "expo-localization",
+      [
+        "expo-notifications",
+// ... existing code ...
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
