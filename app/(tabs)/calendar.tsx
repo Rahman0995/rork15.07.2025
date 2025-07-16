@@ -32,6 +32,7 @@ export default function CalendarScreen() {
     getTasksByDate
   } = useCalendarStore();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
@@ -197,7 +198,7 @@ export default function CalendarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

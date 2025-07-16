@@ -29,6 +29,7 @@ export default function NotificationsScreen() {
   } = useNotificationsStore();
   const { user } = useAuthStore();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -230,7 +231,7 @@ export default function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

@@ -16,9 +16,9 @@ interface ChatMessageProps {
 const VoiceMessage: React.FC<{ 
   attachment: any; 
   isCurrentUser: boolean;
-  colors: any;
-  styles: any;
-}> = ({ attachment, isCurrentUser, colors, styles }) => {
+}> = ({ attachment, isCurrentUser }) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
@@ -176,8 +176,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <VoiceMessage 
             attachment={message.attachment} 
             isCurrentUser={isCurrentUser}
-            colors={colors}
-            styles={styles}
           />
         ) : null;
       

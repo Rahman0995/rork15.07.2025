@@ -23,6 +23,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const handleLogout = () => {
     Alert.alert(
@@ -158,7 +159,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

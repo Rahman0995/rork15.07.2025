@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const { tasks, fetchTasks, isLoading: tasksLoading } = useTasksStore();
   const { reports, fetchReports, isLoading: reportsLoading } = useReportsStore();
   const { colors, isDark } = useTheme();
+  const styles = createStyles(colors);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
@@ -274,7 +275,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

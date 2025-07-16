@@ -15,6 +15,7 @@ export default function ReportsScreen() {
   const { reports, fetchReports, getReportsForApproval, isLoading } = useReportsStore();
   const currentUser = useAuthStore(state => state.user);
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const reportsForApproval = getReportsForApproval();
   
@@ -160,7 +161,7 @@ export default function ReportsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

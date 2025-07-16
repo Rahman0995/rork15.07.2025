@@ -39,6 +39,7 @@ export default function AnalyticsScreen() {
   const { reports } = useReportsStore();
   const { tasks } = useTasksStore();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('overview');
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
@@ -421,7 +422,7 @@ export default function AnalyticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

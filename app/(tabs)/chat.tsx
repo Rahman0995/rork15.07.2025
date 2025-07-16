@@ -19,6 +19,7 @@ export default function ChatScreen() {
   const { chats, fetchChats, isLoading, setCurrentChat } = useChatStore();
   const { user, isAuthenticated } = useAuthStore();
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   useEffect(() => {
     if (user && isAuthenticated) {
@@ -115,7 +116,7 @@ export default function ChatScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

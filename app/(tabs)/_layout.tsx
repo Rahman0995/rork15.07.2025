@@ -62,6 +62,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Home size={20} color={color} />,
         }}
       />
+
       <Tabs.Screen
         name="reports"
         options={{
@@ -109,13 +110,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <User size={20} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="backend-test"
-        options={{
-          title: "Backend",
-          tabBarIcon: ({ color }) => <Server size={20} color={color} />,
-        }}
-      />
+
     </Tabs>
   );
 }
