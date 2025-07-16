@@ -296,7 +296,6 @@ export default function AccountSettingsScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         {/* Profile Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Профиль</Text>
           <View style={styles.card}>
             <View style={styles.profileHeader}>
               <Avatar uri={user.avatar} name={user.name} size={60} />
