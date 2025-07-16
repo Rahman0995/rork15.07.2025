@@ -72,12 +72,20 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'medium
 
   const statusColor = getStatusColor();
   
+  // Convert hex to rgba for transparency
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+  
   return (
     <View style={[
       styles.container, 
       { 
-        backgroundColor: `${statusColor}15`,
-        borderColor: `${statusColor}30`,
+        backgroundColor: hexToRgba(statusColor, 0.08),
+        borderColor: hexToRgba(statusColor, 0.18),
       },
       size === 'small' && styles.smallContainer
     ]}>
