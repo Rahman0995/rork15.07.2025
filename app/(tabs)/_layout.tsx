@@ -31,7 +31,7 @@ export default function TabLayout() {
   useEffect(() => {
     setGlobalScrollListener((scrollValue: number) => {
       scrollY.setValue(scrollValue);
-      setIsScrolling(scrollValue > 50);
+      setIsScrolling(scrollValue > 20); // Lower threshold for earlier activation
     });
     
     return () => {
@@ -40,7 +40,7 @@ export default function TabLayout() {
   }, []);
   
   const tabBarOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [0, 50],
     outputRange: [1, 0.97],
     extrapolate: 'clamp',
   });
@@ -69,9 +69,9 @@ export default function TabLayout() {
           },
         ]}
       >
-        {Platform.OS !== 'web' && isScrolling && (
+        {Platform.OS !== 'web' && (
           <BlurView
-            intensity={80}
+            intensity={isScrolling ? 100 : 0}
             tint={isDark ? 'dark' : 'light'}
             style={{
               position: 'absolute',

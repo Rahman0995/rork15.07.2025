@@ -114,7 +114,7 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
-        scrollEventThrottle={16}
+        scrollEventThrottle={8}
       >
         {/* Header Section */}
         <View style={styles.header}>
