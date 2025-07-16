@@ -343,7 +343,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   contentContainer: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 100,
   },
   header: {
     alignItems: 'center',
@@ -482,5 +482,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginLeft: 12,
   },
   logoutButton: {
+    marginTop: 8,
+    marginBottom: 20,
   },
 });
