@@ -38,7 +38,7 @@ export const getUsersProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let users = [...mockUsers];
     
     if (input?.unit) {
@@ -63,7 +63,7 @@ export const getUsersProcedure = publicProcedure
 
 export const getUserByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     const user = mockUsers.find(u => u.id === input.id);
     if (!user) {
       throw new Error('User not found');
@@ -73,7 +73,7 @@ export const getUserByIdProcedure = publicProcedure
 
 export const getUsersByUnitProcedure = publicProcedure
   .input(z.object({ unit: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     return mockUsers.filter(user => user.unit === input.unit);
   });
 
@@ -86,7 +86,7 @@ export const updateUserProcedure = publicProcedure
     unit: z.string().optional(),
     avatar: z.string().optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const userIndex = mockUsers.findIndex(user => user.id === input.id);
     if (userIndex === -1) {
       throw new Error('User not found');

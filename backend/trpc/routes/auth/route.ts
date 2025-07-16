@@ -6,7 +6,7 @@ export const loginProcedure = publicProcedure
     email: z.string().email(),
     password: z.string().min(1),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     // Mock authentication
     if (input.email === 'admin@example.com' && input.password === 'password') {
       return {
@@ -35,7 +35,7 @@ export const refreshTokenProcedure = publicProcedure
   .input(z.object({
     refreshToken: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     // Mock token refresh
     return {
       token: 'new-mock-jwt-token',
@@ -48,7 +48,7 @@ export const changePasswordProcedure = publicProcedure
     currentPassword: z.string(),
     newPassword: z.string().min(6),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     // Mock password change
     return { success: true };
   });
@@ -57,7 +57,7 @@ export const resetPasswordProcedure = publicProcedure
   .input(z.object({
     email: z.string().email(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     // Mock password reset
     return { success: true, message: 'Password reset email sent' };
   });

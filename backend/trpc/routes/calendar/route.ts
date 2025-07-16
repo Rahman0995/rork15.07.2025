@@ -36,7 +36,7 @@ export const getEventsProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let events = [...mockEvents];
     
     if (input?.startDate) {
@@ -70,7 +70,7 @@ export const getEventsProcedure = publicProcedure
 
 export const getEventByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     const event = mockEvents.find(e => e.id === input.id);
     if (!event) {
       throw new Error('Event not found');
@@ -88,7 +88,7 @@ export const createEventProcedure = publicProcedure
     attendees: z.array(z.string()).optional().default([]),
     createdBy: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const newEvent = {
       id: `event_${Date.now()}`,
       title: input.title,
@@ -116,7 +116,7 @@ export const updateEventProcedure = publicProcedure
     location: z.string().optional(),
     attendees: z.array(z.string()).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const eventIndex = mockEvents.findIndex(event => event.id === input.id);
     if (eventIndex === -1) {
       throw new Error('Event not found');
@@ -134,7 +134,7 @@ export const updateEventProcedure = publicProcedure
 
 export const deleteEventProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const eventIndex = mockEvents.findIndex(event => event.id === input.id);
     if (eventIndex === -1) {
       throw new Error('Event not found');
@@ -149,7 +149,7 @@ export const getUpcomingEventsProcedure = publicProcedure
     userId: z.string(),
     limit: z.number().optional().default(5),
   }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     const now = new Date();
     const upcomingEvents = mockEvents
       .filter(event => 

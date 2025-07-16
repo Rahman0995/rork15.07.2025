@@ -136,7 +136,7 @@ export const getReportsProcedure = publicProcedure
 export const getReportByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .query(({ input }) => {
-    const report = getReport(input.id);
+    const report = getReport(input!.id);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -303,7 +303,7 @@ export const getReportsForApprovalProcedure = publicProcedure
   .query(({ input }) => {
     return mockReports.filter(report => 
       report.status === 'pending' && 
-      report.approvers?.includes(input.approverId) &&
-      report.currentApprover === input.approverId
+      report.approvers?.includes(input!.approverId) &&
+      report.currentApprover === input!.approverId
     );
   });

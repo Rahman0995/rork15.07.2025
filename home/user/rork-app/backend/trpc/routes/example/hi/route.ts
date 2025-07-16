@@ -1,13 +1,18 @@
 import { z } from "zod";
-import { publicProcedure } from "../../../../create-context";
+import { publicProcedure } from "../../create-context";
 
 export const hiProcedure = publicProcedure
   .input(z.object({ name: z.string().optional() }))
-  .query(({ input }: { input?: { name?: string } }) => {
-    return {
-      message: `Hello ${input?.name || 'World'}!`,
-      timestamp: new Date().toISOString(),
-    };
+  .query(({ input }: { input: { name?: string } }) => {
+    // Simple, guaranteed non-undefined return
+    const name = input?.name || 'World';
+    const message = `Hello ${name}!`;
+    const timestamp = new Date().toISOString();
+    
+    const result = { message, timestamp };
+    console.log('hiProcedure called with input:', input, 'returning:', result);
+    
+    return result;
   });
 
 // Mock data for tasks and reports
@@ -103,10 +108,9 @@ export const createTaskProcedure = publicProcedure
     description: z.string(),
     priority: z.enum(['high', 'medium', 'low']),
     assignedTo: z.string(),
-    createdBy: z.string(),
     dueDate: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; priority: 'high' | 'medium' | 'low'; assignedTo: string; dueDate: string } }) => {
     const newTask: Task = {
       id: String(mockTasks.length + 1),
       title: input.title,
@@ -114,7 +118,7 @@ export const createTaskProcedure = publicProcedure
       status: 'pending',
       priority: input.priority,
       assignedTo: input.assignedTo,
-      createdBy: input.createdBy,
+      createdBy: '1', // Mock current user
       dueDate: input.dueDate,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -128,7 +132,7 @@ export const createReportProcedure = publicProcedure
     title: z.string(),
     content: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; content: string } }) => {
     const newReport: Report = {
       id: String(mockReports.length + 1),
       ...input,

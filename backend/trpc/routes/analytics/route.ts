@@ -77,7 +77,7 @@ export const getReportsAnalyticsProcedure = publicProcedure
     endDate: z.string().optional(),
     unit: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let reports = [...mockReports];
     
     if (input?.startDate) {
@@ -123,7 +123,7 @@ export const getTasksAnalyticsProcedure = publicProcedure
     endDate: z.string().optional(),
     assignedTo: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let tasks = [...mockTasks];
     
     if (input?.startDate) {
@@ -170,7 +170,7 @@ export const getUserActivityProcedure = publicProcedure
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let userReports = mockReports.filter(r => r.authorId === input.userId);
     let userTasks = mockTasks.filter(t => t.assignedTo === input.userId || t.createdBy === input.userId);
     

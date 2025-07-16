@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for reports - defined locally to avoid import issues
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
@@ -103,7 +103,7 @@ export const getReportsProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number } }) => {
+  .query(({ input }: { input: any }) => {
     let reports = [...mockReports];
     
     if (input?.status) {
@@ -135,8 +135,8 @@ export const getReportsProcedure = publicProcedure
 
 export const getReportByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number } }) => {
-    const report = getReport(input.id);
+  .query(({ input }: { input: any }) => {
+    const report = getReport(input!.id);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -160,13 +160,14 @@ export const createReportProcedure = publicProcedure
       url: z.string(),
     })).optional().default([]),
   }))
-  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
+  .mutation(({ input }: { input: any }) => {
     const reportId = `report_${Date.now()}`;
     const newReport: Report = {
       id: reportId,
       title: input.title,
       content: input.content,
       authorId: input.authorId,
+
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',
@@ -179,7 +180,6 @@ export const createReportProcedure = publicProcedure
       currentApprover: input.approvers?.[0],
       approvals: [],
       comments: [],
-
     };
     
     mockReports.push(newReport);
@@ -201,8 +201,8 @@ export const updateReportProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }: { input: { id: string; title?: string; content?: string; status?: ReportStatus; priority?: 'low' | 'medium' | 'high'; dueDate?: string; attachments?: Attachment[] } }) => {
-    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
+  .mutation(({ input }: { input: any }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -214,23 +214,7 @@ export const updateReportProcedure = publicProcedure
       updatedAt: new Date().toISOString(),
     };
     
-    // If content or title changed, create new revision
-    if (input.title || input.content) {
-      const newRevision = {
-        id: `rev_${Date.now()}`,
-        reportId: input.id,
-        version: 1,
-        title: input.title || currentReport.title,
-        content: input.content || currentReport.content,
-        attachments: input.attachments || currentReport.attachments || [],
-        createdAt: new Date().toISOString(),
-        createdBy: currentReport.authorId,
-        authorId: currentReport.authorId,
-        changes: 'Updated content',
-      };
-      
-      // Mock revision handling - in real app, this would be stored separately
-    }
+
     
     mockReports[reportIndex] = updatedReport;
     return updatedReport;
@@ -238,8 +222,8 @@ export const updateReportProcedure = publicProcedure
 
 export const deleteReportProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }: { input: { id: string } }) => {
-    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
+  .mutation(({ input }: { input: any }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -261,8 +245,8 @@ export const addReportCommentProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }: { input: { reportId: string; authorId: string; content: string; isRevision?: boolean; attachments?: Attachment[] } }) => {
-    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
+  .mutation(({ input }: { input: any }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -291,8 +275,8 @@ export const approveReportProcedure = publicProcedure
     status: z.enum(['approved', 'rejected', 'needs_revision']),
     comment: z.string().optional(),
   }))
-  .mutation(({ input }: { input: { reportId: string; approverId: string; status: 'approved' | 'rejected' | 'needs_revision'; comment?: string } }) => {
-    const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
+  .mutation(({ input }: { input: any }) => {
+    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -316,10 +300,10 @@ export const approveReportProcedure = publicProcedure
 
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
-  .query(({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number } }) => {
-    return mockReports.filter((report: Report) => 
+  .query(({ input }: { input: any }) => {
+    return mockReports.filter(report => 
       report.status === 'pending' && 
-      report.approvers?.includes(input.approverId) &&
-      report.currentApprover === input.approverId
+      report.approvers?.includes(input!.approverId) &&
+      report.currentApprover === input!.approverId
     );
   });

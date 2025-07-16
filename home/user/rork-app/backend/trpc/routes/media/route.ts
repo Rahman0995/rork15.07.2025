@@ -41,11 +41,11 @@ export const uploadFileProcedure = publicProcedure
     // In a real implementation, this would be a file upload
     data: z.string().optional(), // Base64 or file path
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const newFile = {
       id: `file_${Date.now()}`,
       name: input.name,
-      type: input.type,
+      type: input.type as 'file' | 'image' | 'video',
       url: `https://example.com/files/${input.name}`, // Mock URL
       size: input.size,
       uploadedBy: input.uploadedBy,
@@ -60,7 +60,7 @@ export const uploadFileProcedure = publicProcedure
       },
     };
     
-    mockFiles.push(newFile as any);
+    mockFiles.push(newFile);
     return newFile;
   });
 
@@ -71,7 +71,7 @@ export const getFilesProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let files = [...mockFiles];
     
     if (input?.type) {
@@ -99,7 +99,7 @@ export const getFilesProcedure = publicProcedure
 
 export const getFileByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     const file = mockFiles.find(f => f.id === input.id);
     if (!file) {
       throw new Error('File not found');
@@ -112,7 +112,7 @@ export const deleteFileProcedure = publicProcedure
     id: z.string(),
     userId: z.string(), // Only the uploader or admin can delete
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const fileIndex = mockFiles.findIndex(f => f.id === input.id);
     if (fileIndex === -1) {
       throw new Error('File not found');
@@ -135,7 +135,7 @@ export const generateUploadUrlProcedure = publicProcedure
     fileType: z.string(),
     fileSize: z.number(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     // In a real implementation, this would generate a signed URL for direct upload
     // to cloud storage (AWS S3, Google Cloud Storage, etc.)
     const uploadUrl = `https://example.com/upload/${Date.now()}_${input.fileName}`;
@@ -152,7 +152,7 @@ export const getStorageStatsProcedure = publicProcedure
   .input(z.object({
     userId: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let files = mockFiles;
     
     if (input?.userId) {
@@ -167,9 +167,9 @@ export const getStorageStatsProcedure = publicProcedure
     };
     
     const sizeByType = {
-      image: files.filter(f => f.type === 'image').reduce((sum, f) => sum + f.size, 0),
-      file: files.filter(f => f.type === 'file').reduce((sum, f) => sum + f.size, 0),
-      video: files.filter(f => f.type === 'video').reduce((sum, f) => sum + f.size, 0),
+      image: files.filter(f => f.type === 'image').reduce((sum, f) => sum + (f.type === 'image' ? f.size : 0), 0),
+      file: files.filter(f => f.type === 'file').reduce((sum, f) => sum + (f.type === 'file' ? f.size : 0), 0),
+      video: files.filter(f => f.type === 'video').reduce((sum, f) => sum + (f.type === 'video' ? f.size : 0), 0),
     };
     
     return {

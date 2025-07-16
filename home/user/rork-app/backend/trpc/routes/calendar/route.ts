@@ -1,93 +1,30 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import type { CalendarEvent, EventType, EventStatus } from '../../../../types';
 
-// Mock данные для событий календаря
-const mockEvents: CalendarEvent[] = [
+const mockEvents = [
   {
     id: '1',
-    title: 'Тактические учения',
-    description: 'Проведение тактических учений с личным составом батальона',
-    type: 'training',
-    status: 'scheduled',
-    startDate: new Date(2025, 7, 20, 9, 0).toISOString(),
-    endDate: new Date(2025, 7, 20, 17, 0).toISOString(),
-    location: 'Полигон А',
-    organizer: '1',
-    participants: ['1', '2', '3', '4'],
-    isAllDay: false,
-    createdAt: new Date(2025, 7, 10).toISOString(),
-    updatedAt: new Date(2025, 7, 10).toISOString(),
-    unit: 'Батальон А',
-    color: '#FF6B6B',
+    title: 'Security Briefing',
+    description: 'Weekly security briefing for all staff',
+    startDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+    endDate: new Date(Date.now() + 86400000 + 3600000).toISOString(), // Tomorrow + 1 hour
+    location: 'Conference Room A',
+    attendees: ['1', '2', '3'],
+    createdBy: '1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '2',
-    title: 'Совещание командиров',
-    description: 'Еженедельное совещание командиров рот',
-    type: 'meeting',
-    status: 'scheduled',
-    startDate: new Date(2025, 7, 16, 10, 0).toISOString(),
-    endDate: new Date(2025, 7, 16, 11, 30).toISOString(),
-    location: 'Штаб батальона',
-    organizer: '1',
-    participants: ['1', '2', '4'],
-    isAllDay: false,
-    createdAt: new Date(2025, 7, 9).toISOString(),
-    updatedAt: new Date(2025, 7, 9).toISOString(),
-    unit: 'Батальон А',
-    color: '#4ECDC4',
-  },
-  {
-    id: '3',
-    title: 'Стрельбы',
-    description: 'Плановые стрельбы из стрелкового оружия',
-    type: 'training',
-    status: 'completed',
-    startDate: new Date(2025, 7, 12, 8, 0).toISOString(),
-    endDate: new Date(2025, 7, 12, 16, 0).toISOString(),
-    location: 'Стрельбище',
-    organizer: '2',
-    participants: ['2', '3', '5'],
-    isAllDay: false,
-    createdAt: new Date(2025, 7, 5).toISOString(),
-    updatedAt: new Date(2025, 7, 12).toISOString(),
-    unit: 'Рота Б-1',
-    color: '#45B7D1',
-  },
-  {
-    id: '4',
-    title: 'Инспекция',
-    description: 'Плановая инспекция состояния казарм и техники',
-    type: 'inspection',
-    status: 'scheduled',
-    startDate: new Date(2025, 7, 25, 9, 0).toISOString(),
-    endDate: new Date(2025, 7, 25, 15, 0).toISOString(),
-    location: 'Казармы',
-    organizer: '1',
-    participants: ['1', '2', '3', '4'],
-    isAllDay: false,
-    createdAt: new Date(2025, 7, 15).toISOString(),
-    updatedAt: new Date(2025, 7, 15).toISOString(),
-    unit: 'Батальон А',
-    color: '#F7DC6F',
-  },
-  {
-    id: '5',
-    title: 'День открытых дверей',
-    description: 'Мероприятие для гражданского населения',
-    type: 'ceremony',
-    status: 'scheduled',
-    startDate: new Date(2025, 7, 30).toISOString(),
-    endDate: new Date(2025, 7, 30).toISOString(),
-    location: 'Плац',
-    organizer: '1',
-    participants: ['1', '2', '3', '4', '5'],
-    isAllDay: true,
-    createdAt: new Date(2025, 7, 20).toISOString(),
-    updatedAt: new Date(2025, 7, 20).toISOString(),
-    unit: 'Батальон А',
-    color: '#BB8FCE',
+    title: 'Equipment Maintenance',
+    description: 'Scheduled maintenance of security equipment',
+    startDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
+    endDate: new Date(Date.now() + 172800000 + 7200000).toISOString(), // Day after tomorrow + 2 hours
+    location: 'Equipment Room',
+    attendees: ['2', '3'],
+    createdBy: '2',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -96,50 +33,44 @@ export const getEventsProcedure = publicProcedure
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     userId: z.string().optional(),
-    unit: z.string().optional(),
-    type: z.enum(['training', 'meeting', 'exercise', 'inspection', 'ceremony', 'other']).optional(),
-    status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
+    limit: z.number().optional(),
+    offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     let events = [...mockEvents];
     
-    if (input?.startDate && input?.endDate) {
-      const start = new Date(input.startDate);
-      const end = new Date(input.endDate);
-      events = events.filter(event => {
-        const eventStart = new Date(event.startDate);
-        const eventEnd = new Date(event.endDate);
-        return eventStart <= end && eventEnd >= start;
-      });
+    if (input?.startDate) {
+      events = events.filter(event => new Date(event.startDate) >= new Date(input.startDate!));
+    }
+    
+    if (input?.endDate) {
+      events = events.filter(event => new Date(event.endDate) <= new Date(input.endDate!));
     }
     
     if (input?.userId) {
       events = events.filter(event => 
-        event.participants.includes(input.userId!) || event.organizer === input.userId
+        event.attendees.includes(input.userId!) || event.createdBy === input.userId
       );
     }
     
-    if (input?.unit) {
-      events = events.filter(event => event.unit === input.unit);
-    }
-    
-    if (input?.type) {
-      events = events.filter(event => event.type === input.type);
-    }
-    
-    if (input?.status) {
-      events = events.filter(event => event.status === input.status);
-    }
-    
-    // Сортировка по дате начала
+    // Sort by start date
     events.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     
-    return events;
+    if (input?.offset || input?.limit) {
+      const offset = input.offset || 0;
+      const limit = input.limit || 10;
+      events = events.slice(offset, offset + limit);
+    }
+    
+    return {
+      events,
+      total: mockEvents.length,
+    };
   });
 
 export const getEventByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     const event = mockEvents.find(e => e.id === input.id);
     if (!event) {
       throw new Error('Event not found');
@@ -150,25 +81,25 @@ export const getEventByIdProcedure = publicProcedure
 export const createEventProcedure = publicProcedure
   .input(z.object({
     title: z.string().min(1),
-    description: z.string(),
-    type: z.enum(['training', 'meeting', 'exercise', 'inspection', 'ceremony', 'other']),
+    description: z.string().optional(),
     startDate: z.string(),
     endDate: z.string(),
     location: z.string().optional(),
-    organizer: z.string(),
-    participants: z.array(z.string()),
-    isAllDay: z.boolean().default(false),
-    unit: z.string(),
-    color: z.string().optional(),
+    attendees: z.array(z.string()).optional().default([]),
+    createdBy: z.string(),
   }))
-  .mutation(({ input }) => {
-    const newEvent: CalendarEvent = {
+  .mutation(({ input }: { input: any }) => {
+    const newEvent = {
       id: `event_${Date.now()}`,
-      ...input,
-      status: 'scheduled',
+      title: input.title,
+      description: input.description || '',
+      startDate: input.startDate,
+      endDate: input.endDate,
+      location: input.location || '',
+      attendees: input.attendees || [],
+      createdBy: input.createdBy,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      color: input.color || '#4ECDC4',
     };
     
     mockEvents.push(newEvent);
@@ -180,16 +111,12 @@ export const updateEventProcedure = publicProcedure
     id: z.string(),
     title: z.string().optional(),
     description: z.string().optional(),
-    type: z.enum(['training', 'meeting', 'exercise', 'inspection', 'ceremony', 'other']).optional(),
-    status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     location: z.string().optional(),
-    participants: z.array(z.string()).optional(),
-    isAllDay: z.boolean().optional(),
-    color: z.string().optional(),
+    attendees: z.array(z.string()).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const eventIndex = mockEvents.findIndex(event => event.id === input.id);
     if (eventIndex === -1) {
       throw new Error('Event not found');
@@ -207,7 +134,7 @@ export const updateEventProcedure = publicProcedure
 
 export const deleteEventProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const eventIndex = mockEvents.findIndex(event => event.id === input.id);
     if (eventIndex === -1) {
       throw new Error('Event not found');
@@ -220,18 +147,17 @@ export const deleteEventProcedure = publicProcedure
 export const getUpcomingEventsProcedure = publicProcedure
   .input(z.object({
     userId: z.string(),
-    days: z.number().optional().default(7),
+    limit: z.number().optional().default(5),
   }))
-  .query(({ input }) => {
+  .query(({ input }: { input: any }) => {
     const now = new Date();
-    const futureDate = new Date();
-    futureDate.setDate(now.getDate() + input.days);
+    const upcomingEvents = mockEvents
+      .filter(event => 
+        new Date(event.startDate) > now &&
+        (event.attendees.includes(input.userId) || event.createdBy === input.userId)
+      )
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+      .slice(0, input.limit);
     
-    return mockEvents.filter(event => {
-      const eventStart = new Date(event.startDate);
-      return eventStart >= now && 
-             eventStart <= futureDate && 
-             (event.participants.includes(input.userId) || event.organizer === input.userId) &&
-             event.status !== 'cancelled';
-    }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    return upcomingEvents;
   });

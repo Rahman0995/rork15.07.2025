@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for tasks - defined locally to avoid import issues
 type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 type TaskPriority = 'low' | 'medium' | 'high';
@@ -62,7 +62,7 @@ export const getTasksProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }: { input?: any }) => {
+  .query(({ input }: { input: any }) => {
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
@@ -103,7 +103,7 @@ export const getTasksProcedure = publicProcedure
 
 export const getTaskByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }: { input?: any }) => {
+  .query(({ input }: { input: any }) => {
     const task = getTask(input.id);
     if (!task) {
       throw new Error('Task not found');
@@ -120,7 +120,7 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
   }))
-  .mutation(({ input }: { input: { title: string; description: string; assignedTo: string; createdBy: string; dueDate: string; priority: TaskPriority } }) => {
+  .mutation(({ input }: { input: any }) => {
     const newTask: Task = {
       id: `task_${Date.now()}`,
       title: input.title,
@@ -148,8 +148,8 @@ export const updateTaskProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(({ input }: { input: { id: string; title?: string; description?: string; assignedTo?: string; dueDate?: string; status?: TaskStatus; priority?: TaskPriority } }) => {
-    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
+  .mutation(({ input }: { input: any }) => {
+    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -177,8 +177,8 @@ export const updateTaskProcedure = publicProcedure
 
 export const deleteTaskProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }: { input: { id: string } }) => {
-    const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
+  .mutation(({ input }: { input: any }) => {
+    const taskIndex = mockTasks.findIndex(task => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -189,28 +189,28 @@ export const deleteTaskProcedure = publicProcedure
 
 export const getTaskStatsProcedure = publicProcedure
   .input(z.object({ userId: z.string().optional() }).optional())
-  .query(({ input }: { input?: any }) => {
+  .query(({ input }: { input: any }) => {
     let tasks = mockTasks;
     
     if (input?.userId) {
-      tasks = tasks.filter((task: Task) => task.assignedTo === input.userId || task.createdBy === input.userId);
+      tasks = tasks.filter(task => task.assignedTo === input.userId || task.createdBy === input.userId);
     }
     
     const stats = {
       total: tasks.length,
-      pending: tasks.filter((task: Task) => task.status === 'pending').length,
-      inProgress: tasks.filter((task: Task) => task.status === 'in_progress').length,
-      completed: tasks.filter((task: Task) => task.status === 'completed').length,
-      cancelled: tasks.filter((task: Task) => task.status === 'cancelled').length,
-      overdue: tasks.filter((task: Task) => 
+      pending: tasks.filter(task => task.status === 'pending').length,
+      inProgress: tasks.filter(task => task.status === 'in_progress').length,
+      completed: tasks.filter(task => task.status === 'completed').length,
+      cancelled: tasks.filter(task => task.status === 'cancelled').length,
+      overdue: tasks.filter(task => 
         task.status !== 'completed' && 
         task.status !== 'cancelled' && 
         new Date(task.dueDate) < new Date()
       ).length,
       byPriority: {
-        high: tasks.filter((task: Task) => task.priority === 'high').length,
-        medium: tasks.filter((task: Task) => task.priority === 'medium').length,
-        low: tasks.filter((task: Task) => task.priority === 'low').length,
+        high: tasks.filter(task => task.priority === 'high').length,
+        medium: tasks.filter(task => task.priority === 'medium').length,
+        low: tasks.filter(task => task.priority === 'low').length,
       },
     };
     
