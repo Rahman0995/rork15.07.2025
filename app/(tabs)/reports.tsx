@@ -169,9 +169,13 @@ const createStyles = (colors: any) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
   searchContainer: {
     flex: 1,
@@ -187,8 +191,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     top: 12,
   },
   filtersContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
     paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: colors.backgroundSecondary,
   },
   filtersHeader: {
     flexDirection: 'row',
@@ -210,11 +216,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.card,
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: colors.borderLight,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   activeFilterButton: {
     backgroundColor: colors.primary,
@@ -231,6 +242,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
+    paddingTop: 8,
     paddingBottom: 100,
   },
   loadingContainer: {
@@ -242,13 +254,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 32,
   },
   emptyText: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    lineHeight: 22,
   },
   createButton: {
     marginTop: 12,

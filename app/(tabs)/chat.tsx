@@ -125,7 +125,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    paddingBottom: 8,
+    paddingBottom: 12,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
   searchContainer: {
     flex: 1,
@@ -142,8 +145,8 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   sectionHeader: {
     padding: 16,
-    paddingTop: 24,
-    paddingBottom: 8,
+    paddingTop: 20,
+    paddingBottom: 12,
     backgroundColor: colors.background,
   },
   sectionTitleContainer: {
@@ -152,9 +155,10 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     marginLeft: 8,
+    letterSpacing: -0.2,
   },
   loadingContainer: {
     flex: 1,
@@ -165,13 +169,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 32,
   },
   emptyText: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    lineHeight: 22,
   },
   createButton: {
     marginTop: 12,

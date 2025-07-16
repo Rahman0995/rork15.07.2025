@@ -219,6 +219,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
   monthNavigation: {
     flexDirection: 'row',
@@ -228,14 +231,17 @@ const createStyles = (colors: any) => StyleSheet.create({
   navButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   monthTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     minWidth: 140,
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
   todayButton: {
     paddingHorizontal: 12,
@@ -250,16 +256,18 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   selectedDateHeader: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   selectedDateTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: colors.text,
     marginBottom: 8,
     textTransform: 'capitalize',
+    letterSpacing: -0.2,
   },
   counters: {
     flexDirection: 'row',
@@ -284,10 +292,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     marginHorizontal: 16,
     marginBottom: 12,
+    letterSpacing: -0.2,
   },
   emptyState: {
     alignItems: 'center',
@@ -296,9 +305,10 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.text,
     marginBottom: 8,
+    letterSpacing: -0.2,
   },
   emptyStateText: {
     fontSize: 14,

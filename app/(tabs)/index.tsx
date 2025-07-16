@@ -303,9 +303,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   // Header Styles
   header: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 24,
+    paddingTop: 16,
+    paddingBottom: 20,
+    backgroundColor: colors.card,
     borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
   headerTop: {
     flexDirection: 'row',
@@ -322,9 +324,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+    backgroundColor: colors.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: colors.primary + '20',
   },
   userDetails: {
     flex: 1,
@@ -345,6 +350,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
+    backgroundColor: colors.backgroundSecondary,
   },
   date: {
     fontSize: 13,
@@ -361,6 +367,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
+    backgroundColor: colors.successSoft,
   },
   statusText: {
     fontSize: 12,
@@ -372,20 +379,23 @@ const createStyles = (colors: any) => StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 24,
-    gap: 12,
+    paddingVertical: 20,
+    gap: 10,
   },
   statCard: {
     flex: 1,
+    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'column',
     alignItems: 'flex-start',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   statIconContainer: {
     width: 40,
@@ -400,13 +410,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     width: '100%',
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
+    color: colors.text,
     marginBottom: 2,
+    letterSpacing: -0.5,
   },
   statLabel: {
     fontSize: 12,
     fontWeight: '600',
+    color: colors.textSecondary,
     lineHeight: 16,
   },
   statTrend: {

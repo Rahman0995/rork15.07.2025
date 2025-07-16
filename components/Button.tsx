@@ -143,13 +143,13 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
   },
   content: {
     flexDirection: 'row',
@@ -169,15 +169,15 @@ const styles = StyleSheet.create({
   },
 
   smallButton: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
   },
   mediumButton: {
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 24,
   },
   largeButton: {
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 28,
   },
   smallText: {

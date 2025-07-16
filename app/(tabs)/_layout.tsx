@@ -48,14 +48,14 @@ export default function TabLayout() {
           backgroundColor: colors.card,
           borderTopColor: colors.borderLight,
           borderTopWidth: 1,
-          paddingTop: 12,
-          paddingBottom: 12,
-          height: 88,
+          paddingTop: 8,
+          paddingBottom: 8,
+          height: 80,
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 1,
-          shadowRadius: 12,
-          elevation: 12,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
         },
         headerStyle: {
           backgroundColor: colors.card,
@@ -75,9 +75,9 @@ export default function TabLayout() {
         },
         headerRight: () => <HeaderButtons />,
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: '600',
-          marginTop: 6,
+          marginTop: 4,
         },
       }}
     >

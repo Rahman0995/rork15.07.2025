@@ -434,12 +434,13 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
   },
   headerActions: {
     flexDirection: 'row',
@@ -453,7 +454,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   timeRangeLabel: {
     fontSize: 14,
@@ -487,7 +488,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   tabButton: {
     flex: 1,
@@ -512,6 +513,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+    backgroundColor: colors.background,
   },
   tabContent: {
     flex: 1,
@@ -525,15 +527,17 @@ const createStyles = (colors: any) => StyleSheet.create({
   statCard: {
     width: '48%',
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   statIconContainer: {
     width: 48,
@@ -561,13 +565,15 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   chartCard: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   chartTitle: {
     fontSize: 16,

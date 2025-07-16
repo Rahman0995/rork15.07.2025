@@ -14,14 +14,16 @@ import { useReportsStore } from '@/store/reportsStore';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { mockUsers } from '@/constants/mockData';
 import { Paperclip, X, Image, FileText, Video, AlertTriangle, Clock, CheckCircle } from 'lucide-react-native';
 
 export default function CreateReportScreen() {
   const router = useRouter();
   const { createReport, isLoading } = useReportsStore();
-  const { currentUser } = useAuthStore();
+  const { user: currentUser } = useAuthStore();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -319,7 +321,7 @@ export default function CreateReportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

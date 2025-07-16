@@ -255,7 +255,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -263,8 +263,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: -0.3,
   },
   unreadBadge: {
     backgroundColor: colors.error,
@@ -291,9 +292,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: colors.primary + '10',
+    backgroundColor: colors.primarySoft,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
   cancelText: {
     color: colors.primary,
@@ -342,17 +343,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 32,
   },
   emptyText: {
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
   bottomActions: {
     padding: 16,
     backgroundColor: colors.card,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.borderLight,
   },
 });
