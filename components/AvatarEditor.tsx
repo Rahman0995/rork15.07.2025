@@ -177,7 +177,7 @@ export const AvatarEditor: React.FC<AvatarEditorProps> = ({
           
           {/* Instructions */}
           <Text style={[styles.instructions, { color: colors.white + '80' }]}>
-            Перетащите изображение для позиционирования.{"\n"}Используйте жесты для масштабирования.
+            Перетащите изображение для позиционирования.{'\n'}Используйте жесты для масштабирования.
           </Text>
         </View>
       </View>
