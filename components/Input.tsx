@@ -44,6 +44,7 @@ export const Input: React.FC<InputProps> = ({
           borderColor: error ? colors.error : colors.borderLight,
           backgroundColor: props.editable === false ? colors.backgroundTertiary : colors.backgroundSecondary,
           opacity: props.editable === false ? 0.6 : 1,
+          shadowColor: colors.shadow,
         }
       ]}>
         {icon && (
@@ -86,7 +87,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 12,
-    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
