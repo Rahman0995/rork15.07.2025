@@ -24,7 +24,16 @@
       "NSMicrophoneUsageDescription": "This app needs access to microphone for voice recordings",
       "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select images",
       "NSLocationWhenInUseUsageDescription": "This app needs location access for location-based features",
-      "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access for location-based features"
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access for location-based features",
+      "NSAppTransportSecurity": {
+        "NSExceptionDomains": {
+          "localhost": {
+            "NSExceptionAllowsInsecureHTTPLoads": true,
+            "NSExceptionMinimumTLSVersion": "1.0",
+            "NSIncludesSubdomains": true
+          }
+        }
+      }
     }
   },
   "android": {
@@ -44,8 +53,10 @@
       "android.permission.INTERNET",
       "android.permission.ACCESS_NETWORK_STATE",
       "android.permission.WAKE_LOCK",
-      "android.permission.VIBRATE"
-    ]
+      "android.permission.VIBRATE",
+      "android.permission.ACCESS_WIFI_STATE"
+    ],
+    "usesCleartextTraffic": true
   },
   "web": {
     "favicon": "./assets/images/favicon.png",
@@ -58,8 +69,7 @@
       {
         "icon": "./assets/images/icon.png",
         "color": "#ffffff",
-        "defaultChannel": "default",
-        "sounds": ["./assets/notification.wav"]
+        "defaultChannel": "default"
       }
     ],
     [
@@ -105,14 +115,15 @@
     "eas": {
       "projectId": "0bffb82a-ba27-4f8f-889a-624d89941f86"
     },
-    "apiUrl": "http://localhost:3000/api",
+    "apiUrl": "http://192.168.1.100:3000/api",
     "enableDebugMode": true,
     "enableAnalytics": false,
     "backendConfig": {
-      "baseUrl": "http://localhost:3000",
+      "baseUrl": "http://192.168.1.100:3000",
       "trpcEndpoint": "/api/trpc",
-      "timeout": 10000,
-      "retries": 3
+      "timeout": 15000,
+      "retries": 3,
+      "enableMockData": true
     }
   },
   "runtimeVersion": {
