@@ -78,16 +78,20 @@ export const createTaskProcedure = publicProcedure
   .input(z.object({
     title: z.string(),
     description: z.string(),
-    priority: z.enum(['low', 'medium', 'high']),
+    priority: z.enum(['high', 'medium', 'low']),
     assignedTo: z.string(),
     dueDate: z.string(),
   }))
   .mutation(({ input }) => {
     const newTask = {
       id: String(mockTasks.length + 1),
-      ...input,
+      title: input.title,
+      description: input.description,
       status: 'pending' as const,
+      priority: input.priority,
+      assignedTo: input.assignedTo,
       createdBy: '1', // Mock current user
+      dueDate: input.dueDate,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
