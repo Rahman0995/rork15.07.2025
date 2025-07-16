@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for reports - defined locally to avoid import issues
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
@@ -103,7 +103,7 @@ export const getReportsProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number } }) => {
     let reports = [...mockReports];
     
     if (input?.status) {
@@ -135,7 +135,7 @@ export const getReportsProcedure = publicProcedure
 
 export const getReportByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: { id: string } }) => {
     const report = getReport(input.id);
     if (!report) {
       throw new Error('Report not found');
@@ -160,7 +160,7 @@ export const createReportProcedure = publicProcedure
       url: z.string(),
     })).optional().default([]),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
     const reportId = `report_${Date.now()}`;
     const newReport: Report = {
       id: reportId,
