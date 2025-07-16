@@ -1,14 +1,16 @@
 import { Tabs, router } from "expo-router";
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { FileText, Home, MessageSquare, BarChart3, User } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuthStore } from "@/store/authStore";
 
 
 export default function TabLayout() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   
   return (
     <Tabs
@@ -20,8 +22,8 @@ export default function TabLayout() {
           borderTopColor: colors.borderLight,
           borderTopWidth: 1,
           paddingTop: 6,
-          paddingBottom: 20,
-          height: 70,
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom + 4 : 20,
+          height: Platform.OS === 'ios' ? 60 + insets.bottom : 70,
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,

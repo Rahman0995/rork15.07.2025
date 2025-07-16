@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useTheme } from "@/constants/theme";
@@ -137,9 +138,11 @@ function RootLayoutWrapper() {
   const { colors, isDark } = useTheme();
   
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
-      <RootLayoutNav />
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
+        <RootLayoutNav />
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
