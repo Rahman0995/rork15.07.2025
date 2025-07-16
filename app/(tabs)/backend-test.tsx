@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { trpc } from '@/lib/trpc';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 import { Server, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
 
 export default function BackendTestScreen() {
   const { user } = useAuthStore();
+  const { colors } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   console.log('BackendTestScreen rendered');

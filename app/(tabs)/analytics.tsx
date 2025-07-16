@@ -15,7 +15,7 @@ import { LineChart } from '@/components/charts/LineChart';
 import { PieChart } from '@/components/charts/PieChart';
 import { UserStatsCard } from '@/components/UserStatsCard';
 import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { mockUsers } from '@/constants/mockData';
 import { exportToPDF, exportToExcel, shareReport } from '@/utils/exportUtils';
 import { 
@@ -38,6 +38,7 @@ export default function AnalyticsScreen() {
   const { user } = useAuthStore();
   const { reports } = useReportsStore();
   const { tasks } = useTasksStore();
+  const { colors } = useTheme();
   
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('overview');
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');

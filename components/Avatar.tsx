@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { User } from '@/types';
 
 interface AvatarProps {
@@ -21,6 +21,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   showBadge = false,
   online = false
 }) => {
+  const { colors } = useTheme();
   const displayName = name || user?.name || 'User';
   const avatarUri = uri || user?.avatar;
   const getInitials = (name: string) => {

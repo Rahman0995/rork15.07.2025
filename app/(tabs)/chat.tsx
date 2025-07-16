@@ -6,7 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import { ChatListItem } from '@/components/ChatListItem';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { Search, Users } from 'lucide-react-native';
 import { Chat } from '@/types';
 
@@ -18,6 +18,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const { chats, fetchChats, isLoading, setCurrentChat } = useChatStore();
   const { user, isAuthenticated } = useAuthStore();
+  const { colors } = useTheme();
   
   useEffect(() => {
     if (user && isAuthenticated) {

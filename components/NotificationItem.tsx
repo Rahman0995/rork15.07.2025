@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { AppNotification } from '@/store/notificationsStore';
 import { Avatar } from './Avatar';
 import { formatChatDate } from '@/utils/dateUtils';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { 
   CheckSquare, 
   FileText, 
@@ -24,6 +24,8 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   onPress,
   onMarkAsRead 
 }) => {
+  const { colors } = useTheme();
+  
   const getIcon = () => {
     switch (notification.type) {
       case 'task_assigned':

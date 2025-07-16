@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { Shield } from 'lucide-react-native';
 
 export default function LoginScreen() {
@@ -15,6 +15,7 @@ export default function LoginScreen() {
   const [passwordError, setPasswordError] = useState('');
   
   const { login, isLoading, error, isAuthenticated } = useAuthStore();
+  const { colors } = useTheme();
   const router = useRouter();
   
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function LoginScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar style="dark" />
+      <StatusBar style={colors.background === '#FFFFFF' ? 'dark' : 'light'} />
       
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>

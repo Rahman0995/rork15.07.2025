@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Task } from '@/types';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatDueDate } from '@/utils/dateUtils';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { getUser } from '@/constants/mockData';
 import { CheckCircle, Clock, AlertCircle } from 'lucide-react-native';
 
@@ -15,6 +15,7 @@ interface TaskCardProps {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress }) => {
   const assignedTo = getUser(task.assignedTo);
   const assignedBy = getUser(task.createdBy);
+  const { colors } = useTheme();
   
   const getDaysUntil = (dateString: string): number => {
     const date = new Date(dateString);

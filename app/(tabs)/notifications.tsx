@@ -13,7 +13,7 @@ import { useNotificationsStore } from '@/store/notificationsStore';
 import { useAuthStore } from '@/store/authStore';
 import { NotificationItem } from '@/components/NotificationItem';
 import { Button } from '@/components/Button';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { Settings, CheckCheck, Trash2 } from 'lucide-react-native';
 import { AppNotification } from '@/store/notificationsStore';
 
@@ -28,6 +28,7 @@ export default function NotificationsScreen() {
     isLoading 
   } = useNotificationsStore();
   const { user } = useAuthStore();
+  const { colors } = useTheme();
   
   const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);

@@ -4,7 +4,7 @@ import { Report } from '@/types';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Avatar } from '@/components/Avatar';
 import { formatDate } from '@/utils/dateUtils';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { getUser } from '@/constants/mockData';
 import { FileText, Paperclip } from 'lucide-react-native';
 
@@ -15,6 +15,7 @@ interface ReportCardProps {
 
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
   const author = getUser(report.authorId);
+  const { colors } = useTheme();
 
   return (
     <TouchableOpacity 

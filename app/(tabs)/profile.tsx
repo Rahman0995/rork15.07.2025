@@ -6,6 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/constants/theme';
 import { ThemeSelector } from '@/components/ThemeSelector';
+import { ThemeDemo } from '@/components/ThemeDemo';
 import { 
   User, 
   Mail, 
@@ -123,6 +124,8 @@ export default function ProfileScreen() {
       <View style={[styles.themeCard, { backgroundColor: colors.card }]}>
         <ThemeSelector />
       </View>
+      
+      <ThemeDemo />
       
       <View style={[styles.menuCard, { backgroundColor: colors.card }]}>
         {renderMenuItem(

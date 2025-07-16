@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ReportStatus, TaskStatus, TaskPriority, EventStatus } from '@/types';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface StatusBadgeProps {
   status: ReportStatus | TaskStatus | TaskPriority | EventStatus;
@@ -10,6 +10,8 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'medium', color }) => {
+  const { colors } = useTheme();
+  
   const getStatusColor = () => {
     switch (status) {
       case 'approved':

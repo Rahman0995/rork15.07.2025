@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Stack } from 'expo-router';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { useCalendarStore } from '@/store/calendarStore';
 import { CalendarGrid } from '@/components/CalendarGrid';
 import { EventCard } from '@/components/EventCard';
@@ -31,6 +31,7 @@ export default function CalendarScreen() {
     getEventsByDate,
     getTasksByDate
   } = useCalendarStore();
+  const { colors } = useTheme();
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
