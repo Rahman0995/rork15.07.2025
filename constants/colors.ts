@@ -11,6 +11,9 @@ export const colors = {
   secondaryDark: "#EA580C",
   secondarySoft: "#FFF7ED",
   
+  // Accent color
+  accent: "#8B5CF6",
+  
   // Background colors - Ultra clean and minimal
   background: "#FFFFFF",
   backgroundSecondary: "#F8FAFC",

@@ -28,7 +28,7 @@ export const trpcClient = trpc.createClient({
           console.warn('tRPC fetch failed:', error);
           
           // Check if this is the hi procedure and return mock data
-          if (url.includes('example.hi')) {
+          if (typeof url === 'string' && url.includes('example.hi')) {
             return new Response(JSON.stringify({
               result: {
                 data: {

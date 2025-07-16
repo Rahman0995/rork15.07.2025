@@ -21,7 +21,7 @@ export default function BackendTestScreen() {
 
   // Get tasks from backend
   const { data: backendTasks, isLoading: tasksLoading, refetch: refetchTasks } = trpc.tasks.getAll.useQuery(
-    { userId: user?.id }
+    { assignedTo: user?.id }
   );
 
   // Get reports from backend
@@ -65,6 +65,7 @@ export default function BackendTestScreen() {
       title: taskTitle,
       description: taskDescription,
       assignedTo: user?.id || 'user1',
+      createdBy: user?.id || 'user1',
       priority: 'medium',
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     });
@@ -114,10 +115,10 @@ export default function BackendTestScreen() {
                 </Text>
               </View>
               <Text style={styles.statusDetails}>
-                Привет, {connectionTest.hello}! Версия: {connectionTest.version}
+                {connectionTest.message}
               </Text>
               <Text style={styles.statusDetails}>
-                Время сервера: {new Date(connectionTest.date).toLocaleString()}
+                Время сервера: {new Date(connectionTest.timestamp).toLocaleString()}
               </Text>
             </View>
           ) : null}
@@ -135,8 +136,8 @@ export default function BackendTestScreen() {
           <ActivityIndicator size="small" color={colors.primary} />
         ) : (
           <View style={styles.dataContainer}>
-            {backendTasks && backendTasks.length > 0 ? (
-              backendTasks.map((task) => (
+            {backendTasks && backendTasks.tasks && backendTasks.tasks.length > 0 ? (
+              backendTasks.tasks.map((task: any) => (
                 <View key={task.id} style={styles.dataItem}>
                   <Text style={styles.dataTitle}>{task.title}</Text>
                   <Text style={styles.dataDescription}>{task.description}</Text>
@@ -162,8 +163,8 @@ export default function BackendTestScreen() {
           <ActivityIndicator size="small" color={colors.primary} />
         ) : (
           <View style={styles.dataContainer}>
-            {backendReports && backendReports.length > 0 ? (
-              backendReports.map((report) => (
+            {backendReports && backendReports.reports && backendReports.reports.length > 0 ? (
+              backendReports.reports.map((report: any) => (
                 <View key={report.id} style={styles.dataItem}>
                   <Text style={styles.dataTitle}>{report.title}</Text>
                   <Text style={styles.dataDescription}>{report.content}</Text>
