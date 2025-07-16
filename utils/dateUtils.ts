@@ -67,13 +67,13 @@ export const getDaysUntil = (dateString: string): number => {
 export const formatDueDate = (dateString: string): string => {
   const daysUntil = getDaysUntil(dateString);
   if (daysUntil < 0) {
-    return `Просрочено на ${Math.abs(daysUntil)} дн.`;
+    return `Просрочено на ${Math.abs(daysUntil)} дн`;
   } else if (daysUntil === 0) {
     return 'Сегодня';
   } else if (daysUntil === 1) {
     return 'Завтра';
   } else {
-    return `Через ${daysUntil} дн.`;
+    return `Через ${daysUntil} дн`;
   }
 };
 
@@ -88,13 +88,13 @@ export const formatRelativeTime = (dateString: string): string => {
   if (diffMins < 1) {
     return 'только что';
   } else if (diffMins < 60) {
-    return `${diffMins} мин. назад`;
+    return `${diffMins} мин назад`;
   } else if (diffHours < 24) {
-    return `${diffHours} ч. назад`;
+    return `${diffHours} ч назад`;
   } else if (diffDays === 1) {
     return 'вчера';
   } else if (diffDays < 7) {
-    return `${diffDays} дн. назад`;
+    return `${diffDays} дн назад`;
   } else {
     return formatDate(dateString);
   }
