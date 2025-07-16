@@ -401,10 +401,10 @@ export default function AccountSettingsScreen() {
           <Text style={styles.sectionTitle}>Настройки приложения</Text>
           <View style={styles.card}>
             {renderSwitchItem(
-              settings.darkMode ? <Moon size={20} color={colors.primary} /> : <Sun size={20} color={colors.primary} />,
+              settings.darkMode === true ? <Moon size={20} color={colors.primary} /> : <Sun size={20} color={colors.primary} />,
               'Темная тема',
               'Использовать темное оформление',
-              settings.darkMode,
+              settings.darkMode === true,
               () => handleToggleSetting('darkMode')
             )}
             
