@@ -111,6 +111,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="calendar"
+        options={{
+          title: "Календарь",
+          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: "Уведомления",
+          tabBarIcon: ({ color }) => <Bell size={20} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Профиль",
