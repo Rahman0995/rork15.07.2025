@@ -41,7 +41,7 @@ export default function TabLayout() {
   
   const tabBarOpacity = scrollY.interpolate({
     inputRange: [0, 100],
-    outputRange: [1, 0.85],
+    outputRange: [1, 0.97],
     extrapolate: 'clamp',
   });
   
