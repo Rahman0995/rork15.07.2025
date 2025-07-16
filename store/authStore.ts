@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '@/types';
 import { mockUsers } from '@/constants/mockData';
+import { isDebugMode } from '@/utils/config';
 
 interface AuthState {
   user: User | null;
@@ -29,6 +30,11 @@ export const useAuthStore = create<AuthState>()(
       error: null,
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
+        
+        if (isDebugMode()) {
+          console.log('Auth: Attempting login for:', email);
+        }
+        
         try {
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -37,21 +43,42 @@ export const useAuthStore = create<AuthState>()(
           const user = mockUsers.find(u => u.email === email);
           
           if (user && password === '123456') { // Simple mock password check
+            if (isDebugMode()) {
+              console.log('Auth: Login successful for user:', user.name);
+            }
             set({ user, currentUser: user, isAuthenticated: true, isLoading: false, error: null });
           } else {
+            if (isDebugMode()) {
+              console.log('Auth: Login failed - invalid credentials');
+            }
             set({ error: 'Неверный email или пароль', isLoading: false });
           }
         } catch (error) {
+          if (isDebugMode()) {
+            console.error('Auth: Login error:', error);
+          }
           set({ error: 'Ошибка при входе в систему', isLoading: false });
         }
       },
       logout: async () => {
         set({ isLoading: true });
+        
+        if (isDebugMode()) {
+          console.log('Auth: Logging out user');
+        }
+        
         try {
           // Simulate API call
           await new Promise(resolve => setTimeout(resolve, 500));
           set({ user: null, currentUser: null, isAuthenticated: false, isLoading: false, error: null });
+          
+          if (isDebugMode()) {
+            console.log('Auth: Logout successful');
+          }
         } catch (error) {
+          if (isDebugMode()) {
+            console.error('Auth: Logout error:', error);
+          }
           set({ error: 'Ошибка при выходе из системы', isLoading: false });
         }
       },

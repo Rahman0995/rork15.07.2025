@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { trpc } from '@/lib/trpc';
 import { useTheme } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
+import { getAppConfig, isDebugMode } from '@/utils/config';
 import { Server, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
 
 export default function BackendTestScreen() {
   const { user } = useAuthStore();
   const { colors } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const appConfig = getAppConfig();
   
   const styles = StyleSheet.create({
     container: {
@@ -284,6 +286,32 @@ export default function BackendTestScreen() {
           <Text style={styles.infoValue}>{testUser?.unit || 'Не указано'}</Text>
         </View>
       </View>
+
+      {isDebugMode() && (
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Конфигурация (Debug)</Text>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>API URL:</Text>
+            <Text style={styles.infoValue}>{appConfig.apiUrl}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Backend URL:</Text>
+            <Text style={styles.infoValue}>{appConfig.backendConfig.baseUrl}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Timeout:</Text>
+            <Text style={styles.infoValue}>{appConfig.backendConfig.timeout}ms</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Debug Mode:</Text>
+            <Text style={styles.infoValue}>{appConfig.enableDebugMode ? 'Включен' : 'Выключен'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Analytics:</Text>
+            <Text style={styles.infoValue}>{appConfig.enableAnalytics ? 'Включена' : 'Выключена'}</Text>
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 }
