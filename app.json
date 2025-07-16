@@ -18,7 +18,14 @@
   "ios": {
     "supportsTablet": true,
     "bundleIdentifier": "app.rork.militaryunitmanagement",
-    "googleServicesFile": "./GoogleService-Info.plist"
+    "googleServicesFile": "./GoogleService-Info.plist",
+    "infoPlist": {
+      "NSCameraUsageDescription": "This app needs access to camera to take photos for reports",
+      "NSMicrophoneUsageDescription": "This app needs access to microphone for voice recordings",
+      "NSPhotoLibraryUsageDescription": "This app needs access to photo library to select images",
+      "NSLocationWhenInUseUsageDescription": "This app needs location access for location-based features",
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access for location-based features"
+    }
   },
   "android": {
     "adaptiveIcon": {
@@ -26,10 +33,23 @@
       "backgroundColor": "#ffffff"
     },
     "package": "app.rork.militaryunitmanagement",
-    "googleServicesFile": "./google-services.json"
+    "googleServicesFile": "./google-services.json",
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.RECORD_AUDIO",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.INTERNET",
+      "android.permission.ACCESS_NETWORK_STATE",
+      "android.permission.WAKE_LOCK",
+      "android.permission.VIBRATE"
+    ]
   },
   "web": {
-    "favicon": "./assets/images/favicon.png"
+    "favicon": "./assets/images/favicon.png",
+    "bundler": "metro"
   },
   "plugins": [
     "expo-localization",
@@ -38,25 +58,59 @@
       {
         "icon": "./assets/images/icon.png",
         "color": "#ffffff",
-        "defaultChannel": "default"
+        "defaultChannel": "default",
+        "sounds": ["./assets/notification.wav"]
       }
     ],
     [
       "expo-camera",
       {
-        "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-        "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+        "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to take photos for reports and documentation",
+        "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice recordings and video capture",
         "recordAudioAndroid": true
       }
     ],
     [
       "expo-media-library",
       {
-        "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-        "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+        "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to attach images to reports",
+        "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos from reports and documentation",
         "isAccessMediaLocationEnabled": true
       }
+    ],
+    [
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location for location-based features and reporting",
+        "locationAlwaysPermission": "Allow $(PRODUCT_NAME) to use your location for location-based features and reporting",
+        "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location for location-based features and reporting",
+        "isIosBackgroundLocationEnabled": false,
+        "isAndroidBackgroundLocationEnabled": false
+      }
+    ],
+    [
+      "expo-file-system",
+      {
+        "requestLegacyExternalStorage": true
+      }
+    ],
+    [
+      "expo-av",
+      {
+        "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice recordings"
+      }
     ]
-  ]
+  ],
+  "extra": {
+    "eas": {
+      "projectId": "0bffb82a-ba27-4f8f-889a-624d89941f86"
+    }
+  },
+  "runtimeVersion": {
+    "policy": "sdkVersion"
+  },
+  "updates": {
+    "url": "https://u.expo.dev/0bffb82a-ba27-4f8f-889a-624d89941f86"
+  }
 }
 }
