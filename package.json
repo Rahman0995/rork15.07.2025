@@ -1,11 +1,16 @@
 {
-"name": "expo-app",
+"name": "military-unit-management-app",
 "main": "expo-router/entry",
 "version": "1.0.0",
 "scripts": {
   "start": "bunx rork start -p jwjevnxtm1q2kz7xwsgmz --tunnel",
   "start-web": "bunx rork start -p jwjevnxtm1q2kz7xwsgmz --web --tunnel",
-  "start-web-dev": "DEBUG=expo* bunx rork start -p jwjevnxtm1q2kz7xwsgmz --web --tunnel"
+  "start-web-dev": "DEBUG=expo* bunx rork start -p jwjevnxtm1q2kz7xwsgmz --web --tunnel",
+  "build": "expo build",
+  "build:web": "expo build:web",
+  "test": "jest",
+  "lint": "eslint .",
+  "type-check": "tsc --noEmit"
 },
 "dependencies": {
   "@expo/vector-icons": "^14.1.0",
@@ -59,6 +64,9 @@
   "@babel/core": "^7.25.2",
   "@expo/ngrok": "^4.1.0",
   "@types/react": "~19.0.10",
+  "@types/jest": "^29.5.5",
+  "eslint": "^8.50.0",
+  "jest": "^29.7.0",
   "typescript": "~5.8.3"
 },
 "private": true,
@@ -66,8 +74,5 @@
   "web": {
     "bundler": "metro"
   }
-},
-"resolutions": {
-  "expo-camera": "~16.1.10"
 }
 }
