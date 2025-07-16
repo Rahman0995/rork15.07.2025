@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
+import { Tabs, router } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp, Server } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
 import { useNotificationsStore } from "@/store/notificationsStore";
@@ -13,6 +13,19 @@ export default function TabLayout() {
   const { colors } = useTheme();
   
   const unreadCount = user ? getUnreadCount(user.id) : 0;
+  
+  const NotificationHeaderButton = () => (
+    <TouchableOpacity
+      onPress={() => router.push('/notifications')}
+      style={{
+        marginRight: 16,
+        position: 'relative',
+      }}
+    >
+      <Bell size={24} color={colors.text} />
+      <NotificationBadge count={unreadCount} size={16} />
+    </TouchableOpacity>
+  );
   
   return (
     <Tabs
@@ -48,6 +61,7 @@ export default function TabLayout() {
           fontSize: 17,
           letterSpacing: -0.2,
         },
+        headerRight: () => <NotificationHeaderButton />,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',
@@ -91,18 +105,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: "Уведомления",
-          tabBarIcon: ({ color }) => (
-            <View style={{ position: 'relative' }}>
-              <Bell size={20} color={color} />
-              <NotificationBadge count={unreadCount} />
-            </View>
-          ),
-        }}
-      />
+
       <Tabs.Screen
         name="profile"
         options={{
