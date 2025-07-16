@@ -3,7 +3,7 @@ import { publicProcedure } from "../../create-context";
 
 export const hiProcedure = publicProcedure
   .input(z.object({ name: z.string().optional() }))
-  .query(({ input }) => {
+  .query(({ input }: { input: { name?: string } }) => {
     // Simple, guaranteed non-undefined return
     const name = input?.name || 'World';
     const message = `Hello ${name}!`;
@@ -110,7 +110,7 @@ export const createTaskProcedure = publicProcedure
     assignedTo: z.string(),
     dueDate: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; priority: 'high' | 'medium' | 'low'; assignedTo: string; dueDate: string } }) => {
     const newTask: Task = {
       id: String(mockTasks.length + 1),
       title: input.title,
@@ -132,7 +132,7 @@ export const createReportProcedure = publicProcedure
     title: z.string(),
     content: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; content: string } }) => {
     const newReport: Report = {
       id: String(mockReports.length + 1),
       ...input,

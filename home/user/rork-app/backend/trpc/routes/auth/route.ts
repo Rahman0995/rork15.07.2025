@@ -1,15 +1,26 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockUsers } from '../../../constants/mockData';
+// import { mockUsers } from '../../../constants/mockData'; // Commented to avoid import errors
+
+// Mock users data
+const mockUsers = [
+  {
+    id: '1',
+    name: 'Admin User',
+    email: 'admin@example.com',
+    role: 'admin',
+    unit: 'Security',
+  },
+];
 
 export const loginProcedure = publicProcedure
   .input(z.object({
     email: z.string().email(),
     password: z.string().min(1),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { email: string; password: string } }) => {
     // В реальном приложении здесь будет проверка пароля и создание JWT токена
-    const user = mockUsers.find(u => u.email === input.email);
+    const user = mockUsers.find((u: any) => u.email === input.email);
     
     if (!user) {
       throw new Error('Invalid credentials');
@@ -33,10 +44,10 @@ export const refreshTokenProcedure = publicProcedure
   .input(z.object({
     token: z.string(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { token: string } }) => {
     // В реальном приложении здесь будет проверка и обновление токена
     const userId = input.token.replace('mock_token_', '');
-    const user = mockUsers.find(u => u.id === userId);
+    const user = mockUsers.find((u: any) => u.id === userId);
     
     if (!user) {
       throw new Error('Invalid token');
@@ -55,8 +66,8 @@ export const changePasswordProcedure = publicProcedure
     currentPassword: z.string(),
     newPassword: z.string().min(6),
   }))
-  .mutation(({ input }) => {
-    const user = mockUsers.find(u => u.id === input.userId);
+  .mutation(({ input }: { input: { userId: string; currentPassword: string; newPassword: string } }) => {
+    const user = mockUsers.find((u: any) => u.id === input.userId);
     
     if (!user) {
       throw new Error('User not found');
