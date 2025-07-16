@@ -10,7 +10,7 @@ import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
 import { FileText, CheckSquare, Plus, ArrowRight, Calendar, Users, TrendingUp, Shield, Activity, Clock } from 'lucide-react-native';
 import { Task, Report } from '@/types';
@@ -22,6 +22,7 @@ export default function HomeScreen() {
   const { user, isAuthenticated, isInitialized } = useAuthStore();
   const { tasks, fetchTasks, isLoading: tasksLoading } = useTasksStore();
   const { reports, fetchReports, isLoading: reportsLoading } = useReportsStore();
+  const { colors, isDark } = useTheme();
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
@@ -276,7 +277,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollContainer: {
     flex: 1,
@@ -288,12 +288,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
     padding: 24,
   },
   authText: {
     fontSize: 18,
-    color: colors.text,
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -303,12 +301,10 @@ const styles = StyleSheet.create({
   
   // Header Styles
   header: {
-    backgroundColor: colors.card,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
   headerTop: {
     flexDirection: 'row',
@@ -325,7 +321,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -335,27 +330,23 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    color: colors.textSecondary,
     marginBottom: 2,
     fontWeight: '500',
   },
   name: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text,
     letterSpacing: -0.3,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.backgroundSecondary,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
   },
   date: {
     fontSize: 13,
-    color: colors.textSecondary,
     marginLeft: 6,
     fontWeight: '600',
   },
@@ -366,14 +357,12 @@ const styles = StyleSheet.create({
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.successSoft,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   statusText: {
     fontSize: 12,
-    color: colors.success,
     marginLeft: 6,
     fontWeight: '600',
   },
@@ -387,18 +376,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
     flexDirection: 'column',
     alignItems: 'flex-start',
-    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 2,
     borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   statIconContainer: {
     width: 40,
@@ -415,12 +401,10 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 20,
     fontWeight: '800',
-    color: colors.text,
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
     fontWeight: '600',
     lineHeight: 16,
   },
@@ -449,7 +433,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -457,7 +440,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.text,
     letterSpacing: -0.2,
   },
   sectionAction: {
@@ -466,11 +448,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: colors.backgroundSecondary,
   },
   sectionActionText: {
     fontSize: 13,
-    color: colors.primary,
     fontWeight: '600',
     marginRight: 4,
   },
@@ -482,19 +462,16 @@ const styles = StyleSheet.create({
   
   // Empty State
   emptyStateContainer: {
-    backgroundColor: colors.card,
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   emptyIconContainer: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -502,13 +479,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptyDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 280,
@@ -519,29 +494,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
     borderWidth: 2,
-    borderColor: colors.primary,
     borderStyle: 'dashed',
   },
   createButtonText: {
     fontSize: 16,
-    color: colors.primary,
     fontWeight: '600',
     marginLeft: 8,
   },
   backendTestButton: {
-    backgroundColor: colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,
     marginTop: 16,
   },
   backendTestText: {
-    color: colors.white,
     fontSize: 13,
     fontWeight: '600',
   },

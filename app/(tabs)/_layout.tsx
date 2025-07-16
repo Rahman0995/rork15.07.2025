@@ -2,7 +2,7 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { View } from "react-native";
 import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp, Server } from "lucide-react-native";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/constants/theme";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useAuthStore } from "@/store/authStore";
 import { NotificationBadge } from "@/components/NotificationBadge";
@@ -10,6 +10,7 @@ import { NotificationBadge } from "@/components/NotificationBadge";
 export default function TabLayout() {
   const { getUnreadCount } = useNotificationsStore();
   const { user } = useAuthStore();
+  const { colors } = useTheme();
   
   const unreadCount = user ? getUnreadCount(user.id) : 0;
   

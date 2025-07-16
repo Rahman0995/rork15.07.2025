@@ -9,7 +9,7 @@ import {
   StyleProp,
   View
 } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface ButtonProps {
   title: string;
@@ -36,33 +36,38 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   icon,
 }) => {
+  const { colors } = useTheme();
   const getButtonStyle = () => {
     switch (variant) {
       case 'primary':
-        return styles.primaryButton;
+        return { backgroundColor: colors.primary };
       case 'secondary':
-        return styles.secondaryButton;
+        return { backgroundColor: colors.secondary };
       case 'outline':
-        return styles.outlineButton;
+        return { 
+          backgroundColor: colors.card, 
+          borderWidth: 1, 
+          borderColor: colors.borderLight 
+        };
       case 'danger':
-        return styles.dangerButton;
+        return { backgroundColor: colors.error };
       default:
-        return styles.primaryButton;
+        return { backgroundColor: colors.primary };
     }
   };
 
   const getTextStyle = () => {
     switch (variant) {
       case 'primary':
-        return styles.primaryText;
+        return { color: colors.white };
       case 'secondary':
-        return styles.secondaryText;
+        return { color: colors.white };
       case 'outline':
-        return styles.outlineText;
+        return { color: colors.textSecondary };
       case 'danger':
-        return styles.dangerText;
+        return { color: colors.white };
       default:
-        return styles.primaryText;
+        return { color: colors.white };
     }
   };
 
@@ -99,7 +104,12 @@ export const Button: React.FC<ButtonProps> = ({
         getButtonStyle(),
         getSizeStyle(),
         fullWidth && styles.fullWidth,
-        disabled && styles.disabledButton,
+        disabled && { 
+          backgroundColor: colors.backgroundTertiary,
+          borderColor: colors.borderLight,
+          shadowOpacity: 0,
+          elevation: 0,
+        },
         style,
       ]}
       onPress={onPress}
@@ -108,7 +118,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {loading ? (
         <ActivityIndicator 
-          color={variant === 'outline' ? colors.primary : 'white'} 
+          color={variant === 'outline' ? colors.primary : colors.white} 
           size="small" 
         />
       ) : (
@@ -119,7 +129,7 @@ export const Button: React.FC<ButtonProps> = ({
               styles.text,
               getTextStyle(),
               getTextSizeStyle(),
-              disabled && styles.disabledText,
+              disabled && { color: colors.textTertiary },
               textStyle,
             ]}
           >
@@ -136,9 +146,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
@@ -150,26 +159,7 @@ const styles = StyleSheet.create({
   iconContainer: {
     marginRight: 8,
   },
-  primaryButton: {
-    backgroundColor: colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: colors.secondary,
-  },
-  outlineButton: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  dangerButton: {
-    backgroundColor: colors.error,
-  },
-  disabledButton: {
-    backgroundColor: colors.backgroundTertiary,
-    borderColor: colors.borderLight,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
+
   fullWidth: {
     width: '100%',
   },
@@ -177,21 +167,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.1,
   },
-  primaryText: {
-    color: colors.white,
-  },
-  secondaryText: {
-    color: colors.white,
-  },
-  outlineText: {
-    color: colors.textSecondary,
-  },
-  dangerText: {
-    color: colors.white,
-  },
-  disabledText: {
-    color: colors.textTertiary,
-  },
+
   smallButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,

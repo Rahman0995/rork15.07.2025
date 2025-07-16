@@ -5,7 +5,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 export interface UserSettings {
   twoFactorEnabled: boolean;
   biometricEnabled: boolean;
-  darkMode: boolean;
+  darkMode: boolean | 'system';
   notifications: boolean;
   emailNotifications: boolean;
   pushNotifications: boolean;
@@ -24,7 +24,7 @@ interface SettingsState {
 const defaultSettings: UserSettings = {
   twoFactorEnabled: false,
   biometricEnabled: true,
-  darkMode: false,
+  darkMode: 'system',
   notifications: true,
   emailNotifications: true,
   pushNotifications: true,

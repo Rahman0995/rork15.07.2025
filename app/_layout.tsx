@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
-import { colors } from "@/constants/colors";
+import { useTheme } from "@/constants/theme";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -25,6 +25,7 @@ const queryClient = new QueryClient({
 function RootLayoutNav() {
   const { isAuthenticated, user, isInitialized, initialize } = useAuthStore();
   const { registerForPushNotifications } = useNotificationsStore();
+  const { colors } = useTheme();
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
@@ -125,10 +126,18 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
-          <RootLayoutNav />
-        </GestureHandlerRootView>
+        <RootLayoutWrapper />
       </trpc.Provider>
     </QueryClientProvider>
+  );
+}
+
+function RootLayoutWrapper() {
+  const { colors } = useTheme();
+  
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+      <RootLayoutNav />
+    </GestureHandlerRootView>
   );
 }

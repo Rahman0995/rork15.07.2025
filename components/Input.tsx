@@ -10,7 +10,7 @@ import {
   ViewStyle
 } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -29,6 +29,7 @@ export const Input: React.FC<InputProps> = ({
   ...props
 }) => {
   const [secureTextEntry, setSecureTextEntry] = useState(isPassword);
+  const { colors } = useTheme();
 
   const toggleSecureEntry = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -36,11 +37,14 @@ export const Input: React.FC<InputProps> = ({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: colors.text }]}>{label}</Text>}
       <View style={[
         styles.inputContainer,
-        error ? styles.inputError : null,
-        props.editable === false ? styles.inputDisabled : null
+        {
+          borderColor: error ? colors.error : colors.borderLight,
+          backgroundColor: props.editable === false ? colors.backgroundTertiary : colors.backgroundSecondary,
+          opacity: props.editable === false ? 0.6 : 1,
+        }
       ]}>
         {icon && (
           <View style={styles.iconContainer}>
@@ -48,7 +52,7 @@ export const Input: React.FC<InputProps> = ({
           </View>
         )}
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: colors.text }]}
           placeholderTextColor={colors.inactive}
           secureTextEntry={secureTextEntry}
           {...props}
@@ -63,7 +67,7 @@ export const Input: React.FC<InputProps> = ({
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>}
     </View>
   );
 };
@@ -75,34 +79,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     marginBottom: 8,
-    color: colors.text,
     fontWeight: '600',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.borderLight,
     borderRadius: 12,
-    backgroundColor: colors.backgroundSecondary,
   },
   input: {
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    color: colors.text,
     fontSize: 16,
     fontWeight: '500',
   },
-  inputError: {
-    borderColor: colors.error,
-  },
-  inputDisabled: {
-    backgroundColor: colors.backgroundTertiary,
-    opacity: 0.6,
-  },
   errorText: {
-    color: colors.error,
     fontSize: 13,
     marginTop: 6,
     fontWeight: '500',
