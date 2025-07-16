@@ -73,7 +73,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   initials: {
-    color: 'white',
+    color: colors.white,
     fontWeight: 'bold',
   },
   badge: {

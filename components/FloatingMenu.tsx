@@ -22,7 +22,7 @@ import {
   Settings,
   X,
 } from 'lucide-react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { BlurView } from 'expo-blur';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -36,7 +36,7 @@ interface MenuItem {
   description: string;
 }
 
-const menuItems: MenuItem[] = [
+const getMenuItems = (colors: any): MenuItem[] => [
   {
     id: 'analytics',
     title: 'Аналитика',
@@ -94,6 +94,8 @@ interface FloatingMenuProps {
 
 export const FloatingMenu: React.FC<FloatingMenuProps> = ({ visible, onClose }) => {
   const router = useRouter();
+  const { colors } = useTheme();
+  const menuItems = getMenuItems(colors);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const itemAnimations = useRef(
@@ -265,6 +267,7 @@ interface FloatingActionButtonProps {
 }
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPress }) => {
+  const { colors } = useTheme();
   const [isPressed, setIsPressed] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
