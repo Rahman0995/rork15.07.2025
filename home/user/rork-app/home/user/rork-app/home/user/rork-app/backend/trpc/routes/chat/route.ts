@@ -1,18 +1,18 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../../create-context';
-import { mockChats, mockChatMessages, getUserChats, getChatMessages } from '../../../../constants/mockData';
-import type { ChatMessage, Chat, MessageType } from '../../../../types';
+import { mockChats, mockChatMessages } from '../../../../constants/mockData';
+import { Chat, ChatMessage } from '../../../../types';
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
   .query(({ input }) => {
-    return getUserChats(input.userId);
+    return mockChats.filter(chat => chat.participants.includes(input.userId));
   });
 
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
   .query(({ input }) => {
-    const chat = mockChats.find((c: Chat) => c.id === input.chatId);
+    const chat = mockChats.find(c => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
     }
@@ -26,10 +26,10 @@ export const getChatMessagesProcedure = publicProcedure
     offset: z.number().optional().default(0),
   }))
   .query(({ input }) => {
-    const messages = getChatMessages(input.chatId);
+    const messages = mockChatMessages[input.chatId] || [];
     
     // Sort by time (oldest first)
-    const sortedMessages = messages.sort((a: ChatMessage, b: ChatMessage) => 
+    const sortedMessages = messages.sort((a, b) => 
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
     
@@ -78,7 +78,7 @@ export const sendMessageProcedure = publicProcedure
     mockChatMessages[input.chatId].push(newMessage);
     
     // Update last message in chat
-    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
     if (chatIndex !== -1) {
       mockChats[chatIndex].lastMessage = newMessage;
       
@@ -103,7 +103,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     
     let updatedCount = 0;
     
-    messages.forEach((message: ChatMessage) => {
+    messages.forEach(message => {
       // Mark as read either specific messages or all messages not from current user
       if (message.senderId !== input.userId && !message.read) {
         if (!input.messageIds || input.messageIds.includes(message.id)) {
@@ -114,7 +114,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     });
     
     // Update unread count in chat
-    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
     if (chatIndex !== -1) {
       mockChats[chatIndex].unreadCount = Math.max(0, mockChats[chatIndex].unreadCount - updatedCount);
     }
@@ -134,8 +134,8 @@ export const createChatProcedure = publicProcedure
       participants: input.participants,
       isGroup: input.isGroup,
       unreadCount: 0,
-      ...(input.name && { name: input.name }),
-    } as Chat;
+      name: input.name,
+    };
     
     mockChats.push(newChat);
     mockChatMessages[newChat.id] = [];
@@ -146,7 +146,7 @@ export const createChatProcedure = publicProcedure
 export const deleteChatProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
   .mutation(({ input }) => {
-    const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
+    const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
     if (chatIndex === -1) {
       throw new Error('Chat not found');
     }
@@ -155,19 +155,4 @@ export const deleteChatProcedure = publicProcedure
     delete mockChatMessages[input.chatId];
     
     return { success: true, deletedChat };
-  });
-
-export const getUnreadCountProcedure = publicProcedure
-  .input(z.object({ userId: z.string() }))
-  .query(({ input }) => {
-    const userChats = getUserChats(input.userId);
-    const totalUnread = userChats.reduce((total: number, chat: Chat) => total + chat.unreadCount, 0);
-    
-    return {
-      totalUnread,
-      chatCounts: userChats.map((chat: Chat) => ({
-        chatId: chat.id,
-        unreadCount: chat.unreadCount,
-      })),
-    };
   });

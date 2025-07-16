@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../create-context';
+import { publicProcedure } from '../../create-context';
 
 const mockNotifications = [
   {
@@ -42,7 +42,7 @@ export const getNotificationsProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }))
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     let notifications = mockNotifications.filter(n => n.userId === input.userId);
     
     if (input.read !== undefined) {
@@ -73,7 +73,7 @@ export const markNotificationAsReadProcedure = publicProcedure
     id: z.string(),
     userId: z.string(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     const notification = mockNotifications.find(n => n.id === input.id && n.userId === input.userId);
     if (!notification) {
       throw new Error('Notification not found');
@@ -85,7 +85,7 @@ export const markNotificationAsReadProcedure = publicProcedure
 
 export const markAllNotificationsAsReadProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     const userNotifications = mockNotifications.filter(n => n.userId === input.userId);
     let updatedCount = 0;
     
@@ -107,7 +107,7 @@ export const createNotificationProcedure = publicProcedure
     userId: z.string(),
     data: z.record(z.string(), z.unknown()).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     const newNotification = {
       id: `notification_${Date.now()}`,
       title: input.title,
@@ -128,7 +128,7 @@ export const deleteNotificationProcedure = publicProcedure
     id: z.string(),
     userId: z.string(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     const notificationIndex = mockNotifications.findIndex(n => 
       n.id === input.id && n.userId === input.userId
     );
@@ -143,7 +143,7 @@ export const deleteNotificationProcedure = publicProcedure
 
 export const getUnreadCountProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     const unreadCount = mockNotifications.filter(n => 
       n.userId === input.userId && !n.read
     ).length;
