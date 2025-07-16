@@ -1,23 +1,5 @@
 {
   "expo": {
-    "android": {
-      "googleServicesFile": "./google-services.json"
-    },
-    "ios": {
-      "googleServicesFile": "./GoogleService-Info.plist"
-    },
-    "plugins": [
-      [
-        "expo-notifications",
-        {
-          "projectId": "your-firebase-project-id"
-        }
-      ]
-    ]
-  }
-}
-{
-  "expo": {
     "name": "Military Unit Management Application",
     "slug": "military-unit-management-application",
     "version": "1.0.0",
@@ -34,14 +16,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.militaryunitmanagement"
+      "bundleIdentifier": "app.rork.militaryunitmanagement",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.militaryunitmanagement"
+      "package": "app.rork.militaryunitmanagement",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -51,6 +35,12 @@
         "expo-router",
         {
           "origin": "https://rork.com/"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "projectId": "ahmat-4cfd5"
         }
       ]
     ],
