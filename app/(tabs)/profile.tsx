@@ -16,7 +16,8 @@ import {
   Bell, 
   HelpCircle, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Server
 } from 'lucide-react-native';
 
 export default function ProfileScreen() {
@@ -139,6 +140,12 @@ export default function ProfileScreen() {
           <Bell size={20} color={colors.primary} />,
           'Настройки уведомлений',
           () => router.push('/settings/notifications')
+        )}
+        
+        {renderMenuItem(
+          <Server size={20} color={colors.primary} />,
+          'Тест подключения',
+          () => router.push('/settings/backend-test')
         )}
         
         {renderMenuItem(

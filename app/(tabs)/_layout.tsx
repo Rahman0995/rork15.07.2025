@@ -1,7 +1,7 @@
 import { Tabs, router } from "expo-router";
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
-import { BarChart2, FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp } from "lucide-react-native";
+import { FileText, Home, MessageSquare, User, Bell, Calendar, TrendingUp } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useAuthStore } from "@/store/authStore";
