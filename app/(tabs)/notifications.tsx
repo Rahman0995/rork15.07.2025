@@ -1,5 +1,3 @@
 // This file has been removed - notifications are now accessed via the header icon
-// which navigates to /notifications instead of this tab-based version
-export default function NotificationsScreen() {
-  return null;
-}
+// The notifications functionality is available at /notifications route
+// This file is kept empty to prevent routing conflicts
