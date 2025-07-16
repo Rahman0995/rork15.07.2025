@@ -289,6 +289,7 @@ export default function PhotosScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
           style={styles.scrollView}
+          contentContainerStyle={{ paddingBottom: 120 }}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}

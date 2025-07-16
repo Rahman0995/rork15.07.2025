@@ -343,7 +343,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   contentContainer: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   header: {
     alignItems: 'center',

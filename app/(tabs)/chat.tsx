@@ -104,6 +104,7 @@ export default function ChatScreen() {
           keyExtractor={item => 
             item.type === 'header' ? item.id : item.id
           }
+          contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           refreshing={isLoading}
           onRefresh={() => user && fetchChats(user.id)}

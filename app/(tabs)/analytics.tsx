@@ -420,6 +420,7 @@ export default function AnalyticsScreen() {
       
       <ScrollView 
         style={styles.content} 
+        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
@@ -523,7 +524,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
     backgroundColor: colors.background,
   },
   tabContent: {

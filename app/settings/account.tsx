@@ -569,7 +569,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
   contentContainer: {
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   section: {
     marginBottom: 24,

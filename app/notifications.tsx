@@ -219,6 +219,7 @@ export default function NotificationsScreen() {
             </View>
           )}
           keyExtractor={item => item.id}
+          contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           refreshing={isLoading}
           onRefresh={() => user && fetchNotifications(user.id)}

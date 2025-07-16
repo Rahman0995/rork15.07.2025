@@ -20,6 +20,7 @@ export default function BackendTestScreen() {
     },
     contentContainer: {
       padding: 20,
+      paddingBottom: 120,
     },
     header: {
       alignItems: 'center',

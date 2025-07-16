@@ -313,7 +313,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   photoSection: {
     alignItems: 'center',

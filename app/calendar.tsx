@@ -91,6 +91,7 @@ export default function CalendarScreen() {
       
       <ScrollView 
         style={styles.scrollView}
+        contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
