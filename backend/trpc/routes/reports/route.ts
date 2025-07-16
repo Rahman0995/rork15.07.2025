@@ -1,7 +1,99 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockReports, getReport, getUserReports, getUnitReports } from '../../../constants/mockData';
-import type { Report, ReportStatus, ReportComment, ReportApproval } from '../../../types';
+// Mock data for reports - defined locally to avoid import issues
+type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+type ReportType = 'text' | 'file' | 'video';
+
+interface Attachment {
+  id: string;
+  name: string;
+  type: 'file' | 'image' | 'video';
+  url: string;
+}
+
+interface ReportComment {
+  id: string;
+  reportId: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  isRevision: boolean;
+  attachments?: Attachment[];
+}
+
+interface ReportApproval {
+  id: string;
+  reportId: string;
+  approverId: string;
+  status: 'approved' | 'rejected' | 'needs_revision';
+  comment?: string;
+  createdAt: string;
+}
+
+interface Report {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+  status: ReportStatus;
+  type?: ReportType;
+  attachments?: Attachment[];
+  unit?: string;
+  priority?: 'low' | 'medium' | 'high';
+  approvers?: string[];
+  currentApprover?: string;
+  approvals?: ReportApproval[];
+  comments?: ReportComment[];
+}
+
+const mockReports: Report[] = [
+  {
+    id: '1',
+    title: 'Security Report',
+    content: 'All security systems are functioning normally',
+    authorId: '1',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'approved',
+    type: 'text',
+    unit: 'Security',
+    priority: 'high',
+    approvers: ['2'],
+    currentApprover: '2',
+    approvals: [],
+    comments: [],
+  },
+  {
+    id: '2',
+    title: 'Weekly Report',
+    content: 'Summary of weekly activities',
+    authorId: '1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'pending',
+    type: 'text',
+    unit: 'Operations',
+    priority: 'medium',
+    approvers: ['2'],
+    currentApprover: '2',
+    approvals: [],
+    comments: [],
+  },
+];
+
+const getReport = (id: string): Report | undefined => {
+  return mockReports.find(report => report.id === id);
+};
+
+const getUserReports = (userId: string): Report[] => {
+  return mockReports.filter(report => report.authorId === userId);
+};
+
+const getUnitReports = (unit: string): Report[] => {
+  return mockReports.filter(report => report.unit === unit);
+};
 
 export const getReportsProcedure = publicProcedure
   .input(z.object({

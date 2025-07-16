@@ -1,7 +1,69 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockReports, mockTasks } from '../../../constants/mockData';
-import type { Report, Task } from '../../../types';
+// Mock data for analytics - defined locally to avoid import issues
+interface Report {
+  id: string;
+  title: string;
+  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+  authorId: string;
+  createdAt: string;
+  unit?: string;
+  priority?: 'low' | 'medium' | 'high';
+}
+
+interface Task {
+  id: string;
+  title: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high';
+  assignedTo: string;
+  createdBy: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+const mockReports: Report[] = [
+  {
+    id: '1',
+    title: 'Security Report',
+    status: 'approved',
+    authorId: '1',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    unit: 'Security',
+    priority: 'high',
+  },
+  {
+    id: '2',
+    title: 'Weekly Report',
+    status: 'pending',
+    authorId: '2',
+    createdAt: new Date().toISOString(),
+    unit: 'Operations',
+    priority: 'medium',
+  },
+];
+
+const mockTasks: Task[] = [
+  {
+    id: '1',
+    title: 'Equipment Check',
+    status: 'completed',
+    priority: 'high',
+    assignedTo: '1',
+    createdBy: '2',
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    completedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: '2',
+    title: 'Prepare Report',
+    status: 'in_progress',
+    priority: 'medium',
+    assignedTo: '2',
+    createdBy: '1',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
 
 export const getReportsAnalyticsProcedure = publicProcedure
   .input(z.object({

@@ -32,4 +32,25 @@ const t = initTRPC.context<Context>().create({
 export const createTRPCRouter = t.router;
 export const middleware = t.middleware;
 export const publicProcedure = t.procedure;
-export const protectedProcedure = t.procedure; // Add auth middleware here in real app
+
+// Auth middleware defined here to avoid circular dependency
+const authMiddleware = middleware(async ({ ctx, next }) => {
+  // Mock authentication - in real app, verify JWT from request headers
+  const mockUser = {
+    id: '1',
+    email: 'admin@example.com',
+    name: 'Admin User',
+    role: 'admin' as const,
+    unit: 'Security',
+  };
+  
+  return next({
+    ctx: {
+      ...ctx,
+      user: mockUser,
+    },
+  });
+});
+
+// Protected procedure with authentication
+export const protectedProcedure = t.procedure.use(authMiddleware);
