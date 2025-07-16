@@ -1,5 +1,23 @@
 {
   "expo": {
+    "android": {
+      "googleServicesFile": "./google-services.json"
+    },
+    "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "projectId": "your-firebase-project-id"
+        }
+      ]
+    ]
+  }
+}
+{
+  "expo": {
     "name": "Military Unit Management Application",
     "slug": "military-unit-management-application",
     "version": "1.0.0",
