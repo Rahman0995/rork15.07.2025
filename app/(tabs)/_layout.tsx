@@ -17,7 +17,7 @@ export default function TabLayout() {
   const HeaderButtons = () => (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <TouchableOpacity
-        onPress={() => router.push('/(tabs)/calendar')}
+        onPress={() => router.push('/calendar')}
         style={{
           marginRight: 20,
           padding: 4,
