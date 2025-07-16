@@ -14,17 +14,29 @@ export default function TabLayout() {
   
   const unreadCount = user ? getUnreadCount(user.id) : 0;
   
-  const NotificationHeaderButton = () => (
-    <TouchableOpacity
-      onPress={() => router.push('/notifications')}
-      style={{
-        marginRight: 16,
-        position: 'relative',
-      }}
-    >
-      <Bell size={24} color={colors.text} />
-      <NotificationBadge count={unreadCount} size={16} />
-    </TouchableOpacity>
+  const HeaderButtons = () => (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <TouchableOpacity
+        onPress={() => router.push('/(tabs)/calendar')}
+        style={{
+          marginRight: 20,
+          padding: 4,
+        }}
+      >
+        <Calendar size={24} color={colors.text} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.push('/notifications')}
+        style={{
+          marginRight: 16,
+          position: 'relative',
+          padding: 4,
+        }}
+      >
+        <Bell size={24} color={colors.text} />
+        <NotificationBadge count={unreadCount} size={16} />
+      </TouchableOpacity>
+    </View>
   );
   
   return (
@@ -61,7 +73,7 @@ export default function TabLayout() {
           fontSize: 17,
           letterSpacing: -0.2,
         },
-        headerRight: () => <NotificationHeaderButton />,
+        headerRight: () => <HeaderButtons />,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',
@@ -98,13 +110,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TrendingUp size={20} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
-        }}
-      />
+
 
       <Tabs.Screen
         name="profile"
