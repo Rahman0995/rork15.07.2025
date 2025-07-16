@@ -1,5 +1,5 @@
 import { createTRPCRouter } from "./create-context";
-import { hiProcedure } from "./routes/example/hi/route";
+import { hiProcedure, getTasksProcedure as exampleGetTasksProcedure, getReportsProcedure as exampleGetReportsProcedure, createTaskProcedure as exampleCreateTaskProcedure, createReportProcedure as exampleCreateReportProcedure } from "./routes/example/hi/route";
 
 // Auth
 import {
@@ -94,6 +94,10 @@ import {
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
     hi: hiProcedure,
+    getTasks: exampleGetTasksProcedure,
+    getReports: exampleGetReportsProcedure,
+    createTask: exampleCreateTaskProcedure,
+    createReport: exampleCreateReportProcedure,
   }),
   
   auth: createTRPCRouter({

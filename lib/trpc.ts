@@ -22,18 +22,25 @@ export const trpcClient = trpc.createClient({
       url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
       fetch: (url, options) => {
-        console.log('tRPC request to:', url);
+        console.log('tRPC request to:', url, 'with options:', options);
         // Handle network errors gracefully
         return fetch(url, options).catch((error) => {
           console.warn('tRPC fetch failed:', error);
           
           // Check if this is the hi procedure and return mock data
           if (typeof url === 'string' && url.includes('example.hi')) {
+            const mockData = {
+              message: 'Hello from mock backend!',
+              timestamp: new Date().toISOString(),
+            };
+            
+            console.log('Returning mock data for hi procedure:', mockData);
+            
+            // Return proper tRPC response format with superjson transformation
             return new Response(JSON.stringify({
               result: {
                 data: {
-                  message: 'Hello from mock backend!',
-                  timestamp: new Date().toISOString(),
+                  json: mockData
                 }
               }
             }), {

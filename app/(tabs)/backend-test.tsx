@@ -9,6 +9,8 @@ export default function BackendTestScreen() {
   const { user } = useAuthStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  console.log('BackendTestScreen rendered');
+  
   // Use test user if no user is logged in
   const testUser = user || {
     id: 'test-user',
@@ -21,10 +23,17 @@ export default function BackendTestScreen() {
     { name: testUser?.name || 'Test User' },
     { 
       enabled: true, // Always enabled for testing
-      retry: 1,
+      retry: 2,
       retryDelay: 1000,
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
     }
   );
+  
+  // Add logging to debug the data
+  React.useEffect(() => {
+    console.log('Backend test data changed:', { backendTest, isLoading, error });
+  }, [backendTest, isLoading, error]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -81,7 +90,7 @@ export default function BackendTestScreen() {
           )}
         </View>
 
-        {backendTest && (
+        {backendTest && typeof backendTest === 'object' && (
           <View style={styles.responseContainer}>
             <Text style={styles.responseLabel}>Ответ сервера:</Text>
             <View style={styles.responseBox}>

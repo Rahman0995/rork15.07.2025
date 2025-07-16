@@ -11,7 +11,20 @@ import { trpc, trpcClient } from "@/lib/trpc";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Prevent queries from returning undefined
+      retry: 1,
+      retryDelay: 1000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      // Add a global error handler
+      onError: (error) => {
+        console.error('Query error:', error);
+      },
+    },
+  },
+});
 
 function RootLayoutNav() {
   const { isAuthenticated, user, isInitialized, initialize } = useAuthStore();

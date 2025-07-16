@@ -3,11 +3,16 @@ import { publicProcedure } from "../../../create-context";
 
 export const hiProcedure = publicProcedure
   .input(z.object({ name: z.string().optional() }))
-  .query(({ input }: { input?: { name?: string } }) => {
-    return {
-      message: `Hello ${input?.name || 'World'}!`,
-      timestamp: new Date().toISOString(),
-    };
+  .query(({ input }) => {
+    // Simple, guaranteed non-undefined return
+    const name = input?.name || 'World';
+    const message = `Hello ${name}!`;
+    const timestamp = new Date().toISOString();
+    
+    const result = { message, timestamp };
+    console.log('hiProcedure called with input:', input, 'returning:', result);
+    
+    return result;
   });
 
 // Mock data for tasks and reports
