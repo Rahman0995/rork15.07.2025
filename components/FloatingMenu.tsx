@@ -96,6 +96,7 @@ export const FloatingMenu: React.FC<FloatingMenuProps> = ({ visible, onClose }) 
   const router = useRouter();
   const { colors } = useTheme();
   const menuItems = getMenuItems(colors);
+  const styles = createStyles(colors);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const itemAnimations = useRef(
@@ -268,6 +269,7 @@ interface FloatingActionButtonProps {
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPress }) => {
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   const [isPressed, setIsPressed] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -331,7 +333,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ onPr
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   // Modal and Overlay
   overlay: {
     flex: 1,
