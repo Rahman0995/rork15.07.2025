@@ -141,7 +141,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                   ]} 
                 />
                 <Text style={styles.legendText}>
-                  {segment.label} ({segment.percentage.toFixed(1)}%)
+                  {segment.label} ({Math.round(segment.percentage * 10) / 10}%)
                 </Text>
               </View>
             ))}
