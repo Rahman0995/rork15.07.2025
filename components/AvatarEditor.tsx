@@ -6,9 +6,6 @@ import {
   TouchableOpacity, 
   Modal,
   Dimensions,
-  PanGestureHandler,
-  PinchGestureHandler,
-  State
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/constants/theme';
@@ -19,7 +16,6 @@ import {
   ZoomIn, 
   ZoomOut,
   Move,
-  Crop
 } from 'lucide-react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -181,4 +177,116 @@ export const AvatarEditor: React.FC<AvatarEditorProps> = ({
           
           {/* Instructions */}
           <Text style={[styles.instructions, { color: colors.white + '80' }]}>
-            Перетащите изображение для позиционирования.{\"\\n\"}\n            Используйте жесты для масштабирования.\n          </Text>\n        </View>\n      </View>\n    </Modal>\n  );\n};\n\nconst createStyles = (colors: any) => StyleSheet.create({\n  container: {\n    flex: 1,\n  },\n  header: {\n    flexDirection: 'row',\n    alignItems: 'center',\n    justifyContent: 'space-between',\n    paddingTop: 50,\n    paddingBottom: 16,\n    paddingHorizontal: 16,\n  },\n  headerButton: {\n    width: 44,\n    height: 44,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n  headerTitle: {\n    fontSize: 18,\n    fontWeight: '600',\n  },\n  editorContainer: {\n    flex: 1,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n  cropArea: {\n    width: screenWidth,\n    height: screenWidth,\n    position: 'relative',\n  },\n  cropOverlay: {\n    position: 'absolute',\n    top: 0,\n    left: 0,\n    right: 0,\n    bottom: 0,\n    alignItems: 'center',\n    justifyContent: 'center',\n    zIndex: 2,\n  },\n  cropCircle: {\n    borderRadius: 1000,\n    borderWidth: 2,\n    backgroundColor: 'transparent',\n  },\n  imageContainer: {\n    position: 'absolute',\n    top: 0,\n    left: 0,\n    right: 0,\n    bottom: 0,\n    alignItems: 'center',\n    justifyContent: 'center',\n    zIndex: 1,\n  },\n  image: {\n    width: screenWidth,\n    height: screenWidth,\n  },\n  controls: {\n    padding: 20,\n  },\n  controlRow: {\n    flexDirection: 'row',\n    justifyContent: 'space-around',\n    marginBottom: 20,\n  },\n  controlButton: {\n    alignItems: 'center',\n    padding: 8,\n  },\n  controlText: {\n    fontSize: 12,\n    marginTop: 4,\n  },\n  sliderContainer: {\n    marginBottom: 16,\n  },\n  sliderLabel: {\n    fontSize: 14,\n    textAlign: 'center',\n    marginBottom: 8,\n  },\n  sliderTrack: {\n    height: 4,\n    backgroundColor: 'rgba(255, 255, 255, 0.3)',\n    borderRadius: 2,\n    position: 'relative',\n  },\n  sliderThumb: {\n    position: 'absolute',\n    top: -6,\n    width: 16,\n    height: 16,\n    borderRadius: 8,\n    marginLeft: -8,\n  },\n  instructions: {\n    fontSize: 12,\n    textAlign: 'center',\n    lineHeight: 16,\n  },\n});
+            Перетащите изображение для позиционирования.{"\n"}Используйте жесты для масштабирования.
+          </Text>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+const createStyles = (colors: any) => StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 50,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  editorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cropArea: {
+    width: screenWidth,
+    height: screenWidth,
+    position: 'relative',
+  },
+  cropOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  cropCircle: {
+    borderRadius: 1000,
+    borderWidth: 2,
+    backgroundColor: 'transparent',
+  },
+  imageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  image: {
+    width: screenWidth,
+    height: screenWidth,
+  },
+  controls: {
+    padding: 20,
+  },
+  controlRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  controlButton: {
+    alignItems: 'center',
+    padding: 8,
+  },
+  controlText: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  sliderContainer: {
+    marginBottom: 16,
+  },
+  sliderLabel: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  sliderTrack: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 2,
+    position: 'relative',
+  },
+  sliderThumb: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    top: -8,
+    marginLeft: -10,
+  },
+  instructions: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

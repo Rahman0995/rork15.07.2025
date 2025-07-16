@@ -100,7 +100,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       });
       
       if (!result.canceled && result.assets[0]) {
-        await handlePhotoUpload(result.assets[0].uri);
+        await handleImageSelected(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -122,7 +122,7 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
       });
       
       if (!result.canceled && result.assets[0]) {
-        await handlePhotoUpload(result.assets[0].uri);
+        await handleImageSelected(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -231,6 +231,15 @@ export const PhotoUpload: React.FC<PhotoUploadProps> = ({
           </View>
         )}
       </TouchableOpacity>
+      
+      {enableEditor && pendingImageUri && (
+        <AvatarEditor
+          visible={showEditor}
+          imageUri={pendingImageUri}
+          onSave={handleEditorSave}
+          onCancel={handleEditorCancel}
+        />
+      )}
     </View>
   );
 };
