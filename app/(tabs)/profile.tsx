@@ -33,8 +33,8 @@ export default function ProfileScreen() {
   const styles = createStyles(colors);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   
-  const updateUserMutation = trpc.users.updateUser.useMutation();
-  const uploadFileMutation = trpc.media.uploadFile.useMutation();
+  const updateUserMutation = trpc.users.update.useMutation();
+  const uploadFileMutation = trpc.media.upload.useMutation();
   
   const handleLogout = () => {
     Alert.alert(
