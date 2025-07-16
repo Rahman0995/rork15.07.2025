@@ -1,20 +1,20 @@
 const IS_DEV = process.env.NODE_ENV === 'development';
 const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 
-// Определяем IP адрес для разработки
-// Замените на ваш реальный IP адрес или домен для production
+// ВАЖНО: Замените на ваш реальный IP адрес
+// Найдите ваш IP: ipconfig (Windows) или ifconfig (Mac/Linux)
+const YOUR_IP_ADDRESS = '192.168.1.100'; // ЗАМЕНИТЕ НА ВАШ IP
+
 const getApiUrl = () => {
 if (IS_DEV) {
-  // Для разработки - замените на ваш IP адрес
-  // Найдите ваш IP: ipconfig (Windows) или ifconfig (Mac/Linux)
-  return 'http://192.168.1.100:3000/api'; // Замените на ваш IP
+  return `http://${YOUR_IP_ADDRESS}:3000/api`;
 }
 return 'https://your-production-api.com/api'; // Замените на ваш production URL
 };
 
 const getBaseUrl = () => {
 if (IS_DEV) {
-  return 'http://192.168.1.100:3000'; // Замените на ваш IP
+  return `http://${YOUR_IP_ADDRESS}:3000`;
 }
 return 'https://your-production-domain.com'; // Замените на ваш production URL
 };
@@ -52,6 +52,11 @@ expo: {
         NSAllowsArbitraryLoads: IS_DEV, // Только для разработки
         NSExceptionDomains: {
           'localhost': {
+            NSExceptionAllowsInsecureHTTPLoads: true,
+            NSExceptionMinimumTLSVersion: '1.0',
+            NSIncludesSubdomains: true
+          },
+          [YOUR_IP_ADDRESS]: {
             NSExceptionAllowsInsecureHTTPLoads: true,
             NSExceptionMinimumTLSVersion: '1.0',
             NSIncludesSubdomains: true
@@ -95,8 +100,7 @@ expo: {
       {
         icon: './assets/images/icon.png',
         color: '#ffffff',
-        defaultChannel: 'default',
-        sounds: ['./assets/notification.wav']
+        defaultChannel: 'default'
       }
     ],
     [
@@ -150,14 +154,22 @@ expo: {
     backendConfig: {
       baseUrl: getBaseUrl(),
       trpcEndpoint: '/api/trpc',
-      timeout: 15000, // Увеличен timeout
+      timeout: 30000, // Увеличен timeout для медленных соединений
       retries: 3,
-      enableMockData: IS_DEV // Включаем mock данные только в dev
+      enableMockData: IS_DEV, // Включаем mock данные только в dev
+      enableOfflineMode: true
     },
     // Дополнительные настройки для production
     security: {
       enableSSL: !IS_DEV,
       apiKeyRequired: !IS_DEV
+    },
+    // Feature flags
+    features: {
+      pushNotifications: true,
+      backgroundSync: true,
+      offlineStorage: true,
+      biometricAuth: false
     }
   },
   runtimeVersion: {
