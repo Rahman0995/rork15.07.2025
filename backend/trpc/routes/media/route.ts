@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { publicProcedure } from '../create-context';
+import { publicProcedure } from '../../create-context';
 
 const mockFiles = [
   {
     id: '1',
     name: 'security-report.pdf',
-    type: 'file' as const,
+    type: 'file' as 'file' | 'image' | 'video',
     url: 'https://example.com/files/security-report.pdf',
     size: 1024000, // 1MB
     uploadedBy: '1',
@@ -18,7 +18,7 @@ const mockFiles = [
   {
     id: '2',
     name: 'equipment-photo.jpg',
-    type: 'image' as const,
+    type: 'image' as 'file' | 'image' | 'video',
     url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
     size: 512000, // 512KB
     uploadedBy: '2',
@@ -27,6 +27,20 @@ const mockFiles = [
       mimeType: 'image/jpeg',
       originalName: 'equipment-photo.jpg',
       dimensions: { width: 800, height: 600 },
+    },
+  },
+  {
+    id: '3',
+    name: 'training-video.mp4',
+    type: 'video' as 'file' | 'image' | 'video',
+    url: 'https://example.com/videos/training-video.mp4',
+    size: 5120000, // 5MB
+    uploadedBy: '1',
+    createdAt: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+    metadata: {
+      mimeType: 'video/mp4',
+      originalName: 'training-video.mp4',
+      duration: 120, // 2 minutes
     },
   },
 ];
@@ -41,7 +55,7 @@ export const uploadFileProcedure = publicProcedure
     // In a real implementation, this would be a file upload
     data: z.string().optional(), // Base64 or file path
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     const newFile = {
       id: `file_${Date.now()}`,
       name: input.name,
@@ -71,7 +85,7 @@ export const getFilesProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     let files = [...mockFiles];
     
     if (input?.type) {
@@ -99,7 +113,7 @@ export const getFilesProcedure = publicProcedure
 
 export const getFileByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     const file = mockFiles.find(f => f.id === input.id);
     if (!file) {
       throw new Error('File not found');
@@ -112,7 +126,7 @@ export const deleteFileProcedure = publicProcedure
     id: z.string(),
     userId: z.string(), // Only the uploader or admin can delete
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     const fileIndex = mockFiles.findIndex(f => f.id === input.id);
     if (fileIndex === -1) {
       throw new Error('File not found');
@@ -135,7 +149,7 @@ export const generateUploadUrlProcedure = publicProcedure
     fileType: z.string(),
     fileSize: z.number(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }) => {
     // In a real implementation, this would generate a signed URL for direct upload
     // to cloud storage (AWS S3, Google Cloud Storage, etc.)
     const uploadUrl = `https://example.com/upload/${Date.now()}_${input.fileName}`;
@@ -152,7 +166,7 @@ export const getStorageStatsProcedure = publicProcedure
   .input(z.object({
     userId: z.string().optional(),
   }).optional())
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     let files = mockFiles;
     
     if (input?.userId) {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for analytics - defined locally to avoid import issues
 interface Report {
   id: string;
@@ -77,7 +77,7 @@ export const getReportsAnalyticsProcedure = publicProcedure
     endDate: z.string().optional(),
     unit: z.string().optional(),
   }).optional())
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     let reports = [...mockReports];
     
     if (input?.startDate) {
@@ -123,7 +123,7 @@ export const getTasksAnalyticsProcedure = publicProcedure
     endDate: z.string().optional(),
     assignedTo: z.string().optional(),
   }).optional())
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     let tasks = [...mockTasks];
     
     if (input?.startDate) {
@@ -170,7 +170,7 @@ export const getUserActivityProcedure = publicProcedure
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   }))
-  .query(({ input }: { input: any }) => {
+  .query(({ input }) => {
     let userReports = mockReports.filter(r => r.authorId === input.userId);
     let userTasks = mockTasks.filter(t => t.assignedTo === input.userId || t.createdBy === input.userId);
     
