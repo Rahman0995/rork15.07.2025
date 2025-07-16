@@ -43,9 +43,6 @@
           "projectId": "ahmat-4cfd5"
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    ]
   }
 }
