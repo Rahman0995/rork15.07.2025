@@ -175,7 +175,7 @@ export const createReportProcedure = publicProcedure
       attachments: input.attachments || [],
       unit: input.unit || '',
       priority: input.priority || 'medium',
-      dueDate: input.dueDate,
+
       approvers: input.approvers || [],
       currentApprover: input.approvers?.[0],
       approvals: [],

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../backend/trpc/create-context';
 // Mock data for chat - defined locally to avoid import issues
 type MessageType = 'text' | 'image' | 'file' | 'voice';
 
@@ -72,13 +72,13 @@ const getChatMessages = (chatId: string): ChatMessage[] => {
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input?: any }) => {
     return getUserChats(input.userId);
   });
 
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input?: any }) => {
     const chat = mockChats.find(c => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
@@ -92,7 +92,7 @@ export const getChatMessagesProcedure = publicProcedure
     limit: z.number().optional().default(50),
     offset: z.number().optional().default(0),
   }))
-  .query(({ input }) => {
+  .query(({ input }: { input?: any }) => {
     const messages = getChatMessages(input.chatId);
     
     // Sort by time (oldest first)
@@ -127,7 +127,7 @@ export const sendMessageProcedure = publicProcedure
       duration: z.number().optional(),
     }).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const newMessage: ChatMessage = {
       id: `msg_${Date.now()}`,
       senderId: input.senderId,
@@ -162,7 +162,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     userId: z.string(),
     messageIds: z.array(z.string()).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const messages = mockChatMessages[input.chatId];
     if (!messages) {
       throw new Error('Chat not found');
@@ -195,13 +195,13 @@ export const createChatProcedure = publicProcedure
     isGroup: z.boolean().default(false),
     name: z.string().optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const newChat: Chat = {
       id: `chat_${Date.now()}`,
       participants: input.participants,
       isGroup: input.isGroup,
       unreadCount: 0,
-      name: input.name,
+      ...(input.isGroup && input.name ? { name: input.name } : {}),
     };
     
     mockChats.push(newChat);
@@ -212,7 +212,7 @@ export const createChatProcedure = publicProcedure
 
 export const deleteChatProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: any }) => {
     const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex === -1) {
       throw new Error('Chat not found');
@@ -226,7 +226,7 @@ export const deleteChatProcedure = publicProcedure
 
 export const getUnreadCountProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input?: any }) => {
     const userChats = getUserChats(input.userId);
     const totalUnread = userChats.reduce((total: number, chat: Chat) => total + chat.unreadCount, 0);
     
