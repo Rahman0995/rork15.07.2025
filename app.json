@@ -3,6 +3,7 @@
     "name": "Military Unit Management Application",
     "slug": "military-unit-management-application",
     "version": "1.0.0",
+    "projectId": "your-project-id-here",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -14,6 +15,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    ...
+  }
+}
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.rork.militaryunitmanagement",
