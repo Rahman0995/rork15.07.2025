@@ -71,7 +71,7 @@ export const exportToCSV = async (data: ExportData, options: ExportOptions = {})
       csvContent += headers.join(',') + '\n';
     }
     
-    data.data.forEach(row => {
+    data.data.forEach((row: any) => {
       const values = headers.map(header => {
         const value = row[header];
         // Escape commas and quotes in CSV
