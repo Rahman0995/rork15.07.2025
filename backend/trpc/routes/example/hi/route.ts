@@ -16,13 +16,29 @@ export const hiProcedure = publicProcedure
   });
 
 // Mock data for tasks and reports
-const mockTasks = [
+type TaskPriority = 'high' | 'medium' | 'low';
+type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  assignedTo: string;
+  createdBy: string;
+  dueDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const mockTasks: Task[] = [
   {
     id: '1',
     title: 'Проверить оборудование',
     description: 'Провести плановую проверку оборудования в секторе А',
-    status: 'pending' as const,
-    priority: 'high' as const,
+    status: 'pending',
+    priority: 'high',
     assignedTo: '1',
     createdBy: '2',
     dueDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
@@ -33,8 +49,8 @@ const mockTasks = [
     id: '2',
     title: 'Составить отчет',
     description: 'Подготовить еженедельный отчет о состоянии объекта',
-    status: 'in_progress' as const,
-    priority: 'medium' as const,
+    status: 'in_progress',
+    priority: 'medium',
     assignedTo: '1',
     createdBy: '2',
     dueDate: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
@@ -43,12 +59,24 @@ const mockTasks = [
   },
 ];
 
-const mockReports = [
+type ReportStatus = 'pending' | 'approved' | 'rejected';
+
+interface Report {
+  id: string;
+  title: string;
+  content: string;
+  status: ReportStatus;
+  authorId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const mockReports: Report[] = [
   {
     id: '1',
     title: 'Отчет о безопасности',
     content: 'Все системы безопасности функционируют в штатном режиме',
-    status: 'approved' as const,
+    status: 'approved',
     authorId: '1',
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     updatedAt: new Date().toISOString(),
@@ -57,7 +85,7 @@ const mockReports = [
     id: '2',
     title: 'Еженедельный отчет',
     content: 'Сводка событий за неделю',
-    status: 'pending' as const,
+    status: 'pending',
     authorId: '1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -83,11 +111,11 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
   }))
   .mutation(({ input }) => {
-    const newTask = {
+    const newTask: Task = {
       id: String(mockTasks.length + 1),
       title: input.title,
       description: input.description,
-      status: 'pending' as const,
+      status: 'pending',
       priority: input.priority,
       assignedTo: input.assignedTo,
       createdBy: '1', // Mock current user
@@ -105,10 +133,10 @@ export const createReportProcedure = publicProcedure
     content: z.string(),
   }))
   .mutation(({ input }) => {
-    const newReport = {
+    const newReport: Report = {
       id: String(mockReports.length + 1),
       ...input,
-      status: 'pending' as const,
+      status: 'pending',
       authorId: '1', // Mock current user
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
