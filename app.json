@@ -15,16 +15,11 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    ...
-  }
-}
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "app.rork.militaryunitmanagement",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
-    
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
