@@ -1,43 +1,14 @@
 import { Tabs, router } from "expo-router";
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
-import { FileText, Home, MessageSquare, Bell, Calendar, BarChart3, User } from "lucide-react-native";
+import { FileText, Home, MessageSquare, BarChart3, User } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
-import { useNotificationsStore } from "@/store/notificationsStore";
+
 import { useAuthStore } from "@/store/authStore";
-import { NotificationBadge } from "@/components/NotificationBadge";
+
 
 export default function TabLayout() {
-  const { getUnreadCount } = useNotificationsStore();
-  const { user } = useAuthStore();
   const { colors } = useTheme();
-  
-  const unreadCount = user ? getUnreadCount(user.id) : 0;
-  
-  const HeaderButtons = () => (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <TouchableOpacity
-        onPress={() => router.push('/calendar')}
-        style={{
-          marginRight: 20,
-          padding: 4,
-        }}
-      >
-        <Calendar size={24} color={colors.text} />
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => router.push('/notifications')}
-        style={{
-          marginRight: 16,
-          position: 'relative',
-          padding: 4,
-        }}
-      >
-        <Bell size={24} color={colors.text} />
-        <NotificationBadge count={unreadCount} size={16} />
-      </TouchableOpacity>
-    </View>
-  );
   
   return (
     <Tabs
@@ -73,7 +44,7 @@ export default function TabLayout() {
           fontSize: 17,
           letterSpacing: -0.2,
         },
-        headerRight: () => <HeaderButtons />,
+
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
@@ -110,20 +81,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <BarChart3 size={20} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: "Уведомления",
-          tabBarIcon: ({ color }) => <Bell size={20} color={color} />,
-        }}
-      />
+
       <Tabs.Screen
         name="profile"
         options={{
