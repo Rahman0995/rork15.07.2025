@@ -1,6 +1,6 @@
 import { Tabs, router } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { View, TouchableOpacity, Platform, Animated } from "react-native";
+import React from "react";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { FileText, Home, MessageSquare, BarChart3, User } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
@@ -8,46 +8,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuthStore } from "@/store/authStore";
 
-// Create a global scroll listener
-let globalScrollListener: ((scrollY: number) => void) | null = null;
-
-export const setGlobalScrollListener = (listener: (scrollY: number) => void) => {
-  globalScrollListener = listener;
-};
-
-export const notifyGlobalScroll = (scrollY: number) => {
-  if (globalScrollListener) {
-    globalScrollListener(scrollY);
-  }
-};
-
 
 export default function TabLayout() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const [scrollY] = useState(new Animated.Value(0));
-  const [isScrolling, setIsScrolling] = useState(false);
-  
-  useEffect(() => {
-    setGlobalScrollListener((scrollValue: number) => {
-      scrollY.setValue(scrollValue);
-      setIsScrolling(scrollValue > 20); // Lower threshold for earlier activation
-    });
-    
-    return () => {
-      setGlobalScrollListener(() => {});
-    };
-  }, []);
-  
-  const tabBarOpacity = scrollY.interpolate({
-    inputRange: [0, 50],
-    outputRange: [1, 0.97],
-    extrapolate: 'clamp',
-  });
   
   const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     return (
-      <Animated.View
+      <View
         style={[
           {
             position: 'absolute',
@@ -65,13 +33,13 @@ export default function TabLayout() {
             shadowOpacity: 0.1,
             shadowRadius: 8,
             elevation: 8,
-            opacity: isScrolling ? tabBarOpacity : 1,
+            opacity: 0.98,
           },
         ]}
       >
         {Platform.OS !== 'web' && (
           <BlurView
-            intensity={isScrolling ? 100 : 0}
+            intensity={100}
             tint={isDark ? 'dark' : 'light'}
             style={{
               position: 'absolute',
@@ -130,7 +98,7 @@ export default function TabLayout() {
             );
           })}
         </View>
-      </Animated.View>
+      </View>
     );
   };
   

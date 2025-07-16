@@ -14,7 +14,7 @@ import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
 import { FileText, CheckSquare, Plus, ArrowRight, Calendar, Users, TrendingUp, Shield, Activity, Clock } from 'lucide-react-native';
 import { Task, Report } from '@/types';
-import { notifyGlobalScroll } from './_layout';
+
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
-  const [scrollY, setScrollY] = useState(0);
+
   
   // Test tRPC connection
   const { data: backendTest, isLoading: backendLoading } = trpc.example.hi.useQuery(
@@ -75,11 +75,7 @@ export default function HomeScreen() {
     fetchReports();
   };
   
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    setScrollY(currentScrollY);
-    notifyGlobalScroll(currentScrollY);
-  };
+
   
   const navigateToTask = (task: Task) => {
     router.push(`/task/${task.id}`);
@@ -113,8 +109,7 @@ export default function HomeScreen() {
           />
         }
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={8}
+
       >
         {/* Header Section */}
         <View style={styles.header}>
