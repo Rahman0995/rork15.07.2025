@@ -23,7 +23,7 @@ export const loggingMiddleware = middleware(async ({ path, type, next }) => {
 // Middleware для проверки аутентификации
 export const authMiddleware = middleware(async ({ ctx, next }) => {
   // В реальном приложении здесь будет проверка JWT токена
-  const authHeader = ctx.req?.headers?.authorization;
+  const authHeader = ctx.req?.headers?.get?.('authorization');
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new TRPCError({
@@ -107,7 +107,7 @@ const requestCounts = new Map<string, { count: number; resetTime: number }>();
 
 export const rateLimitMiddleware = (maxRequests: number = 100, windowMs: number = 60000) => {
   return middleware(async ({ ctx, next }) => {
-    const clientId = ctx.req?.headers?.['x-forwarded-for'] || ctx.req?.headers?.['x-real-ip'] || 'unknown';
+    const clientId = ctx.req?.headers?.get?.('x-forwarded-for') || ctx.req?.headers?.get?.('x-real-ip') || 'unknown';
     const now = Date.now();
     
     const clientData = requestCounts.get(clientId as string);

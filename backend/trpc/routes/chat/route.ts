@@ -201,8 +201,8 @@ export const createChatProcedure = publicProcedure
       participants: input.participants,
       isGroup: input.isGroup,
       unreadCount: 0,
-      ...(input.name && { name: input.name }),
-    } as Chat;
+      name: input.name,
+    };
     
     mockChats.push(newChat);
     mockChatMessages[newChat.id] = [];

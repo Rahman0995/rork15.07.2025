@@ -1,7 +1,57 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockTasks, getTask, getUserTasks } from '../../../../constants/mockData';
-import type { Task, TaskStatus, TaskPriority } from '../../../../types';
+// Mock data for tasks - defined locally to avoid import issues
+type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+type TaskPriority = 'low' | 'medium' | 'high';
+
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  assignedTo: string;
+  createdBy: string;
+  dueDate: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+}
+
+const mockTasks: Task[] = [
+  {
+    id: '1',
+    title: 'Equipment Check',
+    description: 'Conduct routine equipment inspection in sector A',
+    assignedTo: '1',
+    createdBy: '2',
+    dueDate: new Date(Date.now() + 86400000).toISOString(),
+    status: 'pending',
+    priority: 'high',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    title: 'Prepare Report',
+    description: 'Prepare weekly status report',
+    assignedTo: '1',
+    createdBy: '2',
+    dueDate: new Date(Date.now() + 172800000).toISOString(),
+    status: 'in_progress',
+    priority: 'medium',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+const getTask = (id: string): Task | undefined => {
+  return mockTasks.find(task => task.id === id);
+};
+
+const getUserTasks = (userId: string): Task[] => {
+  return mockTasks.filter(task => task.assignedTo === userId);
+};
 
 export const getTasksProcedure = publicProcedure
   .input(z.object({

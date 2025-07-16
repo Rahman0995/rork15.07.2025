@@ -1,7 +1,74 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockChats, mockChatMessages, getUserChats, getChatMessages } from '../../../../constants/mockData';
-import type { ChatMessage, Chat, MessageType } from '../../../../types';
+// Mock data for chat - defined locally to avoid import issues
+type MessageType = 'text' | 'image' | 'file' | 'voice';
+
+interface MessageAttachment {
+  id: string;
+  name: string;
+  type: 'image' | 'file' | 'voice';
+  url: string;
+  size?: number;
+  duration?: number;
+}
+
+interface ChatMessage {
+  id: string;
+  senderId: string;
+  text?: string;
+  type: MessageType;
+  attachment?: MessageAttachment;
+  createdAt: string;
+  read: boolean;
+}
+
+interface Chat {
+  id: string;
+  participants: string[];
+  lastMessage?: ChatMessage;
+  unreadCount: number;
+  isGroup: boolean;
+  name?: string;
+}
+
+const mockChatMessages: Record<string, ChatMessage[]> = {
+  'chat_1_2': [
+    {
+      id: '1',
+      senderId: '1',
+      text: 'Hello, how is the preparation going?',
+      type: 'text',
+      createdAt: new Date(Date.now() - 3600000).toISOString(),
+      read: true,
+    },
+    {
+      id: '2',
+      senderId: '2',
+      text: 'Everything is on track. Will have the report ready tomorrow.',
+      type: 'text',
+      createdAt: new Date(Date.now() - 1800000).toISOString(),
+      read: false,
+    },
+  ],
+};
+
+const mockChats: Chat[] = [
+  {
+    id: 'chat_1_2',
+    participants: ['1', '2'],
+    lastMessage: mockChatMessages['chat_1_2'][1],
+    unreadCount: 1,
+    isGroup: false,
+  },
+];
+
+const getUserChats = (userId: string): Chat[] => {
+  return mockChats.filter(chat => chat.participants.includes(userId));
+};
+
+const getChatMessages = (chatId: string): ChatMessage[] => {
+  return mockChatMessages[chatId] || [];
+};
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
@@ -134,8 +201,8 @@ export const createChatProcedure = publicProcedure
       participants: input.participants,
       isGroup: input.isGroup,
       unreadCount: 0,
-      ...(input.name && { name: input.name }),
-    } as Chat;
+      name: input.name,
+    };
     
     mockChats.push(newChat);
     mockChatMessages[newChat.id] = [];

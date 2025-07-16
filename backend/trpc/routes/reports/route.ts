@@ -167,7 +167,7 @@ export const createReportProcedure = publicProcedure
       title: input.title,
       content: input.content,
       authorId: input.authorId,
-      author: input.authorId, // For backward compatibility
+
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',
@@ -180,18 +180,7 @@ export const createReportProcedure = publicProcedure
       currentApprover: input.approvers?.[0],
       approvals: [],
       comments: [],
-      revisions: [{
-        id: `rev_${Date.now()}`,
-        reportId: reportId,
-        version: 1,
-        title: input.title,
-        content: input.content,
-        attachments: input.attachments || [],
-        createdAt: new Date().toISOString(),
-        createdBy: input.authorId,
-        authorId: input.authorId,
-      }],
-      currentRevision: 1,
+
     };
     
     mockReports.push(newReport);
@@ -226,24 +215,7 @@ export const updateReportProcedure = publicProcedure
       updatedAt: new Date().toISOString(),
     };
     
-    // If content or title changed, create new revision
-    if (input.title || input.content) {
-      const newRevision = {
-        id: `rev_${Date.now()}`,
-        reportId: input.id,
-        version: (currentReport.currentRevision || 1) + 1,
-        title: input.title || currentReport.title,
-        content: input.content || currentReport.content,
-        attachments: input.attachments || currentReport.attachments || [],
-        createdAt: new Date().toISOString(),
-        createdBy: currentReport.authorId,
-        authorId: currentReport.authorId,
-        changes: 'Updated content',
-      };
-      
-      updatedReport.revisions = [...(currentReport.revisions || []), newRevision];
-      updatedReport.currentRevision = newRevision.version;
-    }
+
     
     mockReports[reportIndex] = updatedReport;
     return updatedReport;

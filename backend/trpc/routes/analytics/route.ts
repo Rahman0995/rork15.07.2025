@@ -9,6 +9,7 @@ interface Report {
   createdAt: string;
   unit?: string;
   priority?: 'low' | 'medium' | 'high';
+  type?: 'text' | 'file' | 'video';
 }
 
 interface Task {
@@ -20,6 +21,7 @@ interface Task {
   createdBy: string;
   createdAt: string;
   completedAt?: string;
+  dueDate: string;
 }
 
 const mockReports: Report[] = [
@@ -31,6 +33,7 @@ const mockReports: Report[] = [
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     unit: 'Security',
     priority: 'high',
+    type: 'text',
   },
   {
     id: '2',
@@ -40,6 +43,7 @@ const mockReports: Report[] = [
     createdAt: new Date().toISOString(),
     unit: 'Operations',
     priority: 'medium',
+    type: 'text',
   },
 ];
 
@@ -53,6 +57,7 @@ const mockTasks: Task[] = [
     createdBy: '2',
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     completedAt: new Date(Date.now() - 86400000).toISOString(),
+    dueDate: new Date(Date.now() - 86400000).toISOString(),
   },
   {
     id: '2',
@@ -62,6 +67,7 @@ const mockTasks: Task[] = [
     assignedTo: '2',
     createdBy: '1',
     createdAt: new Date(Date.now() - 86400000).toISOString(),
+    dueDate: new Date(Date.now() + 86400000).toISOString(),
   },
 ];
 

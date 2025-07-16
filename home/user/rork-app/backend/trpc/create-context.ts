@@ -33,3 +33,4 @@ export const createTRPCRouter = t.router;
 export const middleware = t.middleware;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure; // Add auth middleware here in real app
+export { t };

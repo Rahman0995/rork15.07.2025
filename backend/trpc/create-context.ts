@@ -32,6 +32,7 @@ const t = initTRPC.context<Context>().create({
 export const createTRPCRouter = t.router;
 export const middleware = t.middleware;
 export const publicProcedure = t.procedure;
+export { t };
 
 // Auth middleware defined here to avoid circular dependency
 const authMiddleware = middleware(async ({ ctx, next }) => {
