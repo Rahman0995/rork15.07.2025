@@ -43,8 +43,8 @@ export default function ProfileEditScreen() {
   
   const [isLoading, setIsLoading] = useState(false);
   
-  const updateUserMutation = trpc.users.updateUser.useMutation();
-  const uploadFileMutation = trpc.media.uploadFile.useMutation();
+  const updateUserMutation = trpc.users.update.useMutation();
+  const uploadFileMutation = trpc.media.upload.useMutation();
 
   const handlePhotoUpload = async (uri: string) => {
     try {
@@ -205,6 +205,8 @@ export default function ProfileEditScreen() {
               size={140}
               label="Фотография профиля"
               placeholder="Добавить фото"
+              enableEditor={true}
+              isAvatar={true}
             />
           </View>
 

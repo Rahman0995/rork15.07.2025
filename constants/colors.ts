@@ -60,6 +60,10 @@ const lightColors = {
   transparent: "transparent",
   overlay: "rgba(0, 0, 0, 0.5)",
   
+  // Additional colors for components
+  surface: "#FFFFFF",
+  errorBackground: "#FEF2F2",
+  
   // Shadows - Soft and modern
   shadow: "rgba(0, 0, 0, 0.08)",
   shadowLight: "rgba(0, 0, 0, 0.04)",
@@ -128,6 +132,10 @@ const darkColors = {
   black: "#000000",
   transparent: "transparent",
   overlay: "rgba(0, 0, 0, 0.7)",
+  
+  // Additional colors for components
+  surface: "#1E293B",
+  errorBackground: "#450A0A",
   
   // Shadows - Darker shadows for dark theme
   shadow: "rgba(0, 0, 0, 0.3)",

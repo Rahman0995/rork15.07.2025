@@ -11,6 +11,7 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { ImageGallery } from '@/components/ImageGallery';
+import { ImagePickerTest } from '@/components/ImagePickerTest';
 import { PhotoUpload } from '@/components/PhotoUpload';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/constants/theme';
