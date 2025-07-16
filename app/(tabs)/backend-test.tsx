@@ -10,6 +10,165 @@ export default function BackendTestScreen() {
   const { colors } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    contentContainer: {
+      padding: 20,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 32,
+    },
+    iconContainer: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: colors.primarySoft,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
+    testCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 20,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    testHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    testTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    refreshButton: {
+      padding: 8,
+      borderRadius: 8,
+      backgroundColor: colors.backgroundSecondary,
+    },
+    spinning: {
+      transform: [{ rotate: '360deg' }],
+    },
+    statusContainer: {
+      marginBottom: 16,
+    },
+    loadingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    successContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    errorContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    unknownContainer: {
+      alignItems: 'center',
+    },
+    statusText: {
+      fontSize: 16,
+      fontWeight: '500',
+      marginLeft: 8,
+      color: colors.text,
+    },
+    responseContainer: {
+      marginTop: 16,
+    },
+    responseLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 8,
+    },
+    responseBox: {
+      backgroundColor: colors.successSoft,
+      borderRadius: 8,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.successLight,
+    },
+    responseText: {
+      fontSize: 14,
+      color: colors.success,
+      fontFamily: 'monospace',
+    },
+    errorDetails: {
+      marginTop: 16,
+    },
+    errorLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.error,
+      marginBottom: 8,
+    },
+    errorBox: {
+      backgroundColor: colors.errorSoft,
+      borderRadius: 8,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.errorLight,
+    },
+    errorText: {
+      fontSize: 14,
+      color: colors.error,
+      fontFamily: 'monospace',
+    },
+    infoCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.borderLight,
+    },
+    infoTitle: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 16,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderLight,
+    },
+    infoLabel: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    infoValue: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: '600',
+    },
+  });
+  
   console.log('BackendTestScreen rendered');
   
   // Use test user if no user is logged in
@@ -129,161 +288,3 @@ export default function BackendTestScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  contentContainer: {
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primarySoft,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  testCard: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  testHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  testTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  refreshButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: colors.backgroundSecondary,
-  },
-  spinning: {
-    transform: [{ rotate: '360deg' }],
-  },
-  statusContainer: {
-    marginBottom: 16,
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  successContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  unknownContainer: {
-    alignItems: 'center',
-  },
-  statusText: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 8,
-    color: colors.text,
-  },
-  responseContainer: {
-    marginTop: 16,
-  },
-  responseLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  responseBox: {
-    backgroundColor: colors.successSoft,
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.successLight,
-  },
-  responseText: {
-    fontSize: 14,
-    color: colors.success,
-    fontFamily: 'monospace',
-  },
-  errorDetails: {
-    marginTop: 16,
-  },
-  errorLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.error,
-    marginBottom: 8,
-  },
-  errorBox: {
-    backgroundColor: colors.errorSoft,
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: colors.errorLight,
-  },
-  errorText: {
-    fontSize: 14,
-    color: colors.error,
-    fontFamily: 'monospace',
-  },
-  infoCard: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 16,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  infoValue: {
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '600',
-  },
-});
