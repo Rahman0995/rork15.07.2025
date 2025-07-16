@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CalendarEvent } from '@/types';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { Clock, MapPin, Users } from 'lucide-react-native';
 import { StatusBadge } from './StatusBadge';
 
@@ -19,14 +19,11 @@ const EVENT_TYPE_LABELS = {
   other: 'Другое'
 };
 
-const EVENT_STATUS_COLORS = {
-  scheduled: colors.info,
-  in_progress: colors.warning,
-  completed: colors.success,
-  cancelled: colors.error
-};
+
 
 export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('ru-RU', {
       hour: '2-digit',
@@ -93,7 +90,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.card,
     borderRadius: 12,

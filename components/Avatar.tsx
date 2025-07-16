@@ -22,6 +22,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   online = false
 }) => {
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   const displayName = name || user?.name || 'User';
   const avatarUri = uri || user?.avatar;
   const getInitials = (name: string) => {
@@ -62,7 +63,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   avatar: {
     backgroundColor: colors.border,
   },

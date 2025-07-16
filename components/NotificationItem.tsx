@@ -25,6 +25,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   onMarkAsRead 
 }) => {
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const getIcon = () => {
     switch (notification.type) {
@@ -102,7 +103,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     padding: 16,

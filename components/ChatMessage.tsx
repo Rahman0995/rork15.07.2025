@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { ChatMessage as ChatMessageType } from '@/types';
 import { formatTime } from '@/utils/dateUtils';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { File, Play, Pause, Download } from 'lucide-react-native';
 import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
@@ -103,6 +103,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   isCurrentUser,
   showAvatar = false,
 }) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const handleFileDownload = () => {
     if (message.attachment) {
       Alert.alert(
@@ -221,7 +223,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     marginVertical: 4,
     maxWidth: '80%',

@@ -16,6 +16,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress }) => {
   const assignedTo = getUser(task.assignedTo);
   const assignedBy = getUser(task.createdBy);
   const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const getDaysUntil = (dateString: string): number => {
     const date = new Date(dateString);
@@ -92,7 +93,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.card,
     borderRadius: 16,

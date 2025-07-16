@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Chat } from '@/types';
 import { Avatar } from './Avatar';
 import { formatChatDate } from '@/utils/dateUtils';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { getUser } from '@/constants/mockData';
 import { useChatStore } from '@/store/chatStore';
 
@@ -19,6 +19,8 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   onPress 
 }) => {
   const { getUserStatus } = useChatStore();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   
   const otherParticipantId = chat.isGroup 
     ? null 
@@ -88,7 +90,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     padding: 16,

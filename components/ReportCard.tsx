@@ -16,6 +16,7 @@ interface ReportCardProps {
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
   const author = getUser(report.authorId);
   const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   return (
     <TouchableOpacity 
@@ -67,7 +68,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.card,
     borderRadius: 16,
