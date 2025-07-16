@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../create-context';
 
 const mockNotifications = [
   {
@@ -119,7 +119,7 @@ export const createNotificationProcedure = publicProcedure
       data: input.data || {},
     };
     
-    mockNotifications.push(newNotification);
+    mockNotifications.push(newNotification as any);
     return newNotification;
   });
 

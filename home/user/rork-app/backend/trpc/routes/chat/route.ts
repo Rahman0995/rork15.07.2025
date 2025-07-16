@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../create-context';
 // Mock data for chat - defined locally to avoid import issues
 type MessageType = 'text' | 'image' | 'file' | 'voice';
 
@@ -78,7 +78,7 @@ export const getChatsProcedure = publicProcedure
 
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .query(({ input }: { input: { userId: string } }) => {
+  .query(({ input }: { input: { chatId: string } }) => {
     const chat = mockChats.find(c => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
@@ -92,7 +92,7 @@ export const getChatMessagesProcedure = publicProcedure
     limit: z.number().optional().default(50),
     offset: z.number().optional().default(0),
   }))
-  .query(({ input }: { input: { userId: string } }) => {
+  .query(({ input }: { input: { chatId: string; limit: number; offset: number } }) => {
     const messages = getChatMessages(input.chatId);
     
     // Sort by time (oldest first)

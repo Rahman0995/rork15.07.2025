@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../create-context';
 // Mock data for reports - defined locally to avoid import issues
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
@@ -136,7 +136,7 @@ export const getReportsProcedure = publicProcedure
 export const getReportByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .query(({ input }) => {
-    const report = getReport(input!.id);
+    const report = getReport(input.id);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -303,7 +303,7 @@ export const getReportsForApprovalProcedure = publicProcedure
   .query(({ input }) => {
     return mockReports.filter(report => 
       report.status === 'pending' && 
-      report.approvers?.includes(input!.approverId) &&
-      report.currentApprover === input!.approverId
+      report.approvers?.includes(input.approverId) &&
+      report.currentApprover === input.approverId
     );
   });

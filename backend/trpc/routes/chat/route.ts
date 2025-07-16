@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../create-context';
 // Mock data for chat - defined locally to avoid import issues
 type MessageType = 'text' | 'image' | 'file' | 'voice';
 
