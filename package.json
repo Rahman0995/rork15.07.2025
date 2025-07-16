@@ -8,6 +8,7 @@
   "start-web-dev": "DEBUG=expo* bunx rork start -p jwjevnxtm1q2kz7xwsgmz --web --tunnel",
   "start-local": "expo start --localhost",
   "start-lan": "expo start --lan",
+  "start-tunnel": "expo start --tunnel",
   "build": "expo build",
   "build:web": "expo build:web",
   "build:android": "eas build --platform android",
@@ -18,7 +19,11 @@
   "clean": "expo r -c",
   "prebuild": "expo prebuild --clean",
   "backend:dev": "cd backend && bun run dev",
-  "backend:build": "cd backend && bun run build"
+  "backend:build": "cd backend && bun run build",
+  "backend:start": "cd backend && bun run start",
+  "dev": "concurrently \"npm run backend:dev\" \"npm run start\"",
+  "fix-text-nodes": "node fix-text-nodes.js",
+  "check-config": "node -e \"console.log(require('./app.config.js').default)\""
 },
 "dependencies": {
   "@expo/vector-icons": "^14.1.0",
@@ -75,6 +80,7 @@
   "@types/jest": "^29.5.5",
   "@typescript-eslint/eslint-plugin": "^6.7.0",
   "@typescript-eslint/parser": "^6.7.0",
+  "concurrently": "^8.2.2",
   "eslint": "^8.50.0",
   "eslint-config-expo": "^7.0.0",
   "jest": "^29.7.0",
