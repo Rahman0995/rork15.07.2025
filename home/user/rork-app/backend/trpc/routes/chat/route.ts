@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for chat - defined locally to avoid import issues
 type MessageType = 'text' | 'image' | 'file' | 'voice';
 
@@ -127,7 +127,7 @@ export const sendMessageProcedure = publicProcedure
       duration: z.number().optional(),
     }).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { chatId: string; senderId: string; text?: string; type: MessageType; attachment?: MessageAttachment } }) => {
     const newMessage: ChatMessage = {
       id: `msg_${Date.now()}`,
       senderId: input.senderId,
@@ -162,7 +162,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     userId: z.string(),
     messageIds: z.array(z.string()).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { chatId: string; userId: string; messageIds?: string[] } }) => {
     const messages = mockChatMessages[input.chatId];
     if (!messages) {
       throw new Error('Chat not found');
@@ -195,7 +195,7 @@ export const createChatProcedure = publicProcedure
     isGroup: z.boolean().default(false),
     name: z.string().optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { chatId: string; senderId: string; text?: string; type: 'text' | 'image' | 'file' | 'voice'; attachment?: MessageAttachment } }) => {
     const newChat: Chat = {
       id: `chat_${Date.now()}`,
       participants: input.participants,
@@ -212,7 +212,7 @@ export const createChatProcedure = publicProcedure
 
 export const deleteChatProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { chatId: string; senderId: string; text?: string; type: 'text' | 'image' | 'file' | 'voice'; attachment?: MessageAttachment } }) => {
     const chatIndex = mockChats.findIndex((chat: Chat) => chat.id === input.chatId);
     if (chatIndex === -1) {
       throw new Error('Chat not found');

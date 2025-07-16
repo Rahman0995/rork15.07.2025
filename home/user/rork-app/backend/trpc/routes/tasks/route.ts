@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for tasks - defined locally to avoid import issues
 type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 type TaskPriority = 'low' | 'medium' | 'high';
@@ -120,17 +120,17 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { title: string; description: string; assignedTo: string; createdBy: string; dueDate: string; priority: TaskPriority } }) => {
     const newTask: Task = {
       id: `task_${Date.now()}`,
       title: input.title,
       description: input.description,
       assignedTo: input.assignedTo,
       createdBy: input.createdBy,
-      createdAt: new Date().toISOString(),
       dueDate: input.dueDate,
       status: 'pending',
       priority: input.priority || 'medium',
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     
@@ -148,7 +148,7 @@ export const updateTaskProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { id: string; title?: string; description?: string; assignedTo?: string; dueDate?: string; status?: TaskStatus; priority?: TaskPriority } }) => {
     const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
@@ -177,7 +177,7 @@ export const updateTaskProcedure = publicProcedure
 
 export const deleteTaskProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { id: string } }) => {
     const taskIndex = mockTasks.findIndex((task: Task) => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');

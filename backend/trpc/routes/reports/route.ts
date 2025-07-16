@@ -180,7 +180,6 @@ export const createReportProcedure = publicProcedure
       currentApprover: input.approvers?.[0],
       approvals: [],
       comments: [],
-
     };
     
     mockReports.push(newReport);

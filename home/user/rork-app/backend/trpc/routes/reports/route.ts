@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for reports - defined locally to avoid import issues
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
@@ -160,7 +160,7 @@ export const createReportProcedure = publicProcedure
       url: z.string(),
     })).optional().default([]),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
     const reportId = `report_${Date.now()}`;
     const newReport: Report = {
       id: reportId,
@@ -179,18 +179,7 @@ export const createReportProcedure = publicProcedure
       currentApprover: input.approvers?.[0],
       approvals: [],
       comments: [],
-      revisions: [{
-        id: `rev_${Date.now()}`,
-        reportId: reportId,
-        version: 1,
-        title: input.title,
-        content: input.content,
-        attachments: input.attachments || [],
-        createdAt: new Date().toISOString(),
-        createdBy: input.authorId,
-        authorId: input.authorId,
-      }],
-      currentRevision: 1,
+
     };
     
     mockReports.push(newReport);
@@ -212,7 +201,7 @@ export const updateReportProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
     const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
@@ -249,7 +238,7 @@ export const updateReportProcedure = publicProcedure
 
 export const deleteReportProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
     const reportIndex = mockReports.findIndex((report: Report) => report.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
@@ -272,7 +261,7 @@ export const addReportCommentProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
     const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
@@ -302,7 +291,7 @@ export const approveReportProcedure = publicProcedure
     status: z.enum(['approved', 'rejected', 'needs_revision']),
     comment: z.string().optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
+  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
     const reportIndex = mockReports.findIndex((report: Report) => report.id === input.reportId);
     if (reportIndex === -1) {
       throw new Error('Report not found');
