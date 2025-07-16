@@ -9,6 +9,7 @@ import { Button } from '@/components/Button';
 import { useTheme } from '@/constants/theme';
 import { Plus, Search, Filter, CheckCircle2, Clock } from 'lucide-react-native';
 import { Report, ReportStatus } from '@/types';
+import { notifyGlobalScroll } from './_layout';
 
 export default function ReportsScreen() {
   const router = useRouter();
@@ -51,6 +52,11 @@ export default function ReportsScreen() {
   
   const navigateToReport = (report: Report) => {
     router.push(`/report/${report.id}`);
+  };
+  
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    notifyGlobalScroll(currentScrollY);
   };
   
   const renderStatusFilter = (status: ReportStatus | 'all', label: string, key: string) => (
@@ -142,6 +148,8 @@ export default function ReportsScreen() {
           showsVerticalScrollIndicator={false}
           refreshing={isLoading}
           onRefresh={fetchReports}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         />
       ) : (
         <View style={styles.emptyContainer}>

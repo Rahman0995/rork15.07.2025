@@ -30,6 +30,7 @@ import {
   Calendar,
   Filter
 } from 'lucide-react-native';
+import { notifyGlobalScroll } from './_layout';
 
 type AnalyticsTab = 'overview' | 'units' | 'users' | 'trends';
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -106,6 +107,11 @@ export default function AnalyticsScreen() {
     { label: 'На рассмотрении', value: pendingReports, color: colors.warning },
     { label: 'Отклонено', value: rejectedReports, color: colors.error },
   ];
+  
+  const handleScroll = (event: any) => {
+    const currentScrollY = event.nativeEvent.contentOffset.y;
+    notifyGlobalScroll(currentScrollY);
+  };
   
   const handleExport = (type: 'pdf' | 'excel') => {
     // Convert analytics data to array format for export
@@ -412,7 +418,12 @@ export default function AnalyticsScreen() {
         {renderTabButton('trends', 'Тренды', <TrendingUp size={16} color={activeTab === 'trends' ? 'white' : colors.primary} />)}
       </View>
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {activeTab === 'overview' && renderOverviewTab()}
         {activeTab === 'units' && renderUnitsTab()}
         {activeTab === 'users' && renderUsersTab()}
