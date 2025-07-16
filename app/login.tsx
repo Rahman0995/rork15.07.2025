@@ -18,6 +18,8 @@ export default function LoginScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   
+  const styles = createStyles(colors);
+  
   useEffect(() => {
     if (isAuthenticated) {
       // Use setTimeout to ensure navigation happens after component is fully mounted
@@ -137,7 +139,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
