@@ -216,7 +216,9 @@ export const useNotificationsStore = create<NotificationsState>()(
             throw new Error('Permission not granted for push notifications');
           }
           
-          const token = (await Notifications.getExpoPushTokenAsync()).data;
+          const token = (await Notifications.getExpoPushTokenAsync({
+            projectId: '0bffb82a-ba27-4f8f-889a-624d89941f86'
+          })).data;
           set({ expoPushToken: token });
           
           console.log('Push token:', token);
