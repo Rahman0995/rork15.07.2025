@@ -264,7 +264,7 @@ export default function AnalyticsScreen() {
                   styles.trendValue,
                   { color: unit.trend >= 0 ? colors.success : colors.error }
                 ]}>
-                  {unit.trend > 0 ? '+' : ''}{unit.trend}%
+                  {unit.trend > 0 ? `+${unit.trend}%` : `${unit.trend}%`}
                 </Text>
               </View>
             </View>

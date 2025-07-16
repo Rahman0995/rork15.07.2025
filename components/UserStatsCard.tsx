@@ -67,7 +67,7 @@ export const UserStatsCard: React.FC<UserStatsCardProps> = ({ stats, onPress }) 
           <View style={styles.trendContainer}>
             {getTrendIcon()}
             <Text style={[styles.trendText, { color: getTrendColor() }]}>
-              {stats.trendValue > 0 ? '+' : ''}{stats.trendValue}%
+              {stats.trendValue > 0 ? `+${stats.trendValue}%` : `${stats.trendValue}%`}
             </Text>
           </View>
         </View>
