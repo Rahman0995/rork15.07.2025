@@ -16,7 +16,9 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
-import { colors } from '@/constants/colors';
+import { PhotoUpload } from '@/components/PhotoUpload';
+import { useTheme } from '@/constants/theme';
+import { trpc } from '@/lib/trpc';
 import { 
   User, 
   Mail, 
@@ -60,6 +62,8 @@ const EditModal: React.FC<EditModalProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState(value);
   const [showPassword, setShowPassword] = useState(false);
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
 
   const handleSave = () => {
     if (inputValue.trim()) {
@@ -76,11 +80,11 @@ const EditModal: React.FC<EditModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
+        <View style={[styles.modalHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={onClose}>
             <X size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.modalTitle}>{title}</Text>
+          <Text style={[styles.modalTitle, { color: colors.text }]}>{title}</Text>
           <TouchableOpacity onPress={handleSave}>
             <Save size={24} color={colors.primary} />
           </TouchableOpacity>
@@ -117,8 +121,14 @@ const EditModal: React.FC<EditModalProps> = ({
 
 export default function AccountSettingsScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const { settings, updateSetting } = useSettingsStore();
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  
+  const updateUserMutation = trpc.users.updateUser.useMutation();
+  const uploadFileMutation = trpc.media.uploadFile.useMutation();
   const [editModal, setEditModal] = useState<{
     visible: boolean;
     field: string;
@@ -170,10 +180,66 @@ export default function AccountSettingsScreen() {
     });
   };
 
-  const handleSave = (value: string) => {
-    // In a real app, this would make an API call to update the user data
-    console.log(`Updating ${editModal.field} to:`, value);
-    Alert.alert('Успешно', 'Данные обновлены');
+  const handleSave = async (value: string) => {
+    try {
+      if (!user) return;
+      
+      // In a real app, this would make an API call to update the user data
+      const updatedUser = await updateUserMutation.mutateAsync({
+        id: user.id,
+        [editModal.field]: value,
+      });
+      
+      // Update local store
+      updateUser({ ...user, [editModal.field]: value });
+      
+      Alert.alert('Успешно', 'Данные обновлены');
+    } catch (error) {
+      console.error('Error updating user:', error);
+      Alert.alert('Ошибка', 'Не удалось обновить данные. Попробуйте еще раз.');
+    }
+  };
+  
+  const handlePhotoUpload = async (uri: string) => {
+    try {
+      if (!user) return;
+      
+      if (uri === '') {
+        // Remove photo
+        const updatedUser = await updateUserMutation.mutateAsync({
+          id: user.id,
+          avatar: '',
+        });
+        
+        updateUser({ ...user, avatar: '' });
+        Alert.alert('Успешно', 'Фотография удалена');
+        return;
+      }
+      
+      // Upload new photo
+      const result = await uploadFileMutation.mutateAsync({
+        name: `avatar_${user.id}_${Date.now()}.jpg`,
+        type: 'image',
+        size: 1024000, // Mock size
+        uploadedBy: user.id,
+        mimeType: 'image/jpeg',
+        data: uri,
+      });
+      
+      // Update user avatar
+      const updatedUser = await updateUserMutation.mutateAsync({
+        id: user.id,
+        avatar: uri, // In production, use result.url
+      });
+      
+      // Update local store
+      updateUser({ ...user, avatar: uri });
+      
+      Alert.alert('Успешно', 'Фотография профиля обновлена!');
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      throw error; // Re-throw to be handled by PhotoUpload component
+    }
   };
 
   const handleToggleSetting = (key: keyof typeof settings) => {
@@ -298,13 +364,21 @@ export default function AccountSettingsScreen() {
         <View style={styles.section}>
           <View style={styles.card}>
             <View style={styles.profileHeader}>
-              <Avatar uri={user.avatar} name={user.name} size={60} />
+              <TouchableOpacity onPress={() => setShowPhotoModal(true)}>
+                <Avatar uri={user.avatar} name={user.name} size={60} />
+                <View style={[styles.editAvatarOverlay, { backgroundColor: colors.primary }]}>
+                  <Camera size={16} color={colors.white} />
+                </View>
+              </TouchableOpacity>
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>{user.name}</Text>
                 <Text style={styles.profileRole}>{user.rank} • {user.unit}</Text>
               </View>
-              <TouchableOpacity style={styles.editAvatarButton}>
-                <Camera size={20} color={colors.primary} />
+              <TouchableOpacity 
+                style={[styles.editAvatarButton, { backgroundColor: colors.primary + '10' }]}
+                onPress={() => setShowPhotoModal(true)}
+              >
+                <Edit3 size={20} color={colors.primary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -452,11 +526,44 @@ export default function AccountSettingsScreen() {
         keyboardType={editModal.keyboardType}
         secureTextEntry={editModal.secureTextEntry}
       />
+      
+      {/* Photo Upload Modal */}
+      <Modal
+        visible={showPhotoModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowPhotoModal(false)}
+      >
+        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+            <TouchableOpacity onPress={() => setShowPhotoModal(false)}>
+              <X size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Изменить фото профиля</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          
+          <View style={styles.photoModalContent}>
+            <PhotoUpload
+              currentPhoto={user.avatar}
+              onPhotoSelected={handlePhotoUpload}
+              size={200}
+              label="Фотография профиля"
+              placeholder="Добавить фото профиля"
+            />
+            
+            <Text style={[styles.photoHint, { color: colors.textSecondary }]}>
+              Рекомендуемый размер: 400x400 пикселей{"\n"}
+              Поддерживаемые форматы: JPG, PNG
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -507,9 +614,32 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary + '10',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  editAvatarOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.background,
+  },
+  photoModalContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  photoHint: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 24,
+    lineHeight: 20,
   },
   settingItem: {
     flexDirection: 'row',

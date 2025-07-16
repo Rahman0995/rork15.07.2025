@@ -1,12 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Platform, ActionSheetIOS, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/constants/theme';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { ThemeDemo } from '@/components/ThemeDemo';
+import { trpc } from '@/lib/trpc';
 import { 
   User, 
   Mail, 
@@ -17,14 +19,21 @@ import {
   HelpCircle, 
   LogOut,
   ChevronRight,
-  Server
+  Server,
+  Camera,
+  Image as ImageIcon,
+  Edit3
 } from 'lucide-react-native';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateUser } = useAuthStore();
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  
+  const updateUserMutation = trpc.users.updateUser.useMutation();
+  const uploadFileMutation = trpc.media.uploadFile.useMutation();
   
   const handleLogout = () => {
     Alert.alert(
@@ -44,6 +53,130 @@ export default function ProfileScreen() {
     );
   };
   
+  const requestPermissions = async () => {
+    if (Platform.OS !== 'web') {
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
+        Alert.alert(
+          'Разрешения необходимы',
+          'Для загрузки фотографий необходимо разрешение на доступ к камере и галерее.',
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
+    }
+    return true;
+  };
+  
+  const uploadPhoto = async (uri: string) => {
+    try {
+      setIsUploadingPhoto(true);
+      
+      // In a real app, you would upload the image to your server/cloud storage
+      // For now, we'll simulate the upload and use the URI directly
+      const result = await uploadFileMutation.mutateAsync({
+        name: `avatar_${user?.id}_${Date.now()}.jpg`,
+        type: 'image',
+        size: 1024000, // Mock size
+        uploadedBy: user?.id || '',
+        mimeType: 'image/jpeg',
+        data: uri,
+      });
+      
+      // Update user avatar
+      if (user) {
+        const updatedUser = await updateUserMutation.mutateAsync({
+          id: user.id,
+          avatar: uri, // In production, use result.url
+        });
+        
+        // Update local store
+        updateUser({ ...user, avatar: uri });
+        
+        Alert.alert('Успешно', 'Фотография профиля обновлена!');
+      }
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      Alert.alert('Ошибка', 'Не удалось загрузить фотографию. Попробуйте еще раз.');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+  
+  const pickImageFromLibrary = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+    
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        base64: false,
+      });
+      
+      if (!result.canceled && result.assets[0]) {
+        await uploadPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Ошибка', 'Не удалось выбрать изображение.');
+    }
+  };
+  
+  const takePhoto = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+    
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        base64: false,
+      });
+      
+      if (!result.canceled && result.assets[0]) {
+        await uploadPhoto(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Ошибка', 'Не удалось сделать фотографию.');
+    }
+  };
+  
+  const showPhotoOptions = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Отмена', 'Сделать фото', 'Выбрать из галереи'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            takePhoto();
+          } else if (buttonIndex === 2) {
+            pickImageFromLibrary();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Изменить фото профиля',
+        'Выберите способ загрузки фотографии',
+        [
+          { text: 'Отмена', style: 'cancel' },
+          { text: 'Сделать фото', onPress: takePhoto },
+          { text: 'Выбрать из галереи', onPress: pickImageFromLibrary },
+        ]
+      );
+    }
+  };
+  
   const renderMenuItem = (icon: React.ReactNode, title: string, onPress: () => void) => (
     <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={onPress}>
       <View style={styles.menuItemLeft}>
@@ -59,14 +192,35 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Avatar 
-          uri={user.avatar} 
-          name={user.name} 
-          size={100} 
-        />
+        <View style={styles.avatarContainer}>
+          <Avatar 
+            uri={user.avatar} 
+            name={user.name} 
+            size={120} 
+          />
+          <TouchableOpacity 
+            style={[styles.editPhotoButton, { backgroundColor: colors.primary }]}
+            onPress={showPhotoOptions}
+            disabled={isUploadingPhoto}
+          >
+            {isUploadingPhoto ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Edit3 size={16} color={colors.white} />
+            )}
+          </TouchableOpacity>
+        </View>
         <Text style={[styles.name, { color: colors.text }]}>{user.name}</Text>
         <Text style={[styles.rank, { color: colors.primary }]}>{user.rank}</Text>
         <Text style={[styles.unit, { color: colors.textSecondary }]}>{user.unit}</Text>
+        
+        <TouchableOpacity 
+          style={[styles.editProfileButton, { backgroundColor: colors.primary + '10', borderColor: colors.primary }]}
+          onPress={() => router.push('/settings/profile-edit')}
+        >
+          <Edit3 size={16} color={colors.primary} />
+          <Text style={[styles.editProfileText, { color: colors.primary }]}>Редактировать профиль</Text>
+        </TouchableOpacity>
       </View>
       
       <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
@@ -149,6 +303,12 @@ export default function ProfileScreen() {
         )}
         
         {renderMenuItem(
+          <ImageIcon size={20} color={colors.primary} />,
+          'Мои фотографии',
+          () => router.push('/settings/photos')
+        )}
+        
+        {renderMenuItem(
           <HelpCircle size={20} color={colors.primary} />,
           'Помощь и поддержка',
           () => router.push('/settings/help')
@@ -178,6 +338,42 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     marginVertical: 24,
     paddingHorizontal: 16,
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: 8,
+  },
+  editPhotoButton: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+    borderWidth: 3,
+    borderColor: colors.background,
+  },
+  editProfileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginTop: 16,
+    gap: 8,
+  },
+  editProfileText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   name: {
     fontSize: 22,

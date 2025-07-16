@@ -14,6 +14,7 @@ interface AuthState {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (updatedUser: User) => void;
   clearError: () => void;
   getCurrentUser: () => User | null;
   initialize: () => void;
@@ -81,6 +82,9 @@ export const useAuthStore = create<AuthState>()(
           }
           set({ error: 'Ошибка при выходе из системы', isLoading: false });
         }
+      },
+      updateUser: (updatedUser: User) => {
+        set({ user: updatedUser, currentUser: updatedUser });
       },
       clearError: () => set({ error: null }),
       getCurrentUser: () => get().user,
