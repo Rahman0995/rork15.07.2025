@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../create-context';
 
 const mockNotifications = [
   {
@@ -105,7 +105,7 @@ export const createNotificationProcedure = publicProcedure
     message: z.string(),
     type: z.enum(['task', 'report', 'chat', 'system']),
     userId: z.string(),
-    data: z.record(z.unknown()).optional(),
+    data: z.record(z.string(), z.unknown()).optional(),
   }))
   .mutation(({ input }: { input: any }) => {
     const newNotification = {

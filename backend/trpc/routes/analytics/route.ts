@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../create-context';
 // Mock data for analytics - defined locally to avoid import issues
 interface Report {
   id: string;

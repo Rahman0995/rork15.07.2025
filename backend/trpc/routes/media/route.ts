@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../create-context';
 
 const mockFiles = [
   {
@@ -60,7 +60,7 @@ export const uploadFileProcedure = publicProcedure
       },
     };
     
-    mockFiles.push(newFile);
+    mockFiles.push(newFile as any);
     return newFile;
   });
 
@@ -163,13 +163,13 @@ export const getStorageStatsProcedure = publicProcedure
     const filesByType = {
       image: files.filter(f => f.type === 'image').length,
       file: files.filter(f => f.type === 'file').length,
-      video: 0, // No video files in mock data
+      video: files.filter(f => f.type === 'video').length
     };
     
     const sizeByType = {
       image: files.filter(f => f.type === 'image').reduce((sum, f) => sum + f.size, 0),
       file: files.filter(f => f.type === 'file').reduce((sum, f) => sum + f.size, 0),
-      video: 0, // No video files in mock data
+      video: files.filter(f => f.type === 'video').reduce((sum, f) => sum + f.size, 0)
     };
     
     return {
