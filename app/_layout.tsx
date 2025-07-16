@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
       retryDelay: 1000,
       staleTime: 5 * 60 * 1000, // 5 minutes
       // Add a global error handler
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error('Query error:', error);
       },
     },
