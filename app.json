@@ -26,7 +26,6 @@
       "NSLocationWhenInUseUsageDescription": "This app needs location access for location-based features",
       "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access for location-based features",
       "NSAppTransportSecurity": {
-        "NSAllowsArbitraryLoads": true,
         "NSExceptionDomains": {
           "localhost": {
             "NSExceptionAllowsInsecureHTTPLoads": true,
@@ -57,8 +56,7 @@
       "android.permission.VIBRATE",
       "android.permission.ACCESS_WIFI_STATE"
     ],
-    "usesCleartextTraffic": true,
-    "networkSecurityConfig": "./network_security_config.xml"
+    "usesCleartextTraffic": true
   },
   "web": {
     "favicon": "./assets/images/favicon.png",
@@ -117,26 +115,15 @@
     "eas": {
       "projectId": "0bffb82a-ba27-4f8f-889a-624d89941f86"
     },
-    "apiUrl": "http://YOUR_IP_ADDRESS:3000/api",
+    "apiUrl": "http://192.168.1.100:3000/api",
     "enableDebugMode": true,
     "enableAnalytics": false,
     "backendConfig": {
-      "baseUrl": "http://YOUR_IP_ADDRESS:3000",
+      "baseUrl": "http://192.168.1.100:3000",
       "trpcEndpoint": "/api/trpc",
-      "timeout": 30000,
+      "timeout": 15000,
       "retries": 3,
-      "enableMockData": true,
-      "enableOfflineMode": true
-    },
-    "security": {
-      "enableSSL": false,
-      "apiKeyRequired": false
-    },
-    "features": {
-      "pushNotifications": true,
-      "backgroundSync": true,
-      "offlineStorage": true,
-      "biometricAuth": false
+      "enableMockData": true
     }
   },
   "runtimeVersion": {
