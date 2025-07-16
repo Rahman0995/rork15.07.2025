@@ -37,7 +37,7 @@ export default function BackendTestScreen() {
       setTaskDescription('');
       refetchTasks();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert('Ошибка', `Не удалось создать задачу: ${error.message}`);
     },
   });
@@ -50,7 +50,7 @@ export default function BackendTestScreen() {
       setReportContent('');
       refetchReports();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       Alert.alert('Ошибка', `Не удалось создать отчет: ${error.message}`);
     },
   });
