@@ -19,9 +19,9 @@ export default function TabLayout() {
           backgroundColor: colors.card,
           borderTopColor: colors.borderLight,
           borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 80,
+          paddingTop: 6,
+          paddingBottom: 20,
+          height: 70,
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
@@ -48,7 +48,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 2,
         },
       }}
     >
