@@ -2,7 +2,7 @@ import { Tabs, router } from "expo-router";
 import React from "react";
 import { View, TouchableOpacity, Platform } from "react-native";
 import { BlurView } from "expo-blur";
-import { FileText, Home, MessageSquare, BarChart3, User, Calendar, Bell } from "lucide-react-native";
+import { FileText, Home, MessageSquare, BarChart3, User } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -134,20 +134,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: "Уведомления",
-          tabBarIcon: ({ color }) => <Bell size={20} color={color} />,
-        }}
-      />
+
       <Tabs.Screen
         name="reports"
         options={{
