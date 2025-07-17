@@ -37,14 +37,8 @@ const apiConfig = getApiConfig();
 // Create tRPC client for React components
 export const trpcClient = trpc.createClient({
   links: [
-    // Logger link for development
-    ...(apiConfig.enableDebugMode ? [
-      loggerLink({
-        enabled: (opts) =>
-          process.env.NODE_ENV === 'development' ||
-          (opts.direction === 'down' && opts.result instanceof Error),
-      })
-    ] : []),
+    // Logger link disabled to prevent CSS styling issues in React Native
+    // ...(apiConfig.enableDebugMode ? [loggerLink()] : []),
     
     // HTTP batch link for better performance
     httpBatchLink({
