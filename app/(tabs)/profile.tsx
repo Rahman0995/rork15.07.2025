@@ -24,7 +24,7 @@ import {
   Image as ImageIcon,
   Edit3
 } from 'lucide-react-native';
-import { notifyGlobalScroll } from './_layout';
+
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -150,10 +150,7 @@ export default function ProfileScreen() {
     }
   };
   
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    notifyGlobalScroll(currentScrollY);
-  };
+
   
   const showPhotoOptions = () => {
     if (Platform.OS === 'ios') {
@@ -199,8 +196,7 @@ export default function ProfileScreen() {
     <ScrollView 
       style={[styles.container, { backgroundColor: colors.background }]} 
       contentContainerStyle={styles.contentContainer}
-      onScroll={handleScroll}
-      scrollEventThrottle={16}
+
     >
       <View style={styles.header}>
         <View style={styles.avatarContainer}>

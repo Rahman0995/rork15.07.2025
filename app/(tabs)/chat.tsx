@@ -9,7 +9,7 @@ import { Button } from '@/components/Button';
 import { useTheme } from '@/constants/theme';
 import { Search, Users } from 'lucide-react-native';
 import { Chat } from '@/types';
-import { notifyGlobalScroll } from './_layout';
+
 
 type ListItem = 
   | { type: 'header'; id: string; title: string }
@@ -33,10 +33,7 @@ export default function ChatScreen() {
     router.push(`/chat/${chat.id}`);
   };
   
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    notifyGlobalScroll(currentScrollY);
-  };
+
   
   const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
@@ -108,8 +105,7 @@ export default function ChatScreen() {
           showsVerticalScrollIndicator={false}
           refreshing={isLoading}
           onRefresh={() => user && fetchChats(user.id)}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
+
         />
       ) : (
         <View style={styles.emptyContainer}>

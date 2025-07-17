@@ -170,7 +170,7 @@ export default function ProfileEditScreen() {
             <Button
               title="Отмена"
               onPress={handleCancel}
-              variant="ghost"
+              variant="outline"
               size="small"
               textStyle={{ color: colors.text }}
             />
@@ -179,7 +179,7 @@ export default function ProfileEditScreen() {
             <Button
               title="Сохранить"
               onPress={handleSave}
-              variant="ghost"
+              variant="outline"
               size="small"
               disabled={isLoading}
               textStyle={{ color: colors.primary }}
