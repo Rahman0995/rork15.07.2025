@@ -8,7 +8,7 @@ import { CalendarGrid } from '@/components/CalendarGrid';
 import { CalendarTaskCard } from '@/components/CalendarTaskCard';
 import { EventCard } from '@/components/EventCard';
 import { Calendar, Plus, Filter, ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { Task } from '@/types';
+import { Task, CalendarTask } from '@/types';
 
 export default function CalendarScreen() {
   const router = useRouter();
@@ -112,9 +112,11 @@ export default function CalendarScreen() {
         {/* Calendar Grid */}
         <View style={styles.calendarContainer}>
           <CalendarGrid
-            selectedDate={selectedDate}
-            onDateSelect={setSelectedDate}
-            tasks={tasks || []}
+            currentDate={selectedDate}
+            selectedDate={selectedDate.toISOString().split('T')[0]}
+            onDateSelect={(dateString: string) => setSelectedDate(new Date(dateString))}
+            events={[]}
+            tasks={(tasks || []).map(task => ({ ...task, startDate: task.dueDate }))}
           />
         </View>
 
@@ -158,19 +160,39 @@ export default function CalendarScreen() {
           
           <View style={styles.eventsContainer}>
             <EventCard
-              title="Планерка отдела"
-              time="09:00"
-              date="Завтра"
-              type="meeting"
-              participants={5}
+              event={{
+                id: '1',
+                title: 'Планерка отдела',
+                description: 'Еженедельная планерка отдела',
+                type: 'meeting',
+                status: 'scheduled',
+                startDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                endDate: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(),
+                organizer: 'user1',
+                participants: ['user1', 'user2', 'user3', 'user4', 'user5'],
+                isAllDay: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                unit: 'battalion'
+              }}
               onPress={() => {}}
             />
             <EventCard
-              title="Сдача отчета"
-              time="18:00"
-              date="Пятница"
-              type="deadline"
-              priority="high"
+              event={{
+                id: '2',
+                title: 'Сдача отчета',
+                description: 'Сдача месячного отчета',
+                type: 'other',
+                status: 'scheduled',
+                startDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+                endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString(),
+                organizer: 'user1',
+                participants: ['user1'],
+                isAllDay: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                unit: 'battalion'
+              }}
               onPress={() => {}}
             />
           </View>

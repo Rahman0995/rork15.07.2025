@@ -6,7 +6,7 @@ import { useNotificationsStore } from '@/store/notificationsStore';
 import { useAuthStore } from '@/store/authStore';
 import { NotificationItem } from '@/components/NotificationItem';
 import { Bell, Settings, Filter, Check, Trash2 } from 'lucide-react-native';
-import { Notification } from '@/types';
+import { AppNotification } from '@/store/notificationsStore';
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -17,19 +17,21 @@ export default function NotificationsScreen() {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (user?.id) {
+      fetchNotifications(user.id);
+    }
+  }, [user?.id]);
 
   const filteredNotifications = notifications?.filter(notification => {
-    if (filter === 'unread') return !notification.isRead;
-    if (filter === 'read') return notification.isRead;
+    if (filter === 'unread') return !notification.read;
+    if (filter === 'read') return notification.read;
     return true;
   }) || [];
 
-  const unreadCount = notifications?.filter(n => !n.isRead).length || 0;
+  const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
-  const handleNotificationPress = (notification: Notification) => {
-    if (!notification.isRead) {
+  const handleNotificationPress = (notification: AppNotification) => {
+    if (!notification.read) {
       markAsRead(notification.id);
     }
     
@@ -50,7 +52,9 @@ export default function NotificationsScreen() {
   };
 
   const handleMarkAllAsRead = () => {
-    markAllAsRead();
+    if (user?.id) {
+      markAllAsRead(user.id);
+    }
   };
 
   const handleDeleteNotification = (id: string) => {
@@ -138,7 +142,7 @@ export default function NotificationsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
-            onRefresh={fetchNotifications}
+            onRefresh={() => user?.id && fetchNotifications(user.id)}
             colors={[colors.primary]}
             tintColor={colors.primary}
           />
@@ -152,7 +156,6 @@ export default function NotificationsScreen() {
                 key={notification.id}
                 notification={notification}
                 onPress={() => handleNotificationPress(notification)}
-                onDelete={() => handleDeleteNotification(notification.id)}
               />
             ))}
           </View>
