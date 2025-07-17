@@ -3,6 +3,7 @@ import { publicProcedure } from '../../create-context';
 import { getDatabase, schema } from '../../database';
 import { eq, and, desc, asc } from 'drizzle-orm';
 import { activityLoggers } from '../../middleware/activity-logger';
+import { Report, ReportStatus, ReportComment } from '../../../../types';
 
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
