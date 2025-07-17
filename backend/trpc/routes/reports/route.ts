@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../backend/trpc/create-context';
+import { publicProcedure } from '../../create-context';
 // Mock data for reports - defined locally to avoid import issues
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
@@ -299,7 +299,7 @@ export const approveReportProcedure = publicProcedure
 
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input?: { approverId: string } }) => {
     return mockReports.filter(report => 
       report.status === 'pending' && 
       report.approvers?.includes(input.approverId) &&
