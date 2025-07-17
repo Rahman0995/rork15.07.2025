@@ -27,6 +27,10 @@ config.watchFolders = [
 
 // Web-specific optimizations
 if (process.env.EXPO_PLATFORM === 'web') {
+  if (!config.resolver) {
+    config.resolver = {};
+  }
+  // @ts-ignore - Metro resolver supports alias but types may not be up to date
   config.resolver.alias = {
     'react-native': 'react-native-web',
   };
