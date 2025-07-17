@@ -111,10 +111,12 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ 
       headerBackTitle: "Назад",
-      headerStyle: {
-        backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
-        borderBottomColor: Platform.OS === 'web' ? colors.borderLight : 'transparent',
-        borderBottomWidth: Platform.OS === 'web' ? 1 : 0,
+      headerStyle: Platform.OS === 'web' ? {
+        backgroundColor: colors.card,
+        borderBottomColor: colors.borderLight,
+        borderBottomWidth: 1,
+      } : {
+        backgroundColor: 'transparent',
         ...(Platform.OS === 'ios' && {
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 4 },
