@@ -26,7 +26,7 @@ app.use("*", prettyJSON());
 
 // Enable CORS for all routes
 app.use("*", cors({
-  origin: config.server.cors.origin,
+  origin: config.server.cors.origin === true ? '*' : config.server.cors.origin as string[],
   credentials: config.server.cors.credentials,
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],

@@ -36,7 +36,6 @@ const apiConfig = getApiConfig();
 
 // Create tRPC client for React components
 export const trpcClient = trpc.createClient({
-  transformer: superjson,
   links: [
     // Logger link for development
     ...(apiConfig.enableDebugMode ? [
@@ -50,6 +49,7 @@ export const trpcClient = trpc.createClient({
     // HTTP batch link for better performance
     httpBatchLink({
       url: `${apiConfig.baseUrl}/api/trpc`,
+      transformer: superjson,
       
       // Custom fetch with error handling
       fetch: async (url, options) => {
@@ -103,10 +103,10 @@ export const trpcClient = trpc.createClient({
 import { createTRPCProxyClient } from '@trpc/client';
 
 export const vanillaTrpcClient = createTRPCProxyClient<AppRouter>({
-  transformer: superjson,
   links: [
     httpBatchLink({
       url: `${apiConfig.baseUrl}/api/trpc`,
+      transformer: superjson,
       headers: () => ({
         'Content-Type': 'application/json',
         'Accept': 'application/json',
