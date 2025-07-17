@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
+import { publicProcedure } from '../../../backend/trpc/create-context';
 // Mock data for tasks - defined locally to avoid import issues
 type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 type TaskPriority = 'low' | 'medium' | 'high';
