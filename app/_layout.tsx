@@ -113,11 +113,15 @@ function RootLayoutNav() {
       headerBackTitle: "Назад",
       headerStyle: {
         backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
-        shadowColor: colors.shadow,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 8,
+        ...(Platform.OS === 'ios' && {
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+        }),
+        ...(Platform.OS === 'android' && {
+          elevation: 8,
+        }),
       },
       headerBackground: Platform.OS !== 'web' ? () => (
         <BlurView
