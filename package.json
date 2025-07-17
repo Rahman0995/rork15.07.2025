@@ -97,14 +97,17 @@
     "jest": "^29.7.0",
     "typescript": "~5.8.3"
   },
-  "private": true,
-  "expo": {
+  {
+// ... other package.json content ...
+"private": true,
+"expo": {
   "web": {
     "bundler": "metro"
-},
-"doctor": {
-  "reactNativeDirectoryCheck": {
-    "listUnknownPackages": false
+  },
+  "doctor": {
+    "reactNativeDirectoryCheck": {
+      "listUnknownPackages": false
+    }
   }
 }
 }
