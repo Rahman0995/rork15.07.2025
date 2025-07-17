@@ -411,10 +411,10 @@ export default function AnalyticsScreen() {
       </View>
       
       <View style={styles.tabsContainer}>
-        {renderTabButton('overview', 'Обзор', <BarChart2 size={16} color={activeTab === 'overview' ? 'white' : colors.primary} />)}
-        {renderTabButton('units', 'Подразделения', <Users size={16} color={activeTab === 'units' ? 'white' : colors.primary} />)}
-        {renderTabButton('users', 'Пользователи', <Users size={16} color={activeTab === 'users' ? 'white' : colors.primary} />)}
-        {renderTabButton('trends', 'Тренды', <TrendingUp size={16} color={activeTab === 'trends' ? 'white' : colors.primary} />)}
+        {renderTabButton('overview', 'Обзор', <BarChart2 size={18} color={activeTab === 'overview' ? 'white' : colors.primary} />)}
+        {renderTabButton('units', 'Подразделения', <Users size={18} color={activeTab === 'units' ? 'white' : colors.primary} />)}
+        {renderTabButton('users', 'Пользователи', <Users size={18} color={activeTab === 'users' ? 'white' : colors.primary} />)}
+        {renderTabButton('trends', 'Тренды', <TrendingUp size={18} color={activeTab === 'trends' ? 'white' : colors.primary} />)}
       </View>
       
       <ScrollView 
@@ -499,23 +499,27 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.card,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
+    paddingHorizontal: 4,
   },
   tabButton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    marginHorizontal: 2,
   },
   activeTabButton: {
     backgroundColor: colors.primary,
   },
   tabButtonText: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.primary,
-    marginLeft: 4,
+    marginTop: 4,
     fontWeight: '500',
+    textAlign: 'center',
   },
   activeTabButtonText: {
     color: 'white',

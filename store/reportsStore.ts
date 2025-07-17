@@ -45,7 +45,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     try {
       const reports = await trpcClient.reports.getAll.query();
       // Transform backend data to match frontend interface
-      const transformedReports = reports.map((report: any) => ({
+      const transformedReports = reports.map((report: Report) => ({
         ...report,
         type: 'text' as const,
         attachments: [],
