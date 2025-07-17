@@ -61,6 +61,9 @@ function RootLayoutNav() {
       segments[0] === 'reports' || 
       (segments.length < 1 && isAuthenticated); // Home route
 
+    // Only redirect if we're not already in the middle of navigation
+    const currentRoute = segments.join('/');
+    
     console.log('Navigation check:', {
       segments,
       isAuthenticated,
@@ -70,9 +73,6 @@ function RootLayoutNav() {
       user: !!user,
       currentRoute
     });
-
-    // Only redirect if we're not already in the middle of navigation
-    const currentRoute = segments.join('/');
     
     if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
       // Redirect to login if not authenticated and trying to access protected routes
