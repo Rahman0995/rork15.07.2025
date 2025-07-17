@@ -4,21 +4,19 @@ import path from 'path';
 const config = getDefaultConfig(__dirname);
 
 // Customize the Metro configuration to fix bundling issues
-if (config.resolver) {
-  config.resolver.blockList = [
+config.resolver = {
+  ...config.resolver,
+  blockList: [
     // Block any nested duplicate directories
     /.*\/home\/user\/rork-app\/home\/.*/,
     // Block node_modules in nested directories
     /.*\/home\/user\/rork-app\/.*\/node_modules\/.*/,
     // Block duplicate app directories
     /.*\/home\/user\/rork-app\/.*\/app\/.*/,
-  ];
-
-  config.resolver.platforms = ['ios', 'android', 'native', 'web'];
-  
-  // Ensure proper resolution order
-  config.resolver.sourceExts = ['js', 'jsx', 'ts', 'tsx', 'json'];
-}
+  ],
+  platforms: ['ios', 'android', 'native', 'web'],
+  sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
+};
 
 // Ensure we're only watching the root directory
 config.watchFolders = [
@@ -27,12 +25,11 @@ config.watchFolders = [
 
 // Web-specific optimizations
 if (process.env.EXPO_PLATFORM === 'web') {
-  if (!config.resolver) {
-    config.resolver = {};
-  }
-  // @ts-ignore - Metro resolver supports alias but types may not be up to date
-  config.resolver.alias = {
-    'react-native': 'react-native-web',
+  config.resolver = {
+    ...config.resolver,
+    alias: {
+      'react-native': 'react-native-web',
+    },
   };
 }
 
