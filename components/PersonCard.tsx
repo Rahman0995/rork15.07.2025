@@ -98,32 +98,36 @@ export const PersonCard: React.FC<PersonCardProps> = ({
           onPressOut={handlePressOut}
           activeOpacity={1}
         >
-        <View style={styles.gridHeader}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{getInitials(person.name)}</Text>
+          <View style={styles.gridHeader}>
+            <View style={styles.avatarContainer}>
+              <Text style={styles.avatarText}>{getInitials(person.name)}</Text>
+            </View>
+            <View style={[styles.gridStatusDot, { backgroundColor: getStatusColor(person.status) }]} />
           </View>
-          <View style={[styles.gridStatusDot, { backgroundColor: getStatusColor(person.status) }]} />
-        </View>
-        
-        <View style={styles.gridContent}>
-          <Text style={styles.gridName} numberOfLines={2}>
-            {person.name}
-          </Text>
-          <Text style={styles.gridRank}>{person.rank}</Text>
-          <Text style={styles.gridPosition} numberOfLines={2}>
-            {person.position}
-          </Text>
-        </View>
-      </TouchableOpacity>
+          
+          <View style={styles.gridContent}>
+            <Text style={styles.gridName} numberOfLines={2}>
+              {person.name}
+            </Text>
+            <Text style={styles.gridRank}>{person.rank}</Text>
+            <Text style={styles.gridPosition} numberOfLines={2}>
+              {person.position}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
 
   return (
-    <TouchableOpacity 
-      style={[styles.container, style]}
-      onPress={() => onPress?.(person)}
-      activeOpacity={0.8}
-    >
+    <Animated.View style={[animatedStyle, style]}>
+      <TouchableOpacity 
+        style={styles.container}
+        onPress={() => onPress?.(person)}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>{getInitials(person.name)}</Text>
@@ -170,6 +174,7 @@ export const PersonCard: React.FC<PersonCardProps> = ({
         </View>
       )}
     </TouchableOpacity>
+    </Animated.View>
   );
 };
 
