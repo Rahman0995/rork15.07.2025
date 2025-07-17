@@ -29,7 +29,7 @@ const queryClient = new QueryClient({
 function RootLayoutNav() {
   const { isAuthenticated, user, isInitialized, initialize } = useAuthStore();
   const { registerForPushNotifications } = useNotificationsStore();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
@@ -113,8 +113,6 @@ function RootLayoutNav() {
       headerBackTitle: "Назад",
       headerStyle: {
         backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
-        borderBottomColor: colors.borderLight,
-        borderBottomWidth: 1,
         shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
