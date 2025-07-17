@@ -113,19 +113,21 @@ function RootLayoutNav() {
       headerBackTitle: "Назад",
       headerStyle: {
         backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
+        borderBottomColor: Platform.OS === 'web' ? colors.borderLight : 'transparent',
+        borderBottomWidth: Platform.OS === 'web' ? 1 : 0,
         ...(Platform.OS === 'ios' && {
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 16,
         }),
         ...(Platform.OS === 'android' && {
-          elevation: 8,
+          elevation: 12,
         }),
       },
       headerBackground: Platform.OS !== 'web' ? () => (
         <BlurView
-          intensity={100}
+          intensity={95}
           tint={isDark ? 'dark' : 'light'}
           style={{
             position: 'absolute',
@@ -133,17 +135,22 @@ function RootLayoutNav() {
             left: 0,
             right: 0,
             bottom: 0,
-            opacity: 0.98,
+            backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
           }}
         />
       ) : undefined,
       headerTitleStyle: {
         color: colors.text,
         fontWeight: '700' as const,
-        fontSize: 17,
-        letterSpacing: -0.2,
+        fontSize: 18,
+        letterSpacing: -0.3,
       },
       headerTintColor: colors.primary,
+      headerBackTitleStyle: {
+        color: colors.primary,
+        fontSize: 16,
+        fontWeight: '500' as const,
+      },
     }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

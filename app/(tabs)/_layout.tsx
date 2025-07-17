@@ -23,71 +23,71 @@ export default function TabLayout() {
     <View style={{ 
       flexDirection: 'row', 
       alignItems: 'center', 
-      gap: 8, 
+      gap: 10, 
       marginRight: 16,
-      paddingVertical: 4,
+      paddingVertical: 6,
     }}>
       <TouchableOpacity 
         style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: colors.backgroundSecondary,
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
           alignItems: 'center',
           justifyContent: 'center',
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 4,
-          elevation: 2,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+          elevation: 4,
           borderWidth: 1,
-          borderColor: colors.borderLight,
+          borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
         }}
         onPress={() => router.push('/personnel')}
-        activeOpacity={0.7}
+        activeOpacity={0.6}
       >
-        <Users size={20} color={colors.text} strokeWidth={2} />
+        <Users size={21} color={colors.text} strokeWidth={2.2} />
       </TouchableOpacity>
       
       <TouchableOpacity 
         style={{
           position: 'relative',
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: colors.backgroundSecondary,
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
           alignItems: 'center',
           justifyContent: 'center',
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 4,
-          elevation: 2,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+          elevation: 4,
           borderWidth: 1,
-          borderColor: colors.borderLight,
+          borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
         }}
         onPress={() => router.push('/notifications')}
-        activeOpacity={0.7}
+        activeOpacity={0.6}
       >
-        <Bell size={20} color={colors.text} strokeWidth={2} />
+        <Bell size={21} color={colors.text} strokeWidth={2.2} />
         {unreadNotifications.length > 0 && (
           <View style={{
             position: 'absolute',
-            top: -2,
-            right: -2,
-            minWidth: 18,
-            height: 18,
-            borderRadius: 9,
+            top: -3,
+            right: -3,
+            minWidth: 20,
+            height: 20,
+            borderRadius: 10,
             backgroundColor: colors.error,
             alignItems: 'center',
             justifyContent: 'center',
-            borderWidth: 2,
-            borderColor: colors.card,
+            borderWidth: 2.5,
+            borderColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
             shadowColor: colors.error,
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.3,
-            shadowRadius: 2,
-            elevation: 3,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.4,
+            shadowRadius: 4,
+            elevation: 5,
           }}>
             <NotificationBadge count={unreadNotifications.length} />
           </View>
@@ -193,13 +193,13 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textTertiary,
         headerStyle: {
           backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
-          borderBottomColor: colors.borderLight,
+          borderBottomColor: Platform.OS === 'web' ? colors.borderLight : 'transparent',
           borderBottomWidth: Platform.OS === 'web' ? 1 : 0,
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 8,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 16,
+          elevation: 12,
         },
         headerBackground: Platform.OS !== 'web' ? () => (
           <BlurView
@@ -217,9 +217,9 @@ export default function TabLayout() {
         ) : undefined,
         headerTitleStyle: {
           color: colors.text,
-          fontWeight: '700',
-          fontSize: 17,
-          letterSpacing: -0.2,
+          fontWeight: '700' as const,
+          fontSize: 18,
+          letterSpacing: -0.3,
         },
         headerRight: () => <HeaderRightComponent />,
       }}
