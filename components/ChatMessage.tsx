@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert, Animated } from 'react-native';
 import { ChatMessage as ChatMessageType } from '@/types';
 import { formatTime } from '@/utils/dateUtils';
 import { useTheme } from '@/constants/theme';
@@ -22,6 +22,31 @@ const VoiceMessage: React.FC<{
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(attachment.duration || 0);
+  const pulseAnim = useState(new Animated.Value(1))[0];
+  
+  useEffect(() => {
+    if (isPlaying) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [isPlaying, pulseAnim]);
   
   const playPauseAudio = async () => {
     if (Platform.OS === 'web') {
@@ -49,6 +74,9 @@ const VoiceMessage: React.FC<{
         newSound.setOnPlaybackStatusUpdate((status: any) => {
           if (status.isLoaded) {
             setPosition(status.positionMillis || 0);
+            if (status.durationMillis) {
+              setDuration(Math.floor(status.durationMillis / 1000));
+            }
             if (status.didJustFinish) {
               setIsPlaying(false);
               setPosition(0);
@@ -75,27 +103,67 @@ const VoiceMessage: React.FC<{
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
   
+  const progress = duration > 0 ? (position / 1000) / duration : 0;
+  
+  // Generate waveform bars with more realistic pattern
+  const generateWaveformBars = () => {
+    const bars = [];
+    const barCount = 30;
+    // Create a more realistic waveform pattern
+    const waveformPattern = [
+      0.3, 0.5, 0.8, 0.6, 0.9, 0.4, 0.7, 0.5, 0.8, 0.3,
+      0.6, 0.9, 0.7, 0.4, 0.8, 0.5, 0.6, 0.9, 0.3, 0.7,
+      0.4, 0.8, 0.6, 0.5, 0.9, 0.3, 0.7, 0.4, 0.8, 0.5
+    ];
+    
+    for (let i = 0; i < barCount; i++) {
+      const height = waveformPattern[i] || 0.5;
+      const isActive = progress > i / barCount;
+      bars.push(
+        <View
+          key={i}
+          style={[
+            styles.waveformBar,
+            {
+              height: `${height * 100}%`,
+              backgroundColor: isActive 
+                ? (isCurrentUser ? 'rgba(255,255,255,0.9)' : colors.primary)
+                : (isCurrentUser ? 'rgba(255,255,255,0.3)' : colors.border),
+              opacity: isActive ? 1 : 0.6
+            }
+          ]}
+        />
+      );
+    }
+    return bars;
+  };
+  
   return (
     <View style={styles.voiceContainer}>
-      <TouchableOpacity onPress={playPauseAudio} style={styles.playButton}>
+      <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+        <TouchableOpacity onPress={playPauseAudio} style={[
+          styles.playButton,
+          { backgroundColor: isCurrentUser ? 'rgba(255,255,255,0.2)' : colors.primaryLight }
+        ]}>
         {isPlaying ? (
-          <Pause size={16} color={isCurrentUser ? 'white' : colors.primary} />
+          <Pause size={18} color={isCurrentUser ? 'white' : colors.primary} />
         ) : (
-          <Play size={16} color={isCurrentUser ? 'white' : colors.primary} />
+          <Play size={18} color={isCurrentUser ? 'white' : colors.primary} style={{ marginLeft: 2 }} />
         )}
-      </TouchableOpacity>
-      <View style={styles.waveform}>
-        <View style={[
-          styles.waveformProgress,
-          { backgroundColor: isCurrentUser ? 'rgba(255,255,255,0.3)' : colors.primary + '30' }
-        ]} />
+        </TouchableOpacity>
+      </Animated.View>
+      
+      <View style={styles.waveformContainer}>
+        <View style={styles.waveform}>
+          {generateWaveformBars()}
+        </View>
+        <Text style={[
+          styles.voiceDuration,
+          { color: isCurrentUser ? 'rgba(255,255,255,0.8)' : colors.textSecondary }
+        ]}>
+          {isPlaying ? formatDuration(Math.floor(position / 1000)) : formatDuration(duration)}
+        </Text>
       </View>
-      <Text style={[
-        styles.voiceDuration,
-        { color: isCurrentUser ? 'rgba(255,255,255,0.8)' : colors.textSecondary }
-      ]}>
-        {formatDuration(attachment.duration || 0)}
-      </Text>
     </View>
   );
 };
@@ -291,34 +359,51 @@ const createStyles = (colors: any) => StyleSheet.create({
   voiceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    minWidth: 120,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    minWidth: 180,
   },
   playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  waveformContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   waveform: {
     flex: 1,
-    height: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 10,
-    marginRight: 8,
-    overflow: 'hidden',
+    height: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginRight: 12,
+    paddingHorizontal: 4,
   },
-  waveformProgress: {
-    height: '100%',
-    width: '30%',
-    borderRadius: 10,
+  waveformBar: {
+    width: 2.5,
+    borderRadius: 1.25,
+    minHeight: 6,
+    maxHeight: 28,
   },
   voiceDuration: {
-    fontSize: 11,
-    minWidth: 30,
+    fontSize: 12,
+    fontWeight: '500',
+    minWidth: 35,
+    textAlign: 'right',
   },
   timeContainer: {
     position: 'absolute',
