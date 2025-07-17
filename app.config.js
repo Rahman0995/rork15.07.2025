@@ -33,7 +33,6 @@ expo: {
   name: IS_DEV ? 'sever_ahmat (Dev)' : 'sever_ahmat',
   slug: 'military-unit-management-application',
   version: '1.0.1',
-  projectId: '0bffb82a-ba27-4f8f-889a-624d89941f86',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'myapp',
@@ -95,8 +94,7 @@ expo: {
       'android.permission.WAKE_LOCK',
       'android.permission.VIBRATE',
       'android.permission.ACCESS_WIFI_STATE'
-    ],
-    // usesCleartextTraffic is not a valid property in app config schema
+    ]
   },
   web: {
     favicon: './assets/images/favicon.png',
