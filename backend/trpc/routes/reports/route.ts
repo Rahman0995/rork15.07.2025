@@ -1,98 +1,31 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-// Mock data for reports - defined locally to avoid import issues
+import { getDatabase, schema } from '../../database';
+import { eq, and, desc, asc } from 'drizzle-orm';
+import { activityLoggers } from '../../middleware/activity-logger';
+
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
 
-interface Attachment {
-  id: string;
-  name: string;
-  type: 'file' | 'image' | 'video';
-  url: string;
-}
-
-interface ReportComment {
-  id: string;
-  reportId: string;
-  authorId: string;
-  content: string;
-  createdAt: string;
-  isRevision: boolean;
-  attachments?: Attachment[];
-}
-
-interface ReportApproval {
-  id: string;
-  reportId: string;
-  approverId: string;
-  status: 'approved' | 'rejected' | 'needs_revision';
-  comment?: string;
-  createdAt: string;
-}
-
-interface Report {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  createdAt: string;
-  updatedAt: string;
-  status: ReportStatus;
-  type?: ReportType;
-  attachments?: Attachment[];
-  unit?: string;
-  priority?: 'low' | 'medium' | 'high';
-  approvers?: string[];
-  currentApprover?: string;
-  approvals?: ReportApproval[];
-  comments?: ReportComment[];
-}
-
-const mockReports: Report[] = [
-  {
-    id: '1',
-    title: 'Security Report',
-    content: 'All security systems are functioning normally',
-    authorId: '1',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'approved',
-    type: 'text',
-    unit: 'Security',
-    priority: 'high',
-    approvers: ['2'],
-    currentApprover: '2',
-    approvals: [],
-    comments: [],
-  },
-  {
-    id: '2',
-    title: 'Weekly Report',
-    content: 'Summary of weekly activities',
-    authorId: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    status: 'pending',
-    type: 'text',
-    unit: 'Operations',
-    priority: 'medium',
-    approvers: ['2'],
-    currentApprover: '2',
-    approvals: [],
-    comments: [],
-  },
-];
-
-const getReport = (id: string): Report | undefined => {
-  return mockReports.find(report => report.id === id);
-};
-
-const getUserReports = (userId: string): Report[] => {
-  return mockReports.filter(report => report.authorId === userId);
-};
-
-const getUnitReports = (unit: string): Report[] => {
-  return mockReports.filter(report => report.unit === unit);
+// Helper functions to work with database
+const getReportWithRelations = async (reportId: string) => {
+  const db = getDatabase();
+  
+  const report = await db.select().from(schema.reports).where(eq(schema.reports.id, reportId)).get();
+  if (!report) return null;
+  
+  const comments = await db.select().from(schema.reportComments).where(eq(schema.reportComments.reportId, reportId));
+  const approvals = await db.select().from(schema.reportApprovals).where(eq(schema.reportApprovals.reportId, reportId));
+  const attachments = await db.select().from(schema.attachments).where(
+    and(eq(schema.attachments.entityType, 'report'), eq(schema.attachments.entityId, reportId))
+  );
+  
+  return {
+    ...report,
+    comments,
+    approvals,
+    attachments
+  };
 };
 
 export const getReportsProcedure = publicProcedure
@@ -103,40 +36,61 @@ export const getReportsProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number } }) => {
-    let reports = [...mockReports];
+  .use(activityLoggers.view('reports'))
+  .query(async ({ input }) => {
+    const db = getDatabase();
+    
+    let query = db.select().from(schema.reports);
+    const conditions = [];
     
     if (input?.status) {
-      reports = reports.filter(report => report.status === input.status);
+      conditions.push(eq(schema.reports.status, input.status));
     }
     
     if (input?.authorId) {
-      reports = reports.filter(report => report.authorId === input.authorId);
+      conditions.push(eq(schema.reports.authorId, input.authorId));
     }
     
     if (input?.unit) {
-      reports = reports.filter(report => report.unit === input.unit);
+      conditions.push(eq(schema.reports.unit, input.unit));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
     
     // Sort by creation date (newest first)
-    reports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    query = query.orderBy(desc(schema.reports.createdAt));
     
-    if (input?.offset || input?.limit) {
-      const offset = input.offset || 0;
-      const limit = input.limit || 10;
-      reports = reports.slice(offset, offset + limit);
+    if (input?.limit) {
+      query = query.limit(input.limit);
     }
+    
+    if (input?.offset) {
+      query = query.offset(input.offset);
+    }
+    
+    const reports = await query;
+    
+    // Get total count
+    let countQuery = db.select({ count: schema.reports.id }).from(schema.reports);
+    if (conditions.length > 0) {
+      countQuery = countQuery.where(and(...conditions));
+    }
+    const totalResult = await countQuery;
+    const total = totalResult.length;
     
     return {
       reports,
-      total: mockReports.length,
+      total,
     };
   });
 
 export const getReportByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }: { input: { id: string } }) => {
-    const report = getReport(input.id);
+  .use(activityLoggers.viewReport)
+  .query(async ({ input }) => {
+    const report = await getReportWithRelations(input.id);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -152,7 +106,6 @@ export const createReportProcedure = publicProcedure
     unit: z.string().optional(),
     priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
     dueDate: z.string().optional(),
-    approvers: z.array(z.string()).optional().default([]),
     attachments: z.array(z.object({
       id: z.string(),
       name: z.string(),
@@ -160,29 +113,43 @@ export const createReportProcedure = publicProcedure
       url: z.string(),
     })).optional().default([]),
   }))
-  .mutation(({ input }: { input: { title: string; content: string; authorId: string; type?: ReportType; unit?: string; priority?: 'low' | 'medium' | 'high'; dueDate?: string; approvers?: string[]; attachments?: Attachment[] } }) => {
-    const reportId = `report_${Date.now()}`;
-    const newReport: Report = {
+  .use(activityLoggers.createReport)
+  .mutation(async ({ input }) => {
+    const db = getDatabase();
+    const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Insert report
+    const newReport = {
       id: reportId,
       title: input.title,
       content: input.content,
       authorId: input.authorId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: 'draft',
+      status: 'draft' as const,
       type: input.type || 'text',
-      attachments: input.attachments || [],
-      unit: input.unit || '',
+      unit: input.unit || null,
       priority: input.priority || 'medium',
-
-      approvers: input.approvers || [],
-      currentApprover: input.approvers?.[0],
-      approvals: [],
-      comments: [],
+      dueDate: input.dueDate || null,
+      currentApprover: null,
+      currentRevision: 1,
     };
     
-    mockReports.push(newReport);
-    return newReport;
+    await db.insert(schema.reports).values(newReport);
+    
+    // Insert attachments if any
+    if (input.attachments && input.attachments.length > 0) {
+      const attachmentValues = input.attachments.map(att => ({
+        id: att.id,
+        name: att.name,
+        type: att.type,
+        url: att.url,
+        entityType: 'report' as const,
+        entityId: reportId,
+      }));
+      
+      await db.insert(schema.attachments).values(attachmentValues);
+    }
+    
+    return await getReportWithRelations(reportId);
   });
 
 export const updateReportProcedure = publicProcedure
@@ -200,35 +167,77 @@ export const updateReportProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.id);
-    if (reportIndex === -1) {
+  .use(activityLoggers.updateReport)
+  .mutation(async ({ input }) => {
+    const db = getDatabase();
+    
+    // Check if report exists
+    const existingReport = await db.select().from(schema.reports).where(eq(schema.reports.id, input.id)).get();
+    if (!existingReport) {
       throw new Error('Report not found');
     }
     
-    const currentReport = mockReports[reportIndex];
-    const updatedReport = {
-      ...currentReport,
-      ...input,
-      updatedAt: new Date().toISOString(),
-    };
+    // Update report
+    const updateData: any = {};
+    if (input.title !== undefined) updateData.title = input.title;
+    if (input.content !== undefined) updateData.content = input.content;
+    if (input.status !== undefined) updateData.status = input.status;
+    if (input.priority !== undefined) updateData.priority = input.priority;
+    if (input.dueDate !== undefined) updateData.dueDate = input.dueDate;
     
-
+    if (Object.keys(updateData).length > 0) {
+      await db.update(schema.reports).set(updateData).where(eq(schema.reports.id, input.id));
+    }
     
-    mockReports[reportIndex] = updatedReport;
-    return updatedReport;
+    // Update attachments if provided
+    if (input.attachments) {
+      // Delete existing attachments
+      await db.delete(schema.attachments).where(
+        and(eq(schema.attachments.entityType, 'report'), eq(schema.attachments.entityId, input.id))
+      );
+      
+      // Insert new attachments
+      if (input.attachments.length > 0) {
+        const attachmentValues = input.attachments.map(att => ({
+          id: att.id,
+          name: att.name,
+          type: att.type,
+          url: att.url,
+          entityType: 'report' as const,
+          entityId: input.id,
+        }));
+        
+        await db.insert(schema.attachments).values(attachmentValues);
+      }
+    }
+    
+    return await getReportWithRelations(input.id);
   });
 
 export const deleteReportProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }: { input: any }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.id);
-    if (reportIndex === -1) {
+  .use(activityLoggers.deleteReport)
+  .mutation(async ({ input }) => {
+    const db = getDatabase();
+    
+    // Get report before deletion
+    const reportToDelete = await getReportWithRelations(input.id);
+    if (!reportToDelete) {
       throw new Error('Report not found');
     }
     
-    const deletedReport = mockReports.splice(reportIndex, 1)[0];
-    return { success: true, deletedReport };
+    // Delete related data first (foreign key constraints)
+    await db.delete(schema.attachments).where(
+      and(eq(schema.attachments.entityType, 'report'), eq(schema.attachments.entityId, input.id))
+    );
+    await db.delete(schema.reportComments).where(eq(schema.reportComments.reportId, input.id));
+    await db.delete(schema.reportApprovals).where(eq(schema.reportApprovals.reportId, input.id));
+    await db.delete(schema.reportRevisions).where(eq(schema.reportRevisions.reportId, input.id));
+    
+    // Delete the report
+    await db.delete(schema.reports).where(eq(schema.reports.id, input.id));
+    
+    return { success: true, deletedReport: reportToDelete };
   });
 
 export const addReportCommentProcedure = publicProcedure
@@ -244,25 +253,47 @@ export const addReportCommentProcedure = publicProcedure
       url: z.string(),
     })).optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
-    if (reportIndex === -1) {
+  .use(activityLoggers.create('comment'))
+  .mutation(async ({ input }) => {
+    const db = getDatabase();
+    
+    // Check if report exists
+    const report = await db.select().from(schema.reports).where(eq(schema.reports.id, input.reportId)).get();
+    if (!report) {
       throw new Error('Report not found');
     }
     
-    const newComment: ReportComment = {
-      id: `comment_${Date.now()}`,
+    const commentId = `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Insert comment
+    const newComment = {
+      id: commentId,
       reportId: input.reportId,
       authorId: input.authorId,
       content: input.content,
-      createdAt: new Date().toISOString(),
       isRevision: input.isRevision || false,
-      attachments: input.attachments,
     };
     
-    const report = mockReports[reportIndex];
-    report.comments = [...(report.comments || []), newComment];
-    report.updatedAt = new Date().toISOString();
+    await db.insert(schema.reportComments).values(newComment);
+    
+    // Insert attachments if any
+    if (input.attachments && input.attachments.length > 0) {
+      const attachmentValues = input.attachments.map(att => ({
+        id: att.id,
+        name: att.name,
+        type: att.type,
+        url: att.url,
+        entityType: 'comment' as const,
+        entityId: commentId,
+      }));
+      
+      await db.insert(schema.attachments).values(attachmentValues);
+    }
+    
+    // Update report's updatedAt
+    await db.update(schema.reports).set({ 
+      updatedAt: new Date().toISOString() 
+    }).where(eq(schema.reports.id, input.reportId));
     
     return newComment;
   });
@@ -274,35 +305,49 @@ export const approveReportProcedure = publicProcedure
     status: z.enum(['approved', 'rejected', 'needs_revision']),
     comment: z.string().optional(),
   }))
-  .mutation(({ input }: { input: any }) => {
-    const reportIndex = mockReports.findIndex(report => report.id === input.reportId);
-    if (reportIndex === -1) {
+  .use(activityLoggers.approveReport)
+  .mutation(async ({ input }) => {
+    const db = getDatabase();
+    
+    // Check if report exists
+    const report = await db.select().from(schema.reports).where(eq(schema.reports.id, input.reportId)).get();
+    if (!report) {
       throw new Error('Report not found');
     }
     
-    const newApproval: ReportApproval = {
-      id: `approval_${Date.now()}`,
+    const approvalId = `approval_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Insert approval
+    const newApproval = {
+      id: approvalId,
       reportId: input.reportId,
       approverId: input.approverId,
       status: input.status,
-      comment: input.comment,
-      createdAt: new Date().toISOString(),
+      comment: input.comment || null,
     };
     
-    const report = mockReports[reportIndex];
-    report.approvals = [...(report.approvals || []), newApproval];
-    report.status = input.status;
-    report.updatedAt = new Date().toISOString();
+    await db.insert(schema.reportApprovals).values(newApproval);
+    
+    // Update report status
+    await db.update(schema.reports).set({ 
+      status: input.status,
+      updatedAt: new Date().toISOString()
+    }).where(eq(schema.reports.id, input.reportId));
     
     return newApproval;
   });
 
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
-  .query(({ input }: { input: { approverId: string } }) => {
-    return mockReports.filter(report => 
-      report.status === 'pending' && 
-      report.approvers?.includes(input.approverId) &&
-      report.currentApprover === input.approverId
-    );
+  .use(activityLoggers.view('approval_reports'))
+  .query(async ({ input }) => {
+    const db = getDatabase();
+    
+    // For now, return all pending reports since we don't have approvers field implemented yet
+    // In a real implementation, you would have a separate approvers table or field
+    const reports = await db.select().from(schema.reports)
+      .where(eq(schema.reports.status, 'pending'))
+      .orderBy(desc(schema.reports.createdAt));
+    
+    return reports;
   });
