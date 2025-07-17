@@ -41,6 +41,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       set({ tasks, isLoading: false });
     } catch (error) {
       console.warn('Failed to fetch tasks from backend, using mock data:', error);
+      // Always ensure we have data, even if it's mock data
       set({ tasks: mockTasks, isLoading: false });
     }
   },

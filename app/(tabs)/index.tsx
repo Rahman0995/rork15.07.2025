@@ -28,16 +28,45 @@ export default function HomeScreen() {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
+  
+  // Debug logging
+  console.log('Home render:', {
+    isInitialized,
+    isAuthenticated,
+    hasUser: !!user,
+    userName: user?.name,
+    tasksCount: tasks?.length || 0,
+    reportsCount: reports?.length || 0,
+    tasksLoading,
+    reportsLoading
+  });
 
   
   // Test tRPC connection
-  const { data: backendTest, isLoading: backendLoading } = trpc.example.hi.useQuery(
+  const { data: backendTest, isLoading: backendLoading, error: backendError } = trpc.example.hi.useQuery(
     { name: user?.name || 'Anonymous' },
-    { enabled: isAuthenticated }
+    { 
+      enabled: isAuthenticated && !!user,
+      retry: 1,
+      staleTime: 30000, // 30 seconds
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false
+    }
   );
   
+  // Log backend connection status
   useEffect(() => {
-    if (isAuthenticated) {
+    if (backendError) {
+      console.warn('Backend connection failed:', backendError);
+    } else if (backendTest) {
+      console.log('Backend connected successfully:', backendTest);
+    }
+  }, [backendTest, backendError]);
+  
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log('Home: User authenticated, fetching data...');
       fetchTasks();
       fetchReports();
       
@@ -55,16 +84,17 @@ export default function HomeScreen() {
         }),
       ]).start();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
   
   const userTasks = useMemo(() => {
-    if (!user) return [];
+    if (!user || !tasks) return [];
     return tasks.filter(task => task.assignedTo === user.id)
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
       .slice(0, 3);
   }, [tasks, user]);
   
   const recentReports = useMemo(() => {
+    if (!reports) return [];
     return reports
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 3);
@@ -85,12 +115,26 @@ export default function HomeScreen() {
     router.push(`/report/${report.id}`);
   };
 
-  // Show loading if not initialized or not authenticated or user data is not available
-  if (!isInitialized || !isAuthenticated || !user) {
+  // Show loading only if not initialized
+  if (!isInitialized) {
     return (
       <View style={styles.authContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.authText}>Загрузка...</Text>
+        <Text style={styles.authText}>Инициализация...</Text>
+      </View>
+    );
+  }
+
+  // If not authenticated, show a simple message (navigation should handle redirect)
+  if (!isAuthenticated || !user) {
+    return (
+      <View style={styles.authContainer}>
+        <Text style={styles.authText}>Требуется авторизация</Text>
+        <Button 
+          title="Войти" 
+          onPress={() => router.push('/login')} 
+          style={styles.authButton}
+        />
       </View>
     );
   }
@@ -102,7 +146,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           <RefreshControl 
-            refreshing={tasksLoading || reportsLoading} 
+            refreshing={tasksLoading || reportsLoading || backendLoading} 
             onRefresh={handleRefresh}
             colors={[colors.primary]}
             tintColor={colors.primary}
@@ -167,7 +211,7 @@ export default function HomeScreen() {
             <FileText size={20} color={colors.secondary} />
           </View>
           <View style={styles.statContent}>
-            <Text style={styles.statNumber}>{reports.length}</Text>
+            <Text style={styles.statNumber}>{reports?.length || 0}</Text>
             <Text style={styles.statLabel}>Отчетов</Text>
           </View>
           <View style={styles.statTrend}>

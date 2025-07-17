@@ -34,7 +34,9 @@ function RootLayoutNav() {
   
   // Ensure auth store is initialized
   useEffect(() => {
+    console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
     if (!isInitialized) {
+      console.log('Initializing auth store...');
       initialize();
     }
   }, [isInitialized, initialize]);
@@ -64,7 +66,9 @@ function RootLayoutNav() {
       isAuthenticated,
       inProtectedRoute,
       isNavigationReady,
-      isInitialized
+      isInitialized,
+      user: !!user,
+      currentRoute
     });
 
     // Only redirect if we're not already in the middle of navigation

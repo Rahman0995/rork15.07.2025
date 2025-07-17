@@ -60,6 +60,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       set({ reports: transformedReports, isLoading: false });
     } catch (error) {
       console.warn('Failed to fetch reports from backend, using mock data:', error);
+      // Always ensure we have data, even if it's mock data
       set({ reports: mockReports, isLoading: false });
     }
   },

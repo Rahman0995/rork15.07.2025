@@ -89,7 +89,32 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => set({ error: null }),
       getCurrentUser: () => get().user,
       initialize: () => {
-        set({ isInitialized: true });
+        const state = get();
+        
+        if (isDebugMode()) {
+          console.log('Auth: Initializing with state:', {
+            hasUser: !!state.user,
+            isAuthenticated: state.isAuthenticated
+          });
+        }
+        
+        // If no user is logged in, auto-login with demo user for development
+        if (!state.user && !state.isAuthenticated) {
+          if (isDebugMode()) {
+            console.log('Auth: No user found, auto-logging in demo user');
+          }
+          
+          // Auto-login with the first mock user (Полковник Иванов)
+          const demoUser = mockUsers[0];
+          set({ 
+            user: demoUser, 
+            currentUser: demoUser, 
+            isAuthenticated: true, 
+            isInitialized: true 
+          });
+        } else {
+          set({ isInitialized: true });
+        }
       },
     }),
     {
@@ -102,10 +127,17 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         // Always initialize, even if state is null
-        setTimeout(() => {
-          const currentState = useAuthStore.getState();
-          currentState.initialize();
-        }, 100);
+        if (isDebugMode()) {
+          console.log('Auth: Rehydrating storage, state:', state);
+        }
+        
+        // Set initialized immediately to prevent loading loops
+        const currentState = useAuthStore.getState();
+        currentState.initialize();
+        
+        if (isDebugMode()) {
+          console.log('Auth: Storage rehydrated and initialized');
+        }
       },
     }
   )
