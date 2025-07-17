@@ -12,7 +12,7 @@ import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
-import { FileText, CheckSquare, Plus, ArrowRight, Calendar, Users, TrendingUp, Shield, Activity, Clock, Bell } from 'lucide-react-native';
+import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
 import { Task, Report } from '@/types';
 
 
@@ -167,33 +167,10 @@ export default function HomeScreen() {
                 <Text style={styles.name}>{user.rank} {user.name}</Text>
               </View>
             </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity 
-                style={styles.headerActionButton}
-                onPress={() => router.push('/calendar')}
-              >
-                <Calendar size={20} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.headerActionButton}
-                onPress={() => router.push('/notifications')}
-              >
-                <Bell size={20} color={colors.primary} />
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationBadgeText}>3</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+
           </View>
           
-          {backendTest && (
-            <View style={styles.statusContainer}>
-              <View style={styles.statusIndicator}>
-                <Activity size={12} color={colors.success} />
-                <Text style={styles.statusText}>Система активна</Text>
-              </View>
-            </View>
-          )}
+
         </View>
 
         {/* Quick Stats */}
@@ -312,14 +289,7 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.emptyTitle}>Нет отчетов</Text>
             <Text style={styles.emptyDescription}>Создайте первый отчет для вашего подразделения</Text>
-            {backendTest && (
-              <TouchableOpacity 
-                style={styles.backendTestButton}
-                onPress={() => router.push('/settings/backend-test')}
-              >
-                <Text style={styles.backendTestText}>Тестировать Backend</Text>
-              </TouchableOpacity>
-            )}
+
           </View>
         )}
       </View>
@@ -406,60 +376,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.3,
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerActionButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primarySoft,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: colors.error,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.card,
-  },
-  notificationBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: colors.successSoft,
-  },
-  statusText: {
-    fontSize: 12,
-    marginLeft: 6,
-    fontWeight: '600',
-  },
+
   
   // Stats Section
   statsContainer: {
@@ -605,14 +522,5 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  backendTestButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginTop: 16,
-  },
-  backendTestText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
+
 });

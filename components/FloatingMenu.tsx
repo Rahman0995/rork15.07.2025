@@ -14,11 +14,9 @@ import { useRouter } from 'expo-router';
 import {
   Plus,
   BarChart2,
-  Calendar,
   FileText,
   CheckSquare,
   MessageSquare,
-  Users,
   Settings,
   X,
 } from 'lucide-react-native';
@@ -44,14 +42,6 @@ const getMenuItems = (colors: any): MenuItem[] => [
     route: '/(tabs)/analytics',
     color: colors.primary,
     description: 'Статистика и отчеты',
-  },
-  {
-    id: 'calendar',
-    title: 'Календарь',
-    icon: Calendar,
-    route: '/(tabs)/calendar',
-    color: colors.secondary,
-    description: 'События и планы',
   },
   {
     id: 'reports',
