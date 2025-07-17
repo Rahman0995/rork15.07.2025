@@ -73,18 +73,19 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       const newReport = await trpcClient.reports.create.mutate({
         title: reportData.title,
         content: reportData.content,
+        authorId: reportData.authorId,
+        type: reportData.type,
+        unit: reportData.unit,
+        priority: reportData.priority,
+        approvers: reportData.approvers,
+        attachments: reportData.attachments,
       });
       
       // Transform backend data to match frontend interface
       const transformedReport: Report = {
         ...newReport,
-        type: 'text' as const,
-        attachments: [],
-        unit: 'default',
-        priority: 'medium' as const,
-        approvers: [],
-        approvals: [],
-        comments: [],
+        approvals: newReport.approvals || [],
+        comments: newReport.comments || [],
         revisions: [],
         currentRevision: 1,
       };

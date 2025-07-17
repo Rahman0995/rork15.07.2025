@@ -167,7 +167,6 @@ export const createReportProcedure = publicProcedure
       title: input.title,
       content: input.content,
       authorId: input.authorId,
-
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       status: 'draft',

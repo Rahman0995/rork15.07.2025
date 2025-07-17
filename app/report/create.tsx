@@ -356,7 +356,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   contentContainer: {
     padding: 20,
     paddingBottom: 40,
-    gap: 24,
   },
   contentInput: {
     minHeight: 140,
@@ -516,6 +515,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 20,
+    marginBottom: 24,
     shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
