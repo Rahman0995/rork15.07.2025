@@ -2,7 +2,7 @@ import { Tabs, router } from "expo-router";
 import React from "react";
 import { View, TouchableOpacity, Platform } from "react-native";
 import { BlurView } from "expo-blur";
-import { FileText, Home, MessageSquare, BarChart3, User } from "lucide-react-native";
+import { FileText, Home, MessageSquare, BarChart3, User, Settings } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -164,6 +164,16 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <User size={20} color={color} />,
         }}
       />
+      
+      {__DEV__ && (
+        <Tabs.Screen
+          name="backend-test"
+          options={{
+            title: "Backend Test",
+            tabBarIcon: ({ color }) => <Settings size={20} color={color} />,
+          }}
+        />
+      )}
     </Tabs>
   );
 }

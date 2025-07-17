@@ -36,11 +36,19 @@ app.use("*", cors({
 app.use(
   "/trpc/*",
   trpcServer({
-    endpoint: "/api/trpc",
+    endpoint: "/trpc",
     router: appRouter,
     createContext,
-    onError: ({ error, path, type }) => {
-      console.error(`❌ tRPC Error on ${type} ${path}:`, error);
+    onError: ({ error, path, type, input }) => {
+      console.error(`❌ tRPC Error on ${type} ${path}:`, {
+        error: error.message,
+        code: error.code,
+        input,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    },
+    batching: {
+      enabled: true,
     },
   })
 );

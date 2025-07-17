@@ -4,8 +4,15 @@ import superjson from "superjson";
 
 // Context creation function
 export const createContext = async (opts: FetchCreateContextFnOptions) => {
+  const { req } = opts;
+  
+  // Extract authorization header
+  const authorization = req.headers.get('authorization');
+  
   return {
-    req: opts.req,
+    req,
+    authorization,
+    userAgent: req.headers.get('user-agent'),
     // You can add more context items here like database connections, auth, etc.
   };
 };
@@ -20,13 +27,17 @@ const t = initTRPC.context<Context>().create({
       ...shape,
       data: {
         ...shape.data,
-        // Добавляем дополнительную информацию об ошибке в development режиме
+        code: error.code,
+        httpStatus: shape.data.httpStatus,
+        // Add additional error information in development mode
         ...(process.env.NODE_ENV === 'development' && {
           stack: error.stack,
+          cause: error.cause,
         }),
       },
     };
   },
+  isDev: process.env.NODE_ENV === 'development',
 });
 
 export const createTRPCRouter = t.router;
