@@ -145,15 +145,29 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         headerStyle: {
-          backgroundColor: colors.card,
+          backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
           borderBottomColor: colors.borderLight,
           borderBottomWidth: 1,
-          shadowColor: colors.shadowLight,
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 1,
-          shadowRadius: 3,
-          elevation: 1,
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          elevation: 8,
         },
+        headerBackground: Platform.OS !== 'web' ? () => (
+          <BlurView
+            intensity={100}
+            tint={isDark ? 'dark' : 'light'}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              opacity: 0.98,
+            }}
+          />
+        ) : undefined,
         headerTitleStyle: {
           color: colors.text,
           fontWeight: '700',

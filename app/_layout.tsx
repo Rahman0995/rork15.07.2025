@@ -9,6 +9,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useTheme } from "@/constants/theme";
 import { Platform } from "react-native";
+import { BlurView } from "expo-blur";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -111,11 +112,34 @@ function RootLayoutNav() {
     <Stack screenOptions={{ 
       headerBackTitle: "Назад",
       headerStyle: {
-        backgroundColor: colors.card,
+        backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
+        borderBottomColor: colors.borderLight,
+        borderBottomWidth: 1,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
       },
+      headerBackground: Platform.OS !== 'web' ? () => (
+        <BlurView
+          intensity={100}
+          tint={isDark ? 'dark' : 'light'}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            opacity: 0.98,
+          }}
+        />
+      ) : undefined,
       headerTitleStyle: {
         color: colors.text,
-        fontWeight: '600',
+        fontWeight: '700' as const,
+        fontSize: 17,
+        letterSpacing: -0.2,
       },
       headerTintColor: colors.primary,
     }}>
