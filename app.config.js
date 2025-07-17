@@ -3,7 +3,7 @@ const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 
 // ВАЖНО: Замените на ваш реальный IP адрес
 // Найдите ваш IP: ipconfig (Windows) или ifconfig (Mac/Linux)
-const YOUR_IP_ADDRESS = '212.34.129.117'; // ЗАМЕНИТЕ НА ВАШ IP
+const YOUR_IP_ADDRESS = '192.168.1.100'; // ЗАМЕНИТЕ НА ВАШ IP
 
 const getApiUrl = () => {
 if (IS_DEV) {
