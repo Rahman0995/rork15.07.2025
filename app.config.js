@@ -4,7 +4,7 @@ const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 // ВАЖНО: Замените на ваш реальный IP адрес
 // Найдите ваш IP: ipconfig (Windows) или ifconfig (Mac/Linux)
 // Или используйте облачный сервис для production
-const YOUR_IP_ADDRESS = process.env.LOCAL_IP || '192.168.1.100'; // ЗАМЕНИТЕ НА ВАШ IP
+const YOUR_IP_ADDRESS = process.env.LOCAL_IP || 'localhost'; // Use localhost for development
 
 const getApiUrl = () => {
 if (IS_DEV) {

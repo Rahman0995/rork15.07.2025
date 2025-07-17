@@ -8,6 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useTheme } from "@/constants/theme";
+import { Platform } from "react-native";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -34,9 +35,11 @@ function RootLayoutNav() {
   
   // Ensure auth store is initialized
   useEffect(() => {
-    console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
+    if (__DEV__) {
+      console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
+    }
     if (!isInitialized) {
-      console.log('Initializing auth store...');
+      if (__DEV__) console.log('Initializing auth store...');
       initialize();
     }
   }, [isInitialized, initialize]);
@@ -64,27 +67,30 @@ function RootLayoutNav() {
     // Only redirect if we're not already in the middle of navigation
     const currentRoute = segments.join('/');
     
-    console.log('Navigation check:', {
-      segments,
-      isAuthenticated,
-      inProtectedRoute,
-      isNavigationReady,
-      isInitialized,
-      user: !!user,
-      currentRoute
-    });
+    if (__DEV__) {
+      console.log('Navigation check:', {
+        segments,
+        isAuthenticated,
+        inProtectedRoute,
+        isNavigationReady,
+        isInitialized,
+        user: !!user,
+        currentRoute,
+        platform: Platform.OS
+      });
+    }
     
     if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
       // Redirect to login if not authenticated and trying to access protected routes
-      console.log('Redirecting to login - not authenticated');
+      if (__DEV__) console.log('Redirecting to login - not authenticated');
       router.replace('/login');
     } else if (isAuthenticated && segments[0] === 'login') {
       // Redirect to tabs if authenticated and on login page
-      console.log('Redirecting to tabs - authenticated on login page');
+      if (__DEV__) console.log('Redirecting to tabs - authenticated on login page');
       router.replace('/(tabs)');
     } else if (isAuthenticated && segments.length < 1) {
       // Redirect to tabs if authenticated and on root
-      console.log('Redirecting to tabs - authenticated on root');
+      if (__DEV__) console.log('Redirecting to tabs - authenticated on root');
       router.replace('/(tabs)');
     }
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);

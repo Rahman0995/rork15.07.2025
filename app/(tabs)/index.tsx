@@ -35,16 +35,18 @@ export default function HomeScreen() {
   const slideAnim = useState(new Animated.Value(50))[0];
   
   // Debug logging
-  console.log('Home render:', {
-    isInitialized,
-    isAuthenticated,
-    hasUser: !!user,
-    userName: user?.name,
-    tasksCount: tasks?.length || 0,
-    reportsCount: reports?.length || 0,
-    tasksLoading,
-    reportsLoading
-  });
+  if (__DEV__) {
+    console.log('Home render:', {
+      isInitialized,
+      isAuthenticated,
+      hasUser: !!user,
+      userName: user?.name,
+      tasksCount: tasks?.length || 0,
+      reportsCount: reports?.length || 0,
+      tasksLoading,
+      reportsLoading
+    });
+  }
 
   
   // Test tRPC connection
@@ -62,16 +64,18 @@ export default function HomeScreen() {
   
   // Log backend connection status
   useEffect(() => {
-    if (backendError) {
-      console.warn('Backend connection failed:', backendError);
-    } else if (backendTest) {
-      console.log('Backend connected successfully:', backendTest);
+    if (__DEV__) {
+      if (backendError) {
+        console.warn('Backend connection failed:', backendError);
+      } else if (backendTest) {
+        console.log('Backend connected successfully:', backendTest);
+      }
     }
   }, [backendTest, backendError]);
   
   useEffect(() => {
     if (isAuthenticated && user) {
-      console.log('Home: User authenticated, fetching data...');
+      if (__DEV__) console.log('Home: User authenticated, fetching data...');
       fetchTasks();
       fetchReports();
       fetchNotifications(user.id);

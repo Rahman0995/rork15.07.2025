@@ -59,7 +59,9 @@ export const trpcClient = trpc.createClient({
           
           return response;
         } catch (error) {
-          console.warn('tRPC fetch failed:', error);
+          if (__DEV__) {
+            console.warn('tRPC fetch failed:', error);
+          }
           
           // For development, provide mock responses for specific endpoints
           if (apiConfig.enableDebugMode && typeof url === 'string') {
