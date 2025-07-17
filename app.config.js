@@ -30,9 +30,9 @@ return process.env.EXPO_PUBLIC_BASE_URL || 'https://your-production-domain.com';
 
 export default {
 expo: {
-  name: IS_DEV ? 'Military Unit Management (Dev)' : 'Military Unit Management Application',
+  name: IS_DEV ? 'sever_ahmat (Dev)' : 'sever_ahmat',
   slug: 'military-unit-management-application',
-  version: '1.0.0',
+  version: '1.0.1',
   projectId: '0bffb82a-ba27-4f8f-889a-624d89941f86',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
@@ -96,7 +96,7 @@ expo: {
       'android.permission.VIBRATE',
       'android.permission.ACCESS_WIFI_STATE'
     ],
-    usesCleartextTraffic: IS_DEV // Разрешает HTTP в dev режиме
+    // usesCleartextTraffic is not a valid property in app config schema
   },
   web: {
     favicon: './assets/images/favicon.png',
