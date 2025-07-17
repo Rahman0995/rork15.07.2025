@@ -190,116 +190,140 @@ export default function CreateReportScreen() {
     >
       <Stack.Screen options={{ title: 'Создание отчета' }} />
       
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
-        <Input
-          label="Название отчета"
-          placeholder="Введите название отчета"
-          value={title}
-          onChangeText={setTitle}
-          error={titleError}
-        />
-        
-        <Input
-          label="Содержание отчета"
-          placeholder="Введите содержание отчета"
-          value={content}
-          onChangeText={setContent}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-          style={styles.contentInput}
-          error={contentError}
-        />
-        
-        <View style={styles.priorityContainer}>
-          <Text style={styles.sectionTitle}>Приоритет</Text>
-          <View style={styles.priorityButtons}>
-            {(['low', 'medium', 'high'] as const).map((level) => (
-              <TouchableOpacity
-                key={level}
-                style={[
-                  styles.priorityButton,
-                  priority === level && styles.activePriorityButton,
-                  { borderColor: getPriorityColor(level) }
-                ]}
-                onPress={() => setPriority(level)}
-              >
-                {getPriorityIcon(level)}
-                <Text style={[
-                  styles.priorityButtonText,
-                  priority === level && { color: getPriorityColor(level) }
-                ]}>
-                  {level === 'low' ? 'Низкий' : level === 'medium' ? 'Средний' : 'Высокий'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.formSection}>
+          <Input
+            label="Название отчета"
+            placeholder="Введите название отчета"
+            value={title}
+            onChangeText={setTitle}
+            error={titleError}
+          />
         </View>
         
-        <Input
-          label="Срок выполнения (необязательно)"
-          placeholder="Введите срок"
-          value={dueDate}
-          onChangeText={setDueDate}
-        />
-        
-        <View style={styles.approversContainer}>
-          <Text style={styles.sectionTitle}>Утверждающие</Text>
-          {approversError ? <Text style={styles.errorText}>{approversError}</Text> : null}
-          <View style={styles.approversList}>
-            {potentialApprovers.map((approver) => (
-              <TouchableOpacity
-                key={approver.id}
-                style={[
-                  styles.approverItem,
-                  selectedApprovers.includes(approver.id) && styles.selectedApprover
-                ]}
-                onPress={() => toggleApprover(approver.id)}
-              >
-                <View style={styles.approverInfo}>
-                  <Text style={styles.approverName}>{approver.name}</Text>
-                  <Text style={styles.approverRank}>{approver.rank}</Text>
-                  <Text style={styles.approverUnit}>{approver.unit}</Text>
-                </View>
-                {selectedApprovers.includes(approver.id) && (
-                  <CheckCircle size={20} color={colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+        <View style={styles.formSection}>
+          <Input
+            label="Содержание отчета"
+            placeholder="Введите содержание отчета"
+            value={content}
+            onChangeText={setContent}
+            multiline
+            numberOfLines={6}
+            textAlignVertical="top"
+            style={styles.contentInput}
+            error={contentError}
+          />
         </View>
         
-        <View style={styles.attachmentsContainer}>
-          <View style={styles.attachmentsHeader}>
-            <Text style={styles.attachmentsTitle}>Вложения</Text>
-            <Button
-              title="Добавить"
-              onPress={handleAddAttachment}
-              size="small"
-              icon={<Paperclip size={16} color="white" />}
-            />
-          </View>
-          
-          {attachments.length > 0 ? (
-            <View style={styles.attachmentsList}>
-              {attachments.map((attachment, index) => (
-                <View key={index} style={styles.attachmentItem}>
-                  <View style={styles.attachmentInfo}>
-                    {getAttachmentIcon(attachment.type)}
-                    <Text style={styles.attachmentName}>{attachment.name}</Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={styles.removeButton}
-                    onPress={() => handleRemoveAttachment(index)}
-                  >
-                    <X size={16} color={colors.error} />
-                  </TouchableOpacity>
-                </View>
+        <View style={styles.formSection}>
+          <View style={styles.priorityContainer}>
+            <Text style={styles.sectionTitle}>Приоритет</Text>
+            <View style={styles.priorityButtons}>
+              {(['low', 'medium', 'high'] as const).map((level) => (
+                <TouchableOpacity
+                  key={level}
+                  style={[
+                    styles.priorityButton,
+                    priority === level && styles.activePriorityButton,
+                    { borderColor: priority === level ? getPriorityColor(level) : colors.border }
+                  ]}
+                  onPress={() => setPriority(level)}
+                >
+                  {getPriorityIcon(level)}
+                  <Text style={[
+                    styles.priorityButtonText,
+                    priority === level && { color: getPriorityColor(level) }
+                  ]}>
+                    {level === 'low' ? 'Низкий' : level === 'medium' ? 'Средний' : 'Высокий'}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
-          ) : (
-            <Text style={styles.noAttachments}>Нет вложений</Text>
-          )}
+          </View>
+        </View>
+        
+        <View style={styles.formSection}>
+          <Input
+            label="Срок выполнения (необязательно)"
+            placeholder="Введите срок"
+            value={dueDate}
+            onChangeText={setDueDate}
+          />
+        </View>
+        
+        <View style={styles.formSection}>
+          <View style={styles.approversContainer}>
+            <Text style={styles.sectionTitle}>Утверждающие</Text>
+            {approversError ? <Text style={styles.errorText}>{approversError}</Text> : null}
+            <View style={styles.approversList}>
+              {potentialApprovers.map((approver, index) => (
+                <TouchableOpacity
+                  key={approver.id}
+                  style={[
+                    styles.approverItem,
+                    selectedApprovers.includes(approver.id) && styles.selectedApprover,
+                    index === potentialApprovers.length - 1 && { borderBottomWidth: 0 }
+                  ]}
+                  onPress={() => toggleApprover(approver.id)}
+                >
+                  <View style={styles.approverInfo}>
+                    <Text style={styles.approverName}>{approver.name}</Text>
+                    <Text style={styles.approverRank}>{approver.rank}</Text>
+                    <Text style={styles.approverUnit}>{approver.unit}</Text>
+                  </View>
+                  {selectedApprovers.includes(approver.id) && (
+                    <CheckCircle size={24} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+        
+        <View style={styles.formSection}>
+          <View style={styles.attachmentsContainer}>
+            <View style={styles.attachmentsHeader}>
+              <Text style={styles.attachmentsTitle}>Вложения</Text>
+              <Button
+                title="Добавить"
+                onPress={handleAddAttachment}
+                size="small"
+                icon={<Paperclip size={18} color="white" />}
+              />
+            </View>
+            
+            {attachments.length > 0 ? (
+              <View style={styles.attachmentsList}>
+                {attachments.map((attachment, index) => (
+                  <View key={index} style={[
+                    styles.attachmentItem,
+                    index === attachments.length - 1 && { borderBottomWidth: 0 }
+                  ]}>
+                    <View style={styles.attachmentInfo}>
+                      {getAttachmentIcon(attachment.type)}
+                      <Text style={styles.attachmentName} numberOfLines={1}>
+                        {attachment.name}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={styles.removeButton}
+                      onPress={() => handleRemoveAttachment(index)}
+                    >
+                      <X size={18} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.noAttachmentsContainer}>
+                <Text style={styles.noAttachments}>Нет вложений</Text>
+              </View>
+            )}
+          </View>
         </View>
         
         <View style={styles.buttonsContainer}>
@@ -330,147 +354,180 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 20,
+    paddingBottom: 40,
+    gap: 24,
   },
   contentInput: {
-    height: 120,
-    paddingTop: 12,
+    minHeight: 140,
+    paddingTop: 16,
   },
   attachmentsContainer: {
-    marginTop: 16,
-    marginBottom: 24,
+    gap: 16,
   },
   attachmentsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
   },
   attachmentsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text,
   },
   attachmentsList: {
     backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 16,
+    gap: 8,
   },
   attachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
   attachmentInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 12,
   },
   attachmentName: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.text,
-    marginLeft: 8,
+    fontWeight: '500',
+    flex: 1,
   },
   removeButton: {
-    padding: 8,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: colors.error + '15',
   },
   noAttachments: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
-    fontStyle: 'italic',
     textAlign: 'center',
-    marginTop: 8,
+    paddingVertical: 32,
+    fontStyle: 'italic',
   },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 12,
+    marginTop: 8,
   },
   cancelButton: {
     flex: 1,
-    marginRight: 8,
   },
   submitButton: {
     flex: 2,
-    marginLeft: 8,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   priorityContainer: {
-    marginBottom: 16,
+    gap: 16,
   },
   priorityButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
   },
   priorityButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 2,
     borderColor: colors.border,
     backgroundColor: colors.card,
-    gap: 6,
+    gap: 8,
+    minHeight: 56,
   },
   activePriorityButton: {
     backgroundColor: colors.background,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   priorityButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   approversContainer: {
-    marginBottom: 16,
+    gap: 16,
   },
   approversList: {
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   approverItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
+    padding: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
+    minHeight: 80,
   },
   selectedApprover: {
-    backgroundColor: colors.primary + '10',
+    backgroundColor: colors.primary + '12',
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
   },
   approverInfo: {
     flex: 1,
+    gap: 4,
   },
   approverName: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.text,
   },
   approverRank: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 2,
+    fontWeight: '500',
   },
   approverUnit: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.primary,
-    marginTop: 2,
+    fontWeight: '600',
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.error,
-    marginBottom: 8,
+    fontWeight: '500',
+    marginTop: -8,
+  },
+  formSection: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  noAttachmentsContainer: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: 24,
+    borderWidth: 2,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
   },
 });
