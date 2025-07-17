@@ -178,7 +178,7 @@ export default function BackendTestScreen() {
   // Use test user if no user is logged in
   const testUser = user || {
     id: 'test-user',
-    name: 'Иванов А.П.',
+    name: 'Зингиев З.Р.',
     rank: 'Полковник',
     unit: 'Батальон А'
   };

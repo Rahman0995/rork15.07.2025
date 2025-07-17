@@ -259,7 +259,7 @@ const insertDefaultData = async () => {
     const defaultUsers = [
       {
         id: 'user-1',
-        name: 'Полковник Иванов',
+        name: 'Полковник Зингиев',
         rank: 'Полковник',
         role: 'battalion_commander',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',

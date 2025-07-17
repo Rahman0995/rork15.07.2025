@@ -104,7 +104,7 @@ export const useAuthStore = create<AuthState>()(
             console.log('Auth: No user found, auto-logging in demo user');
           }
           
-          // Auto-login with the first mock user (Полковник Иванов)
+          // Auto-login with the first mock user (Полковник Зингиев)
           const demoUser = mockUsers[0];
           set({ 
             user: demoUser, 

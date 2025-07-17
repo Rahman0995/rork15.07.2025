@@ -3,7 +3,7 @@ import { User, Report, ChatMessage, Task } from '@/types';
 export const mockUsers: User[] = [
   {
     id: '1',
-    name: 'Иванов А.П.',
+    name: 'Зингиев З.Р.',
     rank: 'Полковник',
     role: 'battalion_commander',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop',
