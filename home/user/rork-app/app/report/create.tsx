@@ -138,7 +138,7 @@ export default function CreateReportScreen() {
       await createReport({
         title,
         content,
-        author: user.id,
+        authorId: user.id,
         status: 'pending',
         type: 'text',
         priority,
