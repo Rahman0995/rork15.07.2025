@@ -138,7 +138,6 @@ function RootLayoutNav() {
       headerTintColor: colors.primary,
       headerBackTitleStyle: {
         fontSize: 16,
-        fontWeight: '500' as const,
       },
     }}>
       <Stack.Screen name="login" options={{ headerShown: false }} />
