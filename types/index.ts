@@ -154,3 +154,6 @@ export interface CalendarTask extends Task {
   endDate?: string;
   isAllDay?: boolean;
 }
+
+// Re-export notification types from expo-notifications
+export type { NotificationContentAttachmentIos } from 'expo-notifications';
