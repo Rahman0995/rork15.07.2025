@@ -2,9 +2,11 @@ import { Tabs, router } from "expo-router";
 import React from "react";
 import { View, TouchableOpacity, Platform } from "react-native";
 import { BlurView } from "expo-blur";
-import { FileText, Home, MessageSquare, BarChart3, User, Settings } from "lucide-react-native";
+import { FileText, Home, MessageSquare, BarChart3, User, Settings, Users, Bell } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { NotificationBadge } from "@/components/NotificationBadge";
+import { useNotificationsStore } from "@/store/notificationsStore";
 
 import { useAuthStore } from "@/store/authStore";
 
@@ -12,6 +14,40 @@ import { useAuthStore } from "@/store/authStore";
 export default function TabLayout() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
+  const { user } = useAuthStore();
+  const { notifications } = useNotificationsStore();
+  
+  const unreadNotifications = notifications.filter(n => n.userId === user?.id && !n.read);
+  
+  const HeaderRightComponent = () => (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginRight: 16 }}>
+      <TouchableOpacity 
+        style={{
+          padding: 8,
+          borderRadius: 12,
+          backgroundColor: colors.backgroundSecondary,
+        }}
+        onPress={() => router.push('/personnel')}
+      >
+        <Users size={24} color={colors.text} />
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={{
+          position: 'relative',
+          padding: 8,
+          borderRadius: 12,
+          backgroundColor: colors.backgroundSecondary,
+        }}
+        onPress={() => router.push('/notifications')}
+      >
+        <Bell size={24} color={colors.text} />
+        {unreadNotifications.length > 0 && (
+          <NotificationBadge count={unreadNotifications.length} />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
   
   const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     return (
@@ -124,6 +160,7 @@ export default function TabLayout() {
           fontSize: 17,
           letterSpacing: -0.2,
         },
+        headerRight: () => <HeaderRightComponent />,
       }}
     >
       <Tabs.Screen

@@ -16,7 +16,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { NotificationBadge } from '@/components/NotificationBadge';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
-import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock, Bell, Users } from 'lucide-react-native';
+import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
 import { Task, Report } from '@/types';
 
 
@@ -180,23 +180,6 @@ export default function HomeScreen() {
             </View>
             
             <View style={styles.headerRight}>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => router.push('/personnel')}
-              >
-                <Users size={24} color={colors.text} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.notificationButton}
-                onPress={() => router.push('/notifications')}
-              >
-                <Bell size={24} color={colors.text} />
-                {unreadNotifications.length > 0 && (
-                  <NotificationBadge count={unreadNotifications.length} />
-                )}
-              </TouchableOpacity>
-              
               <StatusIndicator 
                 isOnline={true}
                 serverStatus={backendError ? 'error' : backendTest ? 'connected' : 'disconnected'}
@@ -418,17 +401,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  headerButton: {
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: colors.backgroundSecondary,
-  },
-  notificationButton: {
-    position: 'relative',
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: colors.backgroundSecondary,
-  },
+
 
   
   // Stats Section
