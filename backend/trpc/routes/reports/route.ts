@@ -299,7 +299,7 @@ export const approveReportProcedure = publicProcedure
 
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
-  .query(({ input }: { input?: { approverId: string } }) => {
+  .query(({ input }: { input: { approverId: string } }) => {
     return mockReports.filter(report => 
       report.status === 'pending' && 
       report.approvers?.includes(input.approverId) &&
