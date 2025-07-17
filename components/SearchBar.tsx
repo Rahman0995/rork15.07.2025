@@ -70,7 +70,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text,
     ...Platform.select({
       web: {
-        outline: 'none',
+        outlineStyle: 'none',
       },
     }),
   },
