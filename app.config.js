@@ -3,20 +3,29 @@ const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 
 // ВАЖНО: Замените на ваш реальный IP адрес
 // Найдите ваш IP: ipconfig (Windows) или ifconfig (Mac/Linux)
-const YOUR_IP_ADDRESS = '192.168.1.100'; // ЗАМЕНИТЕ НА ВАШ IP
+// Или используйте облачный сервис для production
+const YOUR_IP_ADDRESS = process.env.LOCAL_IP || '192.168.1.100'; // ЗАМЕНИТЕ НА ВАШ IP
 
 const getApiUrl = () => {
 if (IS_DEV) {
   return `http://${YOUR_IP_ADDRESS}:3000/api`;
 }
-return 'https://your-production-api.com/api'; // Замените на ваш production URL
+// Для production используйте один из этих вариантов:
+// return 'https://your-app.vercel.app/api';
+// return 'https://your-app.railway.app/api';
+// return 'https://your-app.render.com/api';
+return process.env.EXPO_PUBLIC_API_URL || 'https://your-production-api.com/api';
 };
 
 const getBaseUrl = () => {
 if (IS_DEV) {
   return `http://${YOUR_IP_ADDRESS}:3000`;
 }
-return 'https://your-production-domain.com'; // Замените на ваш production URL
+// Для production используйте один из этих вариантов:
+// return 'https://your-app.vercel.app';
+// return 'https://your-app.railway.app';
+// return 'https://your-app.render.com';
+return process.env.EXPO_PUBLIC_BASE_URL || 'https://your-production-domain.com';
 };
 
 export default {
