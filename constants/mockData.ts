@@ -1,4 +1,4 @@
-import { User, Report, ChatMessage, Task } from '@/types';
+import { User, Report, ChatMessage, Task, ReportComment } from '@/types';
 
 export const mockUsers: User[] = [
   {
@@ -587,3 +587,6 @@ export const getUserChats = (userId: string) => {
     (chat.isGroup && chat.participants.includes(userId))
   );
 };
+
+// Export report comments separately for backend routes
+export const mockReportComments: ReportComment[] = mockReports.flatMap(report => report.comments || []);
