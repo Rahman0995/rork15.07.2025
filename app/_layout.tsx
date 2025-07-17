@@ -113,20 +113,10 @@ function RootLayoutNav() {
       headerBackTitle: "Назад",
       headerStyle: Platform.OS === 'web' ? {
         backgroundColor: colors.card,
-        borderBottomColor: colors.borderLight,
-        borderBottomWidth: 1,
       } : {
         backgroundColor: 'transparent',
-        ...(Platform.OS === 'ios' && {
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.12,
-          shadowRadius: 16,
-        }),
-        ...(Platform.OS === 'android' && {
-          elevation: 12,
-        }),
       },
+      headerShadowVisible: Platform.OS === 'web',
       headerBackground: Platform.OS !== 'web' ? () => (
         <BlurView
           intensity={95}
@@ -142,14 +132,11 @@ function RootLayoutNav() {
         />
       ) : undefined,
       headerTitleStyle: {
-        color: colors.text,
         fontWeight: '700' as const,
         fontSize: 18,
-        letterSpacing: -0.3,
       },
       headerTintColor: colors.primary,
       headerBackTitleStyle: {
-        color: colors.primary,
         fontSize: 16,
         fontWeight: '500' as const,
       },
