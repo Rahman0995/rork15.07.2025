@@ -87,7 +87,7 @@ export default function HomeScreen() {
   }, [isAuthenticated, user]);
   
   const userTasks = useMemo(() => {
-    if (!user || !tasks) return [];
+    if (!user || !tasks || !Array.isArray(tasks)) return [];
     return tasks.filter(task => task.assignedTo === user.id)
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
       .slice(0, 3);
