@@ -10,6 +10,8 @@ import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
+import { QuickActions } from '@/components/QuickActions';
+import { StatusIndicator } from '@/components/StatusIndicator';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
 import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
@@ -167,11 +169,19 @@ export default function HomeScreen() {
                 <Text style={styles.name}>{user.rank} {user.name}</Text>
               </View>
             </View>
+            
+            <StatusIndicator 
+              isOnline={true}
+              serverStatus={backendError ? 'error' : backendTest ? 'connected' : 'disconnected'}
+            />
 
           </View>
           
 
         </View>
+
+        {/* Quick Actions */}
+        <QuickActions />
 
         {/* Quick Stats */}
       <Animated.View 

@@ -19,6 +19,8 @@ import {
   MessageSquare,
   Settings,
   X,
+  Users,
+  FolderOpen,
 } from 'lucide-react-native';
 import { useTheme } from '@/constants/theme';
 import { BlurView } from 'expo-blur';
@@ -36,12 +38,20 @@ interface MenuItem {
 
 const getMenuItems = (colors: any): MenuItem[] => [
   {
-    id: 'analytics',
-    title: 'Аналитика',
-    icon: BarChart2,
-    route: '/(tabs)/analytics',
+    id: 'personnel',
+    title: 'Личный состав',
+    icon: Users,
+    route: '/personnel',
     color: colors.primary,
-    description: 'Статистика и отчеты',
+    description: 'Управление персоналом',
+  },
+  {
+    id: 'documents',
+    title: 'Документы',
+    icon: FolderOpen,
+    route: '/documents',
+    color: colors.secondary,
+    description: 'Документооборот',
   },
   {
     id: 'reports',
@@ -68,12 +78,12 @@ const getMenuItems = (colors: any): MenuItem[] => [
     description: 'Сообщения команды',
   },
   {
-    id: 'create-report',
-    title: 'Отчет',
-    icon: FileText,
-    route: '/report/create',
-    color: colors.error,
-    description: 'Создать отчет',
+    id: 'analytics',
+    title: 'Аналитика',
+    icon: BarChart2,
+    route: '/(tabs)/analytics',
+    color: colors.accent,
+    description: 'Статистика и отчеты',
   },
 ];
 
