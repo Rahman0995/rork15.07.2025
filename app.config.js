@@ -145,7 +145,7 @@ expo: {
       }
     ],
     [
-      'expo-audio',
+      'expo-av',
       {
         microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone for voice recordings'
       }
