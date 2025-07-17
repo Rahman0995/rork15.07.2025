@@ -149,10 +149,7 @@ export default function DocumentsScreen() {
           title: "Документооборот",
           headerStyle: {
             backgroundColor: colors.background,
-            borderBottomWidth: 0,
-            elevation: 0,
-            shadowOpacity: 0,
-          },
+          } as any,
           headerTitleStyle: {
             color: colors.text,
             fontSize: 28,
