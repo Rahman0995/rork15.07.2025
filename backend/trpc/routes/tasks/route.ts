@@ -1,22 +1,11 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-// Mock data for tasks - defined locally to avoid import issues
+import { getDatabase, schema } from '../../database';
+import { eq, and, desc, asc } from 'drizzle-orm';
+import { activityLoggers } from '../../middleware/activity-logger';
+
 type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 type TaskPriority = 'low' | 'medium' | 'high';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  assignedTo: string;
-  createdBy: string;
-  dueDate: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
-}
 
 const mockTasks: Task[] = [
   {
