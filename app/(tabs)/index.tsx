@@ -289,7 +289,6 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.emptyTitle}>Нет отчетов</Text>
             <Text style={styles.emptyDescription}>Создайте первый отчет для вашего подразделения</Text>
-
           </View>
         )}
       </View>
