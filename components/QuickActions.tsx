@@ -43,14 +43,6 @@ export const QuickActions: React.FC = () => {
       route: '/calendar',
       color: colors.success,
     },
-    {
-      id: 'notifications',
-      title: 'Уведомления',
-      subtitle: 'Важные сообщения',
-      icon: Shield,
-      route: '/notifications',
-      color: colors.warning,
-    },
   ];
 
   const handleActionPress = (action: QuickAction) => {

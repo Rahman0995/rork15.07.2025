@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
 import { useTasksStore } from '@/store/tasksStore';
 import { useReportsStore } from '@/store/reportsStore';
+import { useNotificationsStore } from '@/store/notificationsStore';
 import { trpc } from '@/lib/trpc';
 import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
@@ -12,9 +13,10 @@ import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
+import { NotificationBadge } from '@/components/NotificationBadge';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
-import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
+import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock, Bell } from 'lucide-react-native';
 import { Task, Report } from '@/types';
 
 
@@ -25,6 +27,7 @@ export default function HomeScreen() {
   const { user, isAuthenticated, isInitialized } = useAuthStore();
   const { tasks, fetchTasks, isLoading: tasksLoading } = useTasksStore();
   const { reports, fetchReports, isLoading: reportsLoading } = useReportsStore();
+  const { notifications, fetchNotifications } = useNotificationsStore();
   const { colors, isDark } = useTheme();
   const styles = createStyles(colors);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -71,6 +74,7 @@ export default function HomeScreen() {
       console.log('Home: User authenticated, fetching data...');
       fetchTasks();
       fetchReports();
+      fetchNotifications(user.id);
       
       // Animate content appearance
       Animated.parallel([
@@ -105,7 +109,12 @@ export default function HomeScreen() {
   const handleRefresh = () => {
     fetchTasks();
     fetchReports();
+    if (user) {
+      fetchNotifications(user.id);
+    }
   };
+  
+  const unreadNotifications = notifications.filter(n => n.userId === user?.id && !n.read);
   
 
   
@@ -170,10 +179,22 @@ export default function HomeScreen() {
               </View>
             </View>
             
-            <StatusIndicator 
-              isOnline={true}
-              serverStatus={backendError ? 'error' : backendTest ? 'connected' : 'disconnected'}
-            />
+            <View style={styles.headerRight}>
+              <TouchableOpacity 
+                style={styles.notificationButton}
+                onPress={() => router.push('/notifications')}
+              >
+                <Bell size={24} color={colors.text} />
+                {unreadNotifications.length > 0 && (
+                  <NotificationBadge count={unreadNotifications.length} />
+                )}
+              </TouchableOpacity>
+              
+              <StatusIndicator 
+                isOnline={true}
+                serverStatus={backendError ? 'error' : backendTest ? 'connected' : 'disconnected'}
+              />
+            </View>
 
           </View>
           
@@ -384,6 +405,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.3,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  notificationButton: {
+    position: 'relative',
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: colors.backgroundSecondary,
   },
 
   
