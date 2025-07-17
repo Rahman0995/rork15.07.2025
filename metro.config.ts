@@ -28,9 +28,7 @@ config.watchFolders = [
 // Web-specific optimizations
 if (process.env.EXPO_PLATFORM === 'web') {
   config.resolver.alias = {
-    'react-native
-
-export default config;: 'react-native-web',
+    'react-native': 'react-native-web',
   };
 }
 
