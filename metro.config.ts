@@ -4,7 +4,7 @@ import path from 'path';
 const config = getDefaultConfig(__dirname);
 
 // Customize the Metro configuration to fix bundling issues
-const resolverConfig = {
+config.resolver = {
   ...config.resolver,
   blockList: [
     // Block any nested duplicate directories
@@ -20,15 +20,14 @@ const resolverConfig = {
 
 // Web-specific optimizations
 if (process.env.EXPO_PLATFORM === 'web') {
-  resolverConfig.alias = {
-    'react-native': 'react-native-web',
+  config.resolver = {
+    ...config.resolver,
+    alias: {
+      'react-native': 'react-native-web',
+    },
   };
 }
 
-// Apply the resolver configuration
-Object.assign(config, {
-  resolver: resolverConfig,
-  watchFolders: [path.resolve(__dirname)],
-});
+config.watchFolders = [path.resolve(__dirname)];
 
 export default config;
