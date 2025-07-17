@@ -170,13 +170,13 @@ export default function HomeScreen() {
             <View style={styles.headerActions}>
               <TouchableOpacity 
                 style={styles.headerActionButton}
-                onPress={() => router.push('/(tabs)/calendar')}
+                onPress={() => router.push('/calendar')}
               >
                 <Calendar size={20} color={colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.headerActionButton}
-                onPress={() => router.push('/(tabs)/notifications')}
+                onPress={() => router.push('/notifications')}
               >
                 <Bell size={20} color={colors.primary} />
                 <View style={styles.notificationBadge}>
