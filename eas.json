@@ -1,0 +1,27 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "GOOGLE_SERVICES_JSON": "@google-services-json",
+        "GOOGLE_SERVICE_INFO_PLIST": "@google-service-info-plist"
+      }
+    },
+    "production": {
+      "env": {
+        "GOOGLE_SERVICES_JSON": "@google-services-json",
+        "GOOGLE_SERVICE_INFO_PLIST": "@google-service-info-plist"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
