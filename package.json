@@ -99,8 +99,12 @@
   },
   "private": true,
   "expo": {
-    "web": {
-      "bundler": "metro"
-    }
+"web": {
+  "bundler": "metro"
+},
+"doctor": {
+  "reactNativeDirectoryCheck": {
+    "listUnknownPackages": false
   }
+}
 }
