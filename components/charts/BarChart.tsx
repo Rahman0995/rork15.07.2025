@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface BarChartData {
   label: string;
@@ -21,7 +21,10 @@ export const BarChart: React.FC<BarChartProps> = ({
   height = 200,
   showValues = true 
 }) => {
+  const { colors } = useTheme();
   const max = maxValue || Math.max(...data.map(item => item.value));
+  
+  const styles = createStyles(colors);
   
   return (
     <View style={styles.container}>
@@ -56,7 +59,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     padding: 16,
   },

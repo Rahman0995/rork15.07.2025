@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Avatar } from './Avatar';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 import { User } from '@/types';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 
@@ -21,6 +21,9 @@ interface UserStatsCardProps {
 }
 
 export const UserStatsCard: React.FC<UserStatsCardProps> = ({ stats, onPress }) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  
   const getTrendIcon = () => {
     switch (stats.trend) {
       case 'up':
@@ -104,7 +107,7 @@ export const UserStatsCard: React.FC<UserStatsCardProps> = ({ stats, onPress }) 
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.card,
     borderRadius: 12,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface PieChartData {
   label: string;
@@ -19,7 +19,10 @@ export const PieChart: React.FC<PieChartProps> = ({
   size = 120,
   showLegend = true 
 }) => {
+  const { colors } = useTheme();
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  
+  const styles = createStyles(colors);
   
   if (total === 0) {
     return (
@@ -152,7 +155,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     alignItems: 'center',
     padding: 16,

@@ -30,7 +30,7 @@ import {
   Calendar,
   Filter
 } from 'lucide-react-native';
-import { notifyGlobalScroll } from './_layout';
+
 
 type AnalyticsTab = 'overview' | 'units' | 'users' | 'trends';
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -45,16 +45,16 @@ export default function AnalyticsScreen() {
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('overview');
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   
-  // Calculate statistics
-  const totalReports = reports.length;
-  const approvedReports = reports.filter(r => r.status === 'approved').length;
-  const pendingReports = reports.filter(r => r.status === 'pending').length;
-  const rejectedReports = reports.filter(r => r.status === 'rejected').length;
+  // Calculate statistics with error handling
+  const totalReports = reports?.length || 0;
+  const approvedReports = reports?.filter(r => r.status === 'approved').length || 0;
+  const pendingReports = reports?.filter(r => r.status === 'pending').length || 0;
+  const rejectedReports = reports?.filter(r => r.status === 'rejected').length || 0;
   
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
-  const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+  const totalTasks = tasks?.length || 0;
+  const completedTasks = tasks?.filter(t => t.status === 'completed').length || 0;
+  const inProgressTasks = tasks?.filter(t => t.status === 'in_progress').length || 0;
+  const pendingTasks = tasks?.filter(t => t.status === 'pending').length || 0;
   
   const taskCompletionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   const reportApprovalRate = totalReports > 0 ? Math.round((approvedReports / totalReports) * 100) : 0;
@@ -77,8 +77,10 @@ export default function AnalyticsScreen() {
     { label: 'Вс', value: 79 },
   ], []);
   
-  const userStats = useMemo(() => 
-    mockUsers.map(u => ({
+  const userStats = useMemo(() => {
+    if (!mockUsers || mockUsers.length === 0) return [];
+    
+    return mockUsers.map(u => ({
       user: u,
       tasksCompleted: Math.floor(Math.random() * 20) + 5,
       tasksTotal: Math.floor(Math.random() * 30) + 10,
@@ -86,8 +88,8 @@ export default function AnalyticsScreen() {
       completionRate: Math.floor(Math.random() * 40) + 60,
       trend: ['up', 'down', 'stable'][Math.floor(Math.random() * 3)] as 'up' | 'down' | 'stable',
       trendValue: Math.floor(Math.random() * 20) - 10,
-    })).sort((a, b) => b.completionRate - a.completionRate)
-  , []);
+    })).sort((a, b) => b.completionRate - a.completionRate);
+  }, []);
   
   const barChartData = unitsData.map(unit => ({
     label: unit.name.replace('Рота ', ''),
@@ -108,10 +110,7 @@ export default function AnalyticsScreen() {
     { label: 'Отклонено', value: rejectedReports, color: colors.error },
   ];
   
-  const handleScroll = (event: any) => {
-    const currentScrollY = event.nativeEvent.contentOffset.y;
-    notifyGlobalScroll(currentScrollY);
-  };
+
   
   const handleExport = (type: 'pdf' | 'excel') => {
     // Convert analytics data to array format for export
@@ -422,8 +421,7 @@ export default function AnalyticsScreen() {
         style={styles.content} 
         contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
+
       >
         {activeTab === 'overview' && renderOverviewTab()}
         {activeTab === 'units' && renderUnitsTab()}

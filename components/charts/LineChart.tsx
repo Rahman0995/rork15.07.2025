@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface LineChartData {
   label: string;
@@ -16,10 +16,12 @@ interface LineChartProps {
 
 export const LineChart: React.FC<LineChartProps> = ({ 
   data, 
-  color = colors.primary,
+  color,
   height = 150,
   showDots = true 
 }) => {
+  const { colors } = useTheme();
+  const lineColor = color || colors.primary;
   if (data.length === 0) return null;
   
   const maxValue = Math.max(...data.map(item => item.value));
@@ -39,6 +41,8 @@ export const LineChart: React.FC<LineChartProps> = ({
     const y = getY(item.value);
     return { x, y, value: item.value, label: item.label };
   });
+  
+  const styles = createStyles(colors);
   
   return (
     <View style={styles.container}>
@@ -79,7 +83,7 @@ export const LineChart: React.FC<LineChartProps> = ({
                       left: prevPoint.x,
                       top: prevPoint.y,
                       width: lineWidth,
-                      backgroundColor: color,
+                      backgroundColor: lineColor,
                       transform: [{ rotate: `${angle}deg` }],
                     }
                   ]}
@@ -97,7 +101,7 @@ export const LineChart: React.FC<LineChartProps> = ({
                 {
                   left: point.x - 4,
                   top: point.y - 4,
-                  backgroundColor: color,
+                  backgroundColor: lineColor,
                 }
               ]}
             />
@@ -123,7 +127,7 @@ export const LineChart: React.FC<LineChartProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     padding: 16,
     alignItems: 'center',

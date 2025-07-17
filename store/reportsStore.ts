@@ -3,6 +3,7 @@ import { Report, ReportStatus, ReportComment, ReportApproval, ReportRevision } f
 import { trpcClient } from '@/lib/trpc';
 import { useNotificationsStore } from './notificationsStore';
 import { useAuthStore } from '@/store/authStore';
+import { mockReports } from '@/constants/mockData';
 
 interface ReportsState {
   reports: Report[];
@@ -36,7 +37,7 @@ interface ReportsState {
 }
 
 export const useReportsStore = create<ReportsState>((set, get) => ({
-  reports: [],
+  reports: mockReports,
   isLoading: false,
   error: null,
   fetchReports: async () => {
@@ -58,8 +59,8 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       }));
       set({ reports: transformedReports, isLoading: false });
     } catch (error) {
-      console.warn('Failed to fetch reports from backend, using empty array:', error);
-      set({ reports: [], isLoading: false });
+      console.warn('Failed to fetch reports from backend, using mock data:', error);
+      set({ reports: mockReports, isLoading: false });
     }
   },
   getReportById: (id: string) => {
