@@ -20,14 +20,6 @@ export const QuickActions: React.FC = () => {
 
   const quickActions: QuickAction[] = [
     {
-      id: 'personnel',
-      title: 'Личный состав',
-      subtitle: 'Управление персоналом',
-      icon: Users,
-      route: '/personnel',
-      color: colors.primary,
-    },
-    {
       id: 'documents',
       title: 'Документы',
       subtitle: 'Документооборот',
