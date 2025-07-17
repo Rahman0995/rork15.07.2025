@@ -99,7 +99,7 @@
   },
   "private": true,
   "expo": {
-"web": {
+  "web": {
   "bundler": "metro"
 },
 "doctor": {
