@@ -1,0 +1,28 @@
+# Frontend Web Dockerfile
+FROM node:18-alpine as base
+WORKDIR /app
+
+# Install dependencies
+COPY package.json bun.lock* ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build web version
+RUN npx expo export:web
+
+# Production stage with nginx
+FROM nginx:alpine as production
+
+# Copy built web app
+COPY --from=base /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
