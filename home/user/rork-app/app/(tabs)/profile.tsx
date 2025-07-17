@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Platform, 
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { MediaTypeOptions } from 'expo-image-picker';
-import { MediaTypeOptions } from 'expo-image-picker';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
