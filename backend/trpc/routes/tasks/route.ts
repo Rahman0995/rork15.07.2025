@@ -49,7 +49,7 @@ export const getTasksProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { assignedTo?: string; createdBy?: string; status?: TaskStatus; priority?: TaskPriority; limit?: number; offset?: number; } }) => {
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
@@ -71,7 +71,7 @@ export const getTasksProcedure = publicProcedure
     // Sort by priority and creation date
     const priorityOrder: Record<TaskPriority, number> = { high: 3, medium: 2, low: 1 };
     tasks.sort((a, b) => {
-      const priorityDiff = priorityOrder[b.priority as TaskPriority] - priorityOrder[a.priority as TaskPriority];
+      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
       if (priorityDiff !== 0) return priorityDiff;
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
@@ -90,7 +90,7 @@ export const getTasksProcedure = publicProcedure
 
 export const getTaskByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .query(({ input }) => {
+  .query(({ input }: { input?: { assignedTo?: string; createdBy?: string; status?: TaskStatus; priority?: TaskPriority; limit?: number; offset?: number; } }) => {
     const task = getTask(input.id);
     if (!task) {
       throw new Error('Task not found');
@@ -107,7 +107,7 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; assignedTo: string; createdBy: string; dueDate: string; priority?: TaskPriority; } }) => {
     const newTask: Task = {
       id: `task_${Date.now()}`,
       title: input.title,
@@ -135,7 +135,7 @@ export const updateTaskProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; assignedTo: string; createdBy: string; dueDate: string; priority?: TaskPriority; } }) => {
     const taskIndex = mockTasks.findIndex(task => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
@@ -164,7 +164,7 @@ export const updateTaskProcedure = publicProcedure
 
 export const deleteTaskProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: { title: string; description: string; assignedTo: string; createdBy: string; dueDate: string; priority?: TaskPriority; } }) => {
     const taskIndex = mockTasks.findIndex(task => task.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
@@ -176,7 +176,7 @@ export const deleteTaskProcedure = publicProcedure
 
 export const getTaskStatsProcedure = publicProcedure
   .input(z.object({ userId: z.string().optional() }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: { assignedTo?: string; createdBy?: string; status?: TaskStatus; priority?: TaskPriority; limit?: number; offset?: number; } }) => {
     let tasks = mockTasks;
     
     if (input?.userId) {

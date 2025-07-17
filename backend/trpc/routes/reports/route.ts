@@ -3,7 +3,7 @@ import { publicProcedure } from '../../create-context';
 import { getDatabase, schema } from '../../database';
 import { eq, and, desc, asc } from 'drizzle-orm';
 import { activityLoggers } from '../../middleware/activity-logger';
-import { Report, ReportStatus, ReportComment } from '../../../../types';
+import { Report, ReportComment } from '../../../../types';
 
 type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
 type ReportType = 'text' | 'file' | 'video';
@@ -38,7 +38,7 @@ export const getReportsProcedure = publicProcedure
     offset: z.number().optional(),
   }).optional())
   .use(activityLoggers.view('reports'))
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number; } }) => {
     const db = getDatabase();
     
     let query = db.select().from(schema.reports);
@@ -90,7 +90,7 @@ export const getReportsProcedure = publicProcedure
 export const getReportByIdProcedure = publicProcedure
   .input(z.object({ id: z.string() }))
   .use(activityLoggers.viewReport)
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number; } }) => {
     const report = await getReportWithRelations(input.id);
     if (!report) {
       throw new Error('Report not found');
@@ -341,7 +341,7 @@ export const approveReportProcedure = publicProcedure
 export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({ approverId: z.string() }))
   .use(activityLoggers.view('approval_reports'))
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: { status?: ReportStatus; authorId?: string; unit?: string; limit?: number; offset?: number; } }) => {
     const db = getDatabase();
     
     // For now, return all pending reports since we don't have approvers field implemented yet
