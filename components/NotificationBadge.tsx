@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '@/constants/colors';
+import { useTheme } from '@/constants/theme';
 
 interface NotificationBadgeProps {
   count: number;
@@ -10,47 +10,26 @@ interface NotificationBadgeProps {
 
 export const NotificationBadge: React.FC<NotificationBadgeProps> = ({ 
   count, 
-  size = 18,
+  size = 16,
   style 
 }) => {
+  const { colors } = useTheme();
+  
   if (count === 0) return null;
   
   const displayCount = count > 99 ? '99+' : count.toString();
   
   return (
-    <View style={[
-      styles.badge,
-      { 
-        width: size, 
-        height: size, 
-        borderRadius: size / 2,
-        minWidth: size,
-      },
-      style
+    <Text style={[
+      {
+        color: 'white',
+        fontSize: Math.max(10, size * 0.65),
+        fontWeight: '700' as const,
+        textAlign: 'center' as const,
+        lineHeight: size * 0.9,
+      }
     ]}>
-      <Text style={[
-        styles.text,
-        { fontSize: size * 0.6 }
-      ]}>
-        {displayCount}
-      </Text>
-    </View>
+      {displayCount}
+    </Text>
   );
 };
-
-const styles = StyleSheet.create({
-  badge: {
-    backgroundColor: colors.error,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    zIndex: 1,
-  },
-  text: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-});

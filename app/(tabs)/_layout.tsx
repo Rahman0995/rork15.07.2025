@@ -20,30 +20,77 @@ export default function TabLayout() {
   const unreadNotifications = notifications.filter(n => n.userId === user?.id && !n.read);
   
   const HeaderRightComponent = () => (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginRight: 16 }}>
+    <View style={{ 
+      flexDirection: 'row', 
+      alignItems: 'center', 
+      gap: 8, 
+      marginRight: 16,
+      paddingVertical: 4,
+    }}>
       <TouchableOpacity 
         style={{
-          padding: 8,
-          borderRadius: 12,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
           backgroundColor: colors.backgroundSecondary,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          elevation: 2,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}
         onPress={() => router.push('/personnel')}
+        activeOpacity={0.7}
       >
-        <Users size={24} color={colors.text} />
+        <Users size={20} color={colors.text} strokeWidth={2} />
       </TouchableOpacity>
       
       <TouchableOpacity 
         style={{
           position: 'relative',
-          padding: 8,
-          borderRadius: 12,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
           backgroundColor: colors.backgroundSecondary,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          elevation: 2,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
         }}
         onPress={() => router.push('/notifications')}
+        activeOpacity={0.7}
       >
-        <Bell size={24} color={colors.text} />
+        <Bell size={20} color={colors.text} strokeWidth={2} />
         {unreadNotifications.length > 0 && (
-          <NotificationBadge count={unreadNotifications.length} />
+          <View style={{
+            position: 'absolute',
+            top: -2,
+            right: -2,
+            minWidth: 18,
+            height: 18,
+            borderRadius: 9,
+            backgroundColor: colors.error,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 2,
+            borderColor: colors.card,
+            shadowColor: colors.error,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.3,
+            shadowRadius: 2,
+            elevation: 3,
+          }}>
+            <NotificationBadge count={unreadNotifications.length} />
+          </View>
         )}
       </TouchableOpacity>
     </View>
@@ -59,23 +106,22 @@ export default function TabLayout() {
             left: 0,
             right: 0,
             backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
-            borderTopColor: colors.borderLight,
-            borderTopWidth: 1,
-            paddingTop: 6,
-            paddingBottom: Platform.OS === 'ios' ? insets.bottom + 4 : 20,
-            height: Platform.OS === 'ios' ? 60 + insets.bottom : 70,
+            borderTopColor: Platform.OS === 'web' ? colors.borderLight : 'transparent',
+            borderTopWidth: Platform.OS === 'web' ? 1 : 0,
+            paddingTop: 8,
+            paddingBottom: Platform.OS === 'ios' ? insets.bottom + 6 : 22,
+            height: Platform.OS === 'ios' ? 64 + insets.bottom : 74,
             shadowColor: colors.shadow,
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 8,
-            opacity: 0.98,
+            shadowOffset: { width: 0, height: -4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 12,
           },
         ]}
       >
         {Platform.OS !== 'web' && (
           <BlurView
-            intensity={100}
+            intensity={95}
             tint={isDark ? 'dark' : 'light'}
             style={{
               position: 'absolute',
@@ -83,6 +129,7 @@ export default function TabLayout() {
               left: 0,
               right: 0,
               bottom: 0,
+              backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
             }}
           />
         )}
@@ -147,16 +194,16 @@ export default function TabLayout() {
         headerStyle: {
           backgroundColor: Platform.OS === 'web' ? colors.card : 'transparent',
           borderBottomColor: colors.borderLight,
-          borderBottomWidth: 1,
+          borderBottomWidth: Platform.OS === 'web' ? 1 : 0,
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
           elevation: 8,
         },
         headerBackground: Platform.OS !== 'web' ? () => (
           <BlurView
-            intensity={100}
+            intensity={95}
             tint={isDark ? 'dark' : 'light'}
             style={{
               position: 'absolute',
@@ -164,7 +211,7 @@ export default function TabLayout() {
               left: 0,
               right: 0,
               bottom: 0,
-              opacity: 0.98,
+              backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
             }}
           />
         ) : undefined,
