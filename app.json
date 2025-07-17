@@ -73,7 +73,14 @@
         {
           "icon": "./assets/images/icon.png",
           "color": "#ffffff",
-          "defaultChannel": "default"
+          "defaultChannel": "default",
+          "sounds": [
+            "./assets/sounds/notification.wav",
+            "./assets/sounds/alert.wav",
+            "./assets/sounds/urgent.wav",
+            "./assets/sounds/message.wav",
+            "./assets/sounds/reminder.wav"
+          ]
         }
       ],
       [
@@ -103,21 +110,6 @@
         }
       ],
       [
-      [
-"expo-notifications",
-{
-  "icon": "./assets/images/icon.png",
-  "color": "#ffffff",
-  "defaultChannel": "default",
-  "sounds": [
-    "./assets/sounds/notification.wav",
-    "./assets/sounds/alert.wav",
-    "./assets/sounds/urgent.wav",
-    "./assets/sounds/message.wav",
-    "./assets/sounds/reminder.wav"
-  ]
-}
-]
         "expo-file-system",
         {
           "requestLegacyExternalStorage": true
