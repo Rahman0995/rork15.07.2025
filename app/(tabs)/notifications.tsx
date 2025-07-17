@@ -35,16 +35,27 @@ export default function NotificationsScreen() {
       markAsRead(notification.id);
     }
     
-    // Navigate based on notification type
+    // Navigate based on notification type and data
     switch (notification.type) {
-      case 'task':
-        router.push(`/task/${notification.relatedId}`);
+      case 'task_assigned':
+      case 'task_due':
+        if (notification.data?.taskId) {
+          router.push(`/task/${notification.data.taskId}`);
+        }
         break;
-      case 'report':
-        router.push(`/report/${notification.relatedId}`);
+      case 'report_created':
+      case 'report_approved':
+      case 'report_rejected':
+      case 'report_revision_requested':
+      case 'report_revised':
+        if (notification.data?.reportId) {
+          router.push(`/report/${notification.data.reportId}`);
+        }
         break;
-      case 'chat':
-        router.push(`/chat/${notification.relatedId}`);
+      case 'chat_message':
+        if (notification.data?.chatId) {
+          router.push(`/chat/${notification.data.chatId}`);
+        }
         break;
       default:
         break;
