@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockTasks } from '@/constants/mockData';
-import { Task, TaskStatus, TaskPriority } from '@/types';
+import { mockTasks } from '../../../constants/mockData';
+import { Task, TaskStatus, TaskPriority } from '../../../types';
 
 type TasksInput = {
   assignedTo?: string;
@@ -52,19 +52,19 @@ export const getTasksProcedure = publicProcedure
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
-      tasks = tasks.filter((t: Task) => t.assignedTo === input.assignedTo);
+      tasks = tasks.filter((t) => t.assignedTo === input.assignedTo);
     }
     
     if (input?.createdBy) {
-      tasks = tasks.filter((t: Task) => t.createdBy === input.createdBy);
+      tasks = tasks.filter((t) => t.createdBy === input.createdBy);
     }
     
     if (input?.status) {
-      tasks = tasks.filter((t: Task) => t.status === input.status);
+      tasks = tasks.filter((t) => t.status === input.status);
     }
     
     if (input?.priority) {
-      tasks = tasks.filter((t: Task) => t.priority === input.priority);
+      tasks = tasks.filter((t) => t.priority === input.priority);
     }
     
     return tasks;
@@ -75,7 +75,7 @@ export const getTaskByIdProcedure = publicProcedure
     id: z.string(),
   }))
   .query(({ input }: { input: TaskByIdInput }) => {
-    const task = mockTasks.find((t: Task) => t.id === input.id);
+    const task = mockTasks.find((t) => t.id === input.id);
     if (!task) {
       throw new Error('Task not found');
     }
@@ -119,7 +119,7 @@ export const updateTaskProcedure = publicProcedure
     dueDate: z.string().optional(),
   }))
   .mutation(({ input }: { input: UpdateTaskInput }) => {
-    const taskIndex = mockTasks.findIndex((t: Task) => t.id === input.id);
+    const taskIndex = mockTasks.findIndex((t) => t.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -145,7 +145,7 @@ export const deleteTaskProcedure = publicProcedure
     id: z.string(),
   }))
   .mutation(({ input }: { input: DeleteTaskInput }) => {
-    const taskIndex = mockTasks.findIndex((t: Task) => t.id === input.id);
+    const taskIndex = mockTasks.findIndex((t) => t.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -163,28 +163,28 @@ export const getTaskStatsProcedure = publicProcedure
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
-      tasks = tasks.filter((t: Task) => t.assignedTo === input.assignedTo);
+      tasks = tasks.filter((t) => t.assignedTo === input.assignedTo);
     }
     
     if (input?.createdBy) {
-      tasks = tasks.filter((t: Task) => t.createdBy === input.createdBy);
+      tasks = tasks.filter((t) => t.createdBy === input.createdBy);
     }
     
     return {
       total: tasks.length,
-      pending: tasks.filter((t: Task) => t.status === 'pending').length,
-      inProgress: tasks.filter((t: Task) => t.status === 'in_progress').length,
-      completed: tasks.filter((t: Task) => t.status === 'completed').length,
-      cancelled: tasks.filter((t: Task) => t.status === 'cancelled').length,
-      overdue: tasks.filter((t: Task) => 
+      pending: tasks.filter((t) => t.status === 'pending').length,
+      inProgress: tasks.filter((t) => t.status === 'in_progress').length,
+      completed: tasks.filter((t) => t.status === 'completed').length,
+      cancelled: tasks.filter((t) => t.status === 'cancelled').length,
+      overdue: tasks.filter((t) => 
         t.status !== 'completed' && 
         t.status !== 'cancelled' && 
         new Date(t.dueDate) < new Date()
       ).length,
       byPriority: {
-        high: tasks.filter((t: Task) => t.priority === 'high').length,
-        medium: tasks.filter((t: Task) => t.priority === 'medium').length,
-        low: tasks.filter((t: Task) => t.priority === 'low').length,
+        high: tasks.filter((t) => t.priority === 'high').length,
+        medium: tasks.filter((t) => t.priority === 'medium').length,
+        low: tasks.filter((t) => t.priority === 'low').length,
       },
     };
   });
