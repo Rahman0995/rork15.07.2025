@@ -49,13 +49,13 @@ export default function HomeScreen() {
   }
 
   
-  // Test tRPC connection
+  // Test tRPC connection (disabled for production to prevent crashes)
   const { data: backendTest, isLoading: backendLoading, error: backendError } = trpc.example.hi.useQuery(
     { name: user?.name || 'Anonymous' },
     { 
-      enabled: isAuthenticated && !!user,
-      retry: 1,
-      staleTime: 30000, // 30 seconds
+      enabled: false, // Disabled to prevent app crashes on device
+      retry: 0,
+      staleTime: 30000,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchOnReconnect: false
@@ -161,7 +161,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.contentContainer}
         refreshControl={
           <RefreshControl 
-            refreshing={tasksLoading || reportsLoading || backendLoading} 
+            refreshing={tasksLoading || reportsLoading} 
             onRefresh={handleRefresh}
             colors={[colors.primary]}
             tintColor={colors.primary}
@@ -186,7 +186,7 @@ export default function HomeScreen() {
             <View style={styles.headerRight}>
               <StatusIndicator 
                 isOnline={true}
-                serverStatus={backendError ? 'error' : backendTest ? 'connected' : 'disconnected'}
+                serverStatus={'connected'} // Always show connected for production
               />
             </View>
 

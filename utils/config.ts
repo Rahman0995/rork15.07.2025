@@ -33,17 +33,22 @@ export const getAppConfig = (): AppConfig => {
   };
 };
 
-const getDefaultConfig = (): AppConfig => ({
-  apiUrl: 'http://localhost:3000/api',
-  enableDebugMode: true,
-  enableAnalytics: false,
-  backendConfig: {
-    baseUrl: 'http://localhost:3000',
-    trpcEndpoint: '/api/trpc',
-    timeout: 10000,
-    retries: 3,
-  }
-});
+const getDefaultConfig = (): AppConfig => {
+  // Use different defaults for development vs production
+  const isDev = __DEV__;
+  
+  return {
+    apiUrl: isDev ? 'http://localhost:3000/api' : 'https://api.example.com/api',
+    enableDebugMode: isDev,
+    enableAnalytics: !isDev,
+    backendConfig: {
+      baseUrl: isDev ? 'http://localhost:3000' : 'https://api.example.com',
+      trpcEndpoint: '/api/trpc',
+      timeout: 10000,
+      retries: 3,
+    }
+  };
+};
 
 // Convenience functions
 export const getApiUrl = () => getAppConfig().apiUrl;

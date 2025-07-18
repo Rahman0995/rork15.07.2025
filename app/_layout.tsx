@@ -8,7 +8,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useTheme } from "@/constants/theme";
-import { Platform } from "react-native";
+import { Platform, View, Text, TouchableOpacity } from "react-native";
 import { BlurView } from "expo-blur";
 import { trpc, trpcClient } from "@/lib/trpc";
 
@@ -33,22 +33,33 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
+  const [hasError, setHasError] = useState(false);
   
   // Ensure auth store is initialized
   useEffect(() => {
-    if (__DEV__) {
-      console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
-    }
-    if (!isInitialized) {
-      if (__DEV__) console.log('Initializing auth store...');
-      initialize();
+    try {
+      if (__DEV__) {
+        console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
+      }
+      if (!isInitialized) {
+        if (__DEV__) console.log('Initializing auth store...');
+        initialize();
+      }
+    } catch (error) {
+      console.error('Error during auth initialization:', error);
+      setHasError(true);
     }
   }, [isInitialized, initialize]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      // Register for push notifications when user is authenticated
-      registerForPushNotifications();
+    try {
+      if (isAuthenticated) {
+        // Register for push notifications when user is authenticated
+        registerForPushNotifications();
+      }
+    } catch (error) {
+      console.error('Error registering for push notifications:', error);
+      // Don't set error state for this, as it's not critical
     }
   }, [isAuthenticated]);
 
@@ -81,32 +92,65 @@ function RootLayoutNav() {
       });
     }
     
-    if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
-      // Redirect to login if not authenticated and trying to access protected routes
-      if (__DEV__) console.log('Redirecting to login - not authenticated');
-      router.replace('/login');
-    } else if (isAuthenticated && segments[0] === 'login') {
-      // Redirect to tabs if authenticated and on login page
-      if (__DEV__) console.log('Redirecting to tabs - authenticated on login page');
-      router.replace('/(tabs)');
-    } else if (isAuthenticated && segments.length < 1) {
-      // Redirect to tabs if authenticated and on root
-      if (__DEV__) console.log('Redirecting to tabs - authenticated on root');
-      router.replace('/(tabs)');
-    }
+    // Use setTimeout to prevent navigation conflicts
+    setTimeout(() => {
+      if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
+        // Redirect to login if not authenticated and trying to access protected routes
+        if (__DEV__) console.log('Redirecting to login - not authenticated');
+        router.replace('/login');
+      } else if (isAuthenticated && segments[0] === 'login') {
+        // Redirect to tabs if authenticated and on login page
+        if (__DEV__) console.log('Redirecting to tabs - authenticated on login page');
+        router.replace('/(tabs)');
+      } else if (isAuthenticated && segments.length < 1) {
+        // Redirect to tabs if authenticated and on root
+        if (__DEV__) console.log('Redirecting to tabs - authenticated on root');
+        router.replace('/(tabs)');
+      }
+    }, 100);
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);
 
   useEffect(() => {
     // Set navigation ready after a short delay to ensure everything is loaded
     const timer = setTimeout(() => {
-      setIsNavigationReady(true);
-      if (isInitialized) {
-        SplashScreen.hideAsync();
+      try {
+        setIsNavigationReady(true);
+        if (isInitialized) {
+          SplashScreen.hideAsync();
+        }
+      } catch (error) {
+        console.error('Error hiding splash screen:', error);
+        // Still set navigation ready even if splash screen fails
+        setIsNavigationReady(true);
       }
-    }, 100);
+    }, 500); // Increased delay to ensure everything is loaded
 
     return () => clearTimeout(timer);
   }, [isInitialized]);
+
+  // Show error screen if there's a critical error
+  if (hasError) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 18, marginBottom: 20, textAlign: 'center' }}>
+          Произошла ошибка при загрузке приложения
+        </Text>
+        <TouchableOpacity 
+          style={{ 
+            backgroundColor: colors.primary, 
+            padding: 15, 
+            borderRadius: 8 
+          }}
+          onPress={() => {
+            setHasError(false);
+            initialize();
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>Попробовать снова</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <Stack screenOptions={{ 

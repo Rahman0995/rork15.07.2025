@@ -21,11 +21,15 @@ export default function LoginScreen() {
   const styles = createStyles(colors);
   
   useEffect(() => {
-    if (isAuthenticated) {
-      // Use setTimeout to ensure navigation happens after component is fully mounted
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 100);
+    try {
+      if (isAuthenticated) {
+        // Use setTimeout to ensure navigation happens after component is fully mounted
+        setTimeout(() => {
+          router.replace('/(tabs)');
+        }, 200);
+      }
+    } catch (error) {
+      console.error('Error during login navigation:', error);
     }
   }, [isAuthenticated]);
   
@@ -56,8 +60,12 @@ export default function LoginScreen() {
   };
   
   const handleLogin = async () => {
-    if (validateForm()) {
-      await login(email, password);
+    try {
+      if (validateForm()) {
+        await login(email, password);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
     }
   };
   

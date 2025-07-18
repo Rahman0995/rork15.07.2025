@@ -89,30 +89,36 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => set({ error: null }),
       getCurrentUser: () => get().user,
       initialize: () => {
-        const state = get();
-        
-        if (isDebugMode()) {
-          console.log('Auth: Initializing with state:', {
-            hasUser: !!state.user,
-            isAuthenticated: state.isAuthenticated
-          });
-        }
-        
-        // If no user is logged in, auto-login with demo user for development
-        if (!state.user && !state.isAuthenticated) {
+        try {
+          const state = get();
+          
           if (isDebugMode()) {
-            console.log('Auth: No user found, auto-logging in demo user');
+            console.log('Auth: Initializing with state:', {
+              hasUser: !!state.user,
+              isAuthenticated: state.isAuthenticated
+            });
           }
           
-          // Auto-login with the first mock user (Полковник Зингиев)
-          const demoUser = mockUsers[0];
-          set({ 
-            user: demoUser, 
-            currentUser: demoUser, 
-            isAuthenticated: true, 
-            isInitialized: true 
-          });
-        } else {
+          // Always set initialized to true first to prevent loops
+          set({ isInitialized: true });
+          
+          // If no user is logged in, auto-login with demo user for development
+          if (!state.user && !state.isAuthenticated) {
+            if (isDebugMode()) {
+              console.log('Auth: No user found, auto-logging in demo user');
+            }
+            
+            // Auto-login with the first mock user (Полковник Зингиев)
+            const demoUser = mockUsers[0];
+            set({ 
+              user: demoUser, 
+              currentUser: demoUser, 
+              isAuthenticated: true
+            });
+          }
+        } catch (error) {
+          console.error('Auth: Error during initialization:', error);
+          // Ensure we're always initialized even if there's an error
           set({ isInitialized: true });
         }
       },
@@ -126,17 +132,30 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated 
       }),
       onRehydrateStorage: () => (state) => {
-        // Always initialize, even if state is null
-        if (isDebugMode()) {
-          console.log('Auth: Rehydrating storage, state:', state);
-        }
-        
-        // Set initialized immediately to prevent loading loops
-        const currentState = useAuthStore.getState();
-        currentState.initialize();
-        
-        if (isDebugMode()) {
-          console.log('Auth: Storage rehydrated and initialized');
+        try {
+          // Always initialize, even if state is null
+          if (isDebugMode()) {
+            console.log('Auth: Rehydrating storage, state:', state);
+          }
+          
+          // Use setTimeout to ensure initialization happens after rehydration
+          setTimeout(() => {
+            const currentState = useAuthStore.getState();
+            if (!currentState.isInitialized) {
+              currentState.initialize();
+            }
+            
+            if (isDebugMode()) {
+              console.log('Auth: Storage rehydrated and initialized');
+            }
+          }, 0);
+        } catch (error) {
+          console.error('Auth: Error during rehydration:', error);
+          // Ensure initialization even on error
+          setTimeout(() => {
+            const currentState = useAuthStore.getState();
+            currentState.initialize();
+          }, 0);
         }
       },
     }
