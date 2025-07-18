@@ -18,6 +18,9 @@ const resolverConfig = {
     // Block any server-side files that might use import.meta or Node.js APIs
     /.*\.server\.(js|ts|jsx|tsx)$/,
     /.*\/server\/.*/,
+    // Block any files that might contain import.meta
+    /.*node_modules\/.*\/dist\/.*\.js$/,
+    /.*node_modules\/.*\/esm\/.*\.js$/,
   ],
   platforms: ['ios', 'android', 'native', 'web'],
   sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
@@ -36,6 +39,16 @@ const finalConfig = {
   ...config,
   resolver: resolverConfig,
   watchFolders: [path.resolve(__dirname)],
+  transformer: {
+    ...config.transformer,
+    minifierConfig: {
+      // Disable minification that might cause issues with import.meta transformation
+      keep_fnames: true,
+      mangle: {
+        keep_fnames: true,
+      },
+    },
+  },
 };
 
 export default finalConfig;

@@ -32,7 +32,7 @@ export default {
 expo: {
   name: IS_DEV ? 'sever_ahmat (Dev)' : 'sever_ahmat',
   slug: 'military-unit-management-application',
-  version: '1.0.1',
+  version: '1.0.2',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'myapp',
@@ -50,6 +50,7 @@ expo: {
       ? 'app.rork.militaryunitmanagement.dev' 
       : 'app.rork.militaryunitmanagement',
     googleServicesFile: './GoogleService-Info.plist',
+    buildNumber: '2',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSCameraUsageDescription: 'This app needs access to camera to take photos for reports',
@@ -83,6 +84,7 @@ expo: {
       ? 'app.rork.militaryunitmanagement.dev' 
       : 'app.rork.militaryunitmanagement',
     googleServicesFile: './google-services.json',
+    versionCode: 2,
     permissions: [
       'android.permission.CAMERA',
       'android.permission.RECORD_AUDIO',
