@@ -46,9 +46,7 @@ expo: {
   },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: IS_DEV 
-      ? 'app.rork.militaryunitmanagement.dev' 
-      : 'app.rork.militaryunitmanagement',
+    bundleIdentifier: 'app.rork.military-unit-management-application',
     googleServicesFile: './GoogleService-Info.plist',
     buildNumber: '2',
     infoPlist: {
@@ -80,9 +78,7 @@ expo: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff'
     },
-    package: IS_DEV 
-      ? 'app.rork.militaryunitmanagement.dev' 
-      : 'app.rork.militaryunitmanagement',
+    package: 'app.rork.militaryunitmanagement',
     googleServicesFile: './google-services.json',
     versionCode: 2,
     permissions: [
