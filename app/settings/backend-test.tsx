@@ -5,7 +5,8 @@ import { trpc } from '@/lib/trpc';
 import { useTheme } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 import { getAppConfig, isDebugMode } from '@/utils/config';
-import { Server, CheckCircle, XCircle, RefreshCw, Wifi, Globe, Clock } from 'lucide-react-native';
+import { Server, CheckCircle, XCircle, RefreshCw, Wifi, Globe, Clock, Settings } from 'lucide-react-native';
+import { NetworkStatus } from '@/components/NetworkStatus';
 
 export default function BackendTestScreen() {
   const { user } = useAuthStore();
@@ -13,6 +14,7 @@ export default function BackendTestScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [networkTest, setNetworkTest] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', data?: any, error?: string }>({ status: 'idle' });
   const [internetTest, setInternetTest] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', data?: any, error?: string }>({ status: 'idle' });
+  const [showNetworkDiagnostics, setShowNetworkDiagnostics] = useState(false);
   const appConfig = getAppConfig();
   
   const styles = StyleSheet.create({
@@ -195,6 +197,22 @@ export default function BackendTestScreen() {
       color: colors.white,
       fontSize: 16,
       fontWeight: '600',
+    },
+    diagnosticsButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.backgroundSecondary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 8,
+      marginTop: 8,
+      gap: 6,
+    },
+    diagnosticsButtonText: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '500',
     },
   });
   
@@ -406,6 +424,14 @@ export default function BackendTestScreen() {
               style={[isLoading || isRefreshing || networkTest.status === 'loading' || internetTest.status === 'loading' ? styles.spinning : null]} 
             />
             <Text style={styles.runAllButtonText}>Запустить все тесты</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.diagnosticsButton}
+            onPress={() => setShowNetworkDiagnostics(true)}
+          >
+            <Settings size={16} color={colors.text} />
+            <Text style={styles.diagnosticsButtonText}>Диагностика сети</Text>
           </TouchableOpacity>
         </View>
 
@@ -646,6 +672,11 @@ export default function BackendTestScreen() {
           </View>
         )}
       </ScrollView>
+      
+      <NetworkStatus 
+        visible={showNetworkDiagnostics}
+        onClose={() => setShowNetworkDiagnostics(false)}
+      />
     </>
   );
 }

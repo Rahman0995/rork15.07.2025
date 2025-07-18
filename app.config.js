@@ -4,7 +4,7 @@ const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 // ВАЖНО: Замените на ваш реальный IP адрес
 // Найдите ваш IP: ipconfig (Windows) или ifconfig (Mac/Linux)
 // Или используйте облачный сервис для production
-const YOUR_IP_ADDRESS = process.env.LOCAL_IP || 'localhost'; // Use localhost for development
+const YOUR_IP_ADDRESS = process.env.LOCAL_IP || '192.168.1.100'; // Default to common local IP
 
 const getApiUrl = () => {
 if (IS_DEV) {
@@ -164,8 +164,13 @@ expo: {
       trpcEndpoint: '/api/trpc',
       timeout: 30000, // Увеличен timeout для медленных соединений
       retries: 3,
-      enableMockData: IS_DEV, // Включаем mock данные только в dev
-      enableOfflineMode: true
+      enableMockData: true, // Всегда включаем mock данные для отказоустойчивости
+      enableOfflineMode: true,
+      fallbackUrls: [
+        `http://localhost:3000`,
+        `http://127.0.0.1:3000`,
+        `http://${YOUR_IP_ADDRESS}:3000`
+      ]
     },
     // Дополнительные настройки для production
     security: {
