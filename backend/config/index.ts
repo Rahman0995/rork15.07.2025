@@ -10,7 +10,7 @@ export const config = {
     },
   },
   database: {
-    url: process.env.DATABASE_URL || 'sqlite:./data/app.db',
+    url: process.env.DATABASE_URL || process.env.MYSQL_MYSQL_URL || 'mysql://root:password@localhost:3306/rork_app',
   },
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379',
