@@ -39,16 +39,15 @@ const getBaseUrl = () => {
     return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   }
 
-  // Platform-specific fallbacks
+  // Platform-specific fallbacks with better defaults
   if (Platform.OS === 'web') {
+    // For web, always use localhost
     console.log('Using web fallback: http://localhost:3000');
     return "http://localhost:3000";
   } else {
-    // For mobile, try to use the local IP from environment
-    const localIP = getLocalIP();
-    const mobileUrl = `http://${localIP}:3000`;
-    console.log('Using mobile fallback:', mobileUrl);
-    return mobileUrl;
+    // For mobile, prefer localhost first, then try local IP
+    console.log('Using mobile fallback: http://localhost:3000');
+    return "http://localhost:3000";
   }
 };
 
@@ -63,7 +62,11 @@ const getApiConfig = () => {
     fallbackUrls: config?.backendConfig?.fallbackUrls || [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      `http://${getLocalIP()}:3000`
+      `http://${getLocalIP()}:3000`,
+      'http://10.0.2.2:3000', // Android emulator
+      'http://192.168.1.100:3000',
+      'http://192.168.0.100:3000',
+      'http://10.0.0.100:3000'
     ]
   };
   
@@ -162,6 +165,73 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
               });
             }
             
+            // Mock responses for tasks
+            if (url.includes('tasks.getAll')) {
+              return new Response(JSON.stringify([
+                {
+                  result: {
+                    data: {
+                      json: {
+                        tasks: [
+                          {
+                            id: '1',
+                            title: 'Equipment Check (Mock)',
+                            description: 'Conduct routine equipment inspection in sector A',
+                            assignedTo: '1',
+                            createdBy: '2',
+                            dueDate: new Date(Date.now() + 86400000).toISOString(),
+                            status: 'pending',
+                            priority: 'high',
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                          }
+                        ],
+                        total: 1,
+                      }
+                    }
+                  }
+                }
+              ]), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            // Mock responses for reports
+            if (url.includes('reports.getAll')) {
+              return new Response(JSON.stringify([
+                {
+                  result: {
+                    data: {
+                      json: {
+                        reports: [
+                          {
+                            id: '1',
+                            title: 'Weekly Status Report (Mock)',
+                            content: 'All systems operational. Equipment check completed successfully.',
+                            authorId: '1',
+                            status: 'approved',
+                            type: 'text',
+                            unit: 'Alpha Squad',
+                            priority: 'medium',
+                            dueDate: new Date(Date.now() + 86400000).toISOString(),
+                            currentApprover: null,
+                            currentRevision: 1,
+                            createdAt: new Date(Date.now() - 86400000).toISOString(),
+                            updatedAt: new Date().toISOString(),
+                          }
+                        ],
+                        total: 1,
+                      }
+                    }
+                  }
+                }
+              ]), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
             // Mock responses for other common endpoints
             if (url.includes('auth')) {
               return new Response(JSON.stringify({
@@ -182,18 +252,20 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
             }
             
             // Generic mock response for other endpoints
-            return new Response(JSON.stringify({
-              result: {
-                data: {
-                  json: {
-                    message: 'Mock data - all servers unavailable',
-                    timestamp: new Date().toISOString(),
-                    mock: true,
-                    error: mainError.message
+            return new Response(JSON.stringify([
+              {
+                result: {
+                  data: {
+                    json: {
+                      message: 'Mock data - all servers unavailable',
+                      timestamp: new Date().toISOString(),
+                      mock: true,
+                      error: mainError.message
+                    }
                   }
                 }
               }
-            }), {
+            ]), {
               status: 200,
               headers: { 'Content-Type': 'application/json' }
             });

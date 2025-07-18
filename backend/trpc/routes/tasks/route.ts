@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { getDatabase, schema } from '../../database';
-import { eq, and, desc, asc } from 'drizzle-orm';
-import { activityLoggers } from '../../middleware/activity-logger';
+// import { getDatabase, schema } from '../../database';
+// import { eq, and, desc, asc } from 'drizzle-orm';
+// import { activityLoggers } from '../../middleware/activity-logger';
 import { Task, TaskStatus, TaskPriority } from '../../../../types';
 
 const mockTasks: Task[] = [
@@ -49,43 +49,57 @@ export const getTasksProcedure = publicProcedure
     limit: z.number().optional(),
     offset: z.number().optional(),
   }).optional())
-  .query(({ input }) => {
-    let tasks = [...mockTasks];
-    
-    if (input?.assignedTo) {
-      tasks = tasks.filter(task => task.assignedTo === input.assignedTo);
+  .query(async ({ input }) => {
+    try {
+      // Try database first (if available)
+      // const db = getDatabase();
+      // ... database logic would go here
+      
+      // For now, always use mock data for reliability
+      let tasks = [...mockTasks];
+      
+      if (input?.assignedTo) {
+        tasks = tasks.filter(task => task.assignedTo === input.assignedTo);
+      }
+      
+      if (input?.createdBy) {
+        tasks = tasks.filter(task => task.createdBy === input.createdBy);
+      }
+      
+      if (input?.status) {
+        tasks = tasks.filter(task => task.status === input.status);
+      }
+      
+      if (input?.priority) {
+        tasks = tasks.filter(task => task.priority === input.priority);
+      }
+      
+      // Sort by priority and creation date
+      const priorityOrder: Record<TaskPriority, number> = { high: 3, medium: 2, low: 1 };
+      tasks.sort((a, b) => {
+        const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      
+      if (input?.offset || input?.limit) {
+        const offset = input.offset || 0;
+        const limit = input.limit || 10;
+        tasks = tasks.slice(offset, offset + limit);
+      }
+      
+      return {
+        tasks,
+        total: mockTasks.length,
+      };
+    } catch (error) {
+      console.error('Error in getTasksProcedure:', error);
+      // Return mock data as fallback
+      return {
+        tasks: mockTasks,
+        total: mockTasks.length,
+      };
     }
-    
-    if (input?.createdBy) {
-      tasks = tasks.filter(task => task.createdBy === input.createdBy);
-    }
-    
-    if (input?.status) {
-      tasks = tasks.filter(task => task.status === input.status);
-    }
-    
-    if (input?.priority) {
-      tasks = tasks.filter(task => task.priority === input.priority);
-    }
-    
-    // Sort by priority and creation date
-    const priorityOrder: Record<TaskPriority, number> = { high: 3, medium: 2, low: 1 };
-    tasks.sort((a, b) => {
-      const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-    
-    if (input?.offset || input?.limit) {
-      const offset = input.offset || 0;
-      const limit = input.limit || 10;
-      tasks = tasks.slice(offset, offset + limit);
-    }
-    
-    return {
-      tasks,
-      total: mockTasks.length,
-    };
   });
 
 export const getTaskByIdProcedure = publicProcedure
@@ -176,30 +190,48 @@ export const deleteTaskProcedure = publicProcedure
 
 export const getTaskStatsProcedure = publicProcedure
   .input(z.object({ userId: z.string().optional() }).optional())
-  .query(({ input }: { input?: { assignedTo?: string; createdBy?: string; status?: TaskStatus; priority?: TaskPriority; limit?: number; offset?: number; } }) => {
-    let tasks = mockTasks;
-    
-    if (input?.userId) {
-      tasks = tasks.filter(task => task.assignedTo === input.userId || task.createdBy === input.userId);
+  .query(async ({ input }) => {
+    try {
+      let tasks = mockTasks;
+      
+      if (input?.userId) {
+        tasks = tasks.filter(task => task.assignedTo === input.userId || task.createdBy === input.userId);
+      }
+      
+      const stats = {
+        total: tasks.length,
+        pending: tasks.filter(task => task.status === 'pending').length,
+        inProgress: tasks.filter(task => task.status === 'in_progress').length,
+        completed: tasks.filter(task => task.status === 'completed').length,
+        cancelled: tasks.filter(task => task.status === 'cancelled').length,
+        overdue: tasks.filter(task => 
+          task.status !== 'completed' && 
+          task.status !== 'cancelled' && 
+          new Date(task.dueDate) < new Date()
+        ).length,
+        byPriority: {
+          high: tasks.filter(task => task.priority === 'high').length,
+          medium: tasks.filter(task => task.priority === 'medium').length,
+          low: tasks.filter(task => task.priority === 'low').length,
+        },
+      };
+      
+      return stats;
+    } catch (error) {
+      console.error('Error in getTaskStatsProcedure:', error);
+      // Return default stats as fallback
+      return {
+        total: 0,
+        pending: 0,
+        inProgress: 0,
+        completed: 0,
+        cancelled: 0,
+        overdue: 0,
+        byPriority: {
+          high: 0,
+          medium: 0,
+          low: 0,
+        },
+      };
     }
-    
-    const stats = {
-      total: tasks.length,
-      pending: tasks.filter(task => task.status === 'pending').length,
-      inProgress: tasks.filter(task => task.status === 'in_progress').length,
-      completed: tasks.filter(task => task.status === 'completed').length,
-      cancelled: tasks.filter(task => task.status === 'cancelled').length,
-      overdue: tasks.filter(task => 
-        task.status !== 'completed' && 
-        task.status !== 'cancelled' && 
-        new Date(task.dueDate) < new Date()
-      ).length,
-      byPriority: {
-        high: tasks.filter(task => task.priority === 'high').length,
-        medium: tasks.filter(task => task.priority === 'medium').length,
-        low: tasks.filter(task => task.priority === 'low').length,
-      },
-    };
-    
-    return stats;
   });

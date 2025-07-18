@@ -6,7 +6,7 @@ import { prettyJSON } from "hono/pretty-json";
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 import { config, validateConfig } from "./config";
-import { initializeDatabase, closeDatabase } from "./utils/database";
+import { initializeDatabase, closeDatabase } from "./database";
 
 // Валидация конфигурации при запуске
 try {
