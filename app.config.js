@@ -46,7 +46,7 @@ expo: {
   },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'app.rork.military-unit-management-application',
+    bundleIdentifier: 'com.rork.militaryunit',
     googleServicesFile: './GoogleService-Info.plist',
     buildNumber: '14',
     infoPlist: {
