@@ -38,7 +38,7 @@ const customConfig: MetroConfig = {
         'react-native': 'react-native-web',
       }
     }),
-    resolveRequest: (context: any, moduleName: string, platform: string) => {
+    resolveRequest: (context: any, moduleName: string, platform: string | null) => {
       // Block @trpc/server imports on client side
       if (moduleName === '@trpc/server' || moduleName.startsWith('@trpc/server/')) {
         return {
@@ -68,6 +68,7 @@ const customConfig: MetroConfig = {
         inlineRequires: true,
       },
     }),
+    transformVariants: {},
   },
   watchFolders: [path.resolve(__dirname)],
 };
