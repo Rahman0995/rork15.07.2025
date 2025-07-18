@@ -72,13 +72,13 @@ const getChatMessages = (chatId: string): ChatMessage[] => {
 
 export const getChatsProcedure = publicProcedure
   .input(z.object({ userId: z.string() }))
-  .query(({ input }: { input: { userId: string } }) => {
+  .query(({ input }) => {
     return getUserChats(input.userId);
   });
 
 export const getChatByIdProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .query(({ input }: { input: { chatId: string } }) => {
+  .query(({ input }) => {
     const chat = mockChats.find(c => c.id === input.chatId);
     if (!chat) {
       throw new Error('Chat not found');
@@ -92,7 +92,7 @@ export const getChatMessagesProcedure = publicProcedure
     limit: z.number().optional().default(50),
     offset: z.number().optional().default(0),
   }))
-  .query(({ input }: { input: { chatId: string; limit: number; offset: number } }) => {
+  .query(({ input }) => {
     const messages = getChatMessages(input.chatId);
     
     // Sort by time (oldest first)
@@ -127,7 +127,7 @@ export const sendMessageProcedure = publicProcedure
       duration: z.number().optional(),
     }).optional(),
   }))
-  .mutation(({ input }: { input: { chatId: string; senderId: string; text?: string; type: 'text' | 'image' | 'file' | 'voice'; attachment?: MessageAttachment } }) => {
+  .mutation(({ input }) => {
     const newMessage: ChatMessage = {
       id: `msg_${Date.now()}`,
       senderId: input.senderId,
@@ -162,7 +162,7 @@ export const markMessagesAsReadProcedure = publicProcedure
     userId: z.string(),
     messageIds: z.array(z.string()).optional(),
   }))
-  .mutation(({ input }: { input: { chatId: string; userId: string; messageIds?: string[] } }) => {
+  .mutation(({ input }) => {
     const messages = mockChatMessages[input.chatId];
     if (!messages) {
       throw new Error('Chat not found');
@@ -195,7 +195,7 @@ export const createChatProcedure = publicProcedure
     isGroup: z.boolean().default(false),
     name: z.string().optional(),
   }))
-  .mutation(({ input }: { input: { participants: string[]; isGroup: boolean; name?: string } }) => {
+  .mutation(({ input }) => {
     const newChat: Chat = {
       id: `chat_${Date.now()}`,
       participants: input.participants,
@@ -212,7 +212,7 @@ export const createChatProcedure = publicProcedure
 
 export const deleteChatProcedure = publicProcedure
   .input(z.object({ chatId: z.string() }))
-  .mutation(({ input }: { input: { chatId: string } }) => {
+  .mutation(({ input }) => {
     const chatIndex = mockChats.findIndex(chat => chat.id === input.chatId);
     if (chatIndex === -1) {
       throw new Error('Chat not found');
