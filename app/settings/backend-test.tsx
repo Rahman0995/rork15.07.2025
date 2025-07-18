@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { trpc } from '@/lib/trpc';
 import { useTheme } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 import { getAppConfig, isDebugMode } from '@/utils/config';
-import { Server, CheckCircle, XCircle, RefreshCw } from 'lucide-react-native';
+import { Server, CheckCircle, XCircle, RefreshCw, Wifi, Globe, Clock } from 'lucide-react-native';
 
 export default function BackendTestScreen() {
   const { user } = useAuthStore();
   const { colors } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [networkTest, setNetworkTest] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', data?: any, error?: string }>({ status: 'idle' });
+  const [internetTest, setInternetTest] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', data?: any, error?: string }>({ status: 'idle' });
   const appConfig = getAppConfig();
   
   const styles = StyleSheet.create({
@@ -171,6 +173,29 @@ export default function BackendTestScreen() {
       color: colors.text,
       fontWeight: '600',
     },
+    testButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 12,
+      borderRadius: 8,
+      backgroundColor: colors.primarySoft,
+    },
+    runAllButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.primary,
+      paddingHorizontal: 24,
+      paddingVertical: 12,
+      borderRadius: 12,
+      marginTop: 16,
+      gap: 8,
+    },
+    runAllButtonText: {
+      color: colors.white,
+      fontSize: 16,
+      fontWeight: '600',
+    },
   });
   
   console.log('BackendTestScreen rendered');
@@ -199,10 +224,135 @@ export default function BackendTestScreen() {
     console.log('Backend test data changed:', { backendTest, isLoading, error });
   }, [backendTest, isLoading, error]);
 
+  // Calculate overall status
+  const getOverallStatus = () => {
+    const tests = [
+      { name: 'Internet', status: internetTest.status },
+      { name: 'Network', status: networkTest.status },
+      { name: 'tRPC', status: isLoading ? 'loading' : error ? 'error' : backendTest ? 'success' : 'idle' }
+    ];
+    
+    const hasError = tests.some(t => t.status === 'error');
+    const hasLoading = tests.some(t => t.status === 'loading');
+    const allSuccess = tests.every(t => t.status === 'success');
+    
+    if (hasError) return { status: 'error', color: colors.error };
+    if (hasLoading) return { status: 'loading', color: colors.primary };
+    if (allSuccess) return { status: 'success', color: colors.success };
+    return { status: 'idle', color: colors.textSecondary };
+  };
+
+  const overallStatus = getOverallStatus();
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await refetch();
     setIsRefreshing(false);
+  };
+
+  const testNetworkConnection = async () => {
+    setNetworkTest({ status: 'loading' });
+    
+    try {
+      const startTime = Date.now();
+      
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(appConfig.backendConfig.baseUrl + '/api/health', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
+      if (response.ok) {
+        const data = await response.json();
+        setNetworkTest({ 
+          status: 'success', 
+          data: { 
+            ...data, 
+            responseTime,
+            status: response.status,
+            statusText: response.statusText 
+          } 
+        });
+      } else {
+        setNetworkTest({ 
+          status: 'error', 
+          error: `HTTP ${response.status}: ${response.statusText}` 
+        });
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        setNetworkTest({ 
+          status: 'error', 
+          error: 'Request timeout (5s)' 
+        });
+      } else {
+        setNetworkTest({ 
+          status: 'error', 
+          error: error.message || 'Network connection failed' 
+        });
+      }
+    }
+  };
+
+  const testInternetConnection = async () => {
+    setInternetTest({ status: 'loading' });
+    
+    try {
+      const startTime = Date.now();
+      
+      // Test with a reliable public API
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      
+      const response = await fetch('https://httpbin.org/json', {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
+      if (response.ok) {
+        const data = await response.json();
+        setInternetTest({ 
+          status: 'success', 
+          data: { 
+            responseTime,
+            status: response.status,
+            testUrl: 'httpbin.org',
+            timestamp: new Date().toISOString()
+          } 
+        });
+      } else {
+        setInternetTest({ 
+          status: 'error', 
+          error: `HTTP ${response.status}: ${response.statusText}` 
+        });
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        setInternetTest({ 
+          status: 'error', 
+          error: 'Request timeout (3s)' 
+        });
+      } else {
+        setInternetTest({ 
+          status: 'error', 
+          error: error.message || 'Internet connection failed' 
+        });
+      }
+    }
   };
 
   return (
@@ -220,13 +370,174 @@ export default function BackendTestScreen() {
       />
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
-          <View style={styles.iconContainer}>
-            <Server size={32} color={colors.primary} />
+          <View style={[styles.iconContainer, { backgroundColor: overallStatus.status === 'success' ? colors.successSoft : colors.primarySoft }]}>
+            {overallStatus.status === 'loading' ? (
+              <ActivityIndicator size={32} color={colors.primary} />
+            ) : overallStatus.status === 'success' ? (
+              <CheckCircle size={32} color={colors.success} />
+            ) : overallStatus.status === 'error' ? (
+              <XCircle size={32} color={colors.error} />
+            ) : (
+              <Server size={32} color={colors.primary} />
+            )}
           </View>
           <Text style={styles.title}>Backend Connection Test</Text>
-          <Text style={styles.subtitle}>Проверка связи с сервером</Text>
+          <Text style={[styles.subtitle, { color: overallStatus.color }]}>
+            {overallStatus.status === 'success' ? 'Все системы работают' :
+             overallStatus.status === 'error' ? 'Обнаружены проблемы' :
+             overallStatus.status === 'loading' ? 'Выполняется проверка...' :
+             'Проверка связи с сервером'}
+          </Text>
+          
+          <TouchableOpacity 
+            style={styles.runAllButton}
+            onPress={async () => {
+              await Promise.all([
+                testInternetConnection(),
+                testNetworkConnection(),
+                handleRefresh()
+              ]);
+            }}
+            disabled={isLoading || isRefreshing || networkTest.status === 'loading' || internetTest.status === 'loading'}
+          >
+            <RefreshCw 
+              size={20} 
+              color={colors.white} 
+              style={[isLoading || isRefreshing || networkTest.status === 'loading' || internetTest.status === 'loading' ? styles.spinning : null]} 
+            />
+            <Text style={styles.runAllButtonText}>Запустить все тесты</Text>
+          </TouchableOpacity>
         </View>
 
+        {/* Internet Connection Test */}
+        <View style={styles.testCard}>
+          <View style={styles.testHeader}>
+            <Text style={styles.testTitle}>Internet Connection</Text>
+            <TouchableOpacity 
+              style={styles.refreshButton} 
+              onPress={testInternetConnection}
+              disabled={internetTest.status === 'loading'}
+            >
+              <RefreshCw 
+                size={16} 
+                color={colors.primary} 
+                style={[internetTest.status === 'loading' ? styles.spinning : null]} 
+              />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.statusContainer}>
+            {internetTest.status === 'loading' ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.statusText}>Проверка интернета...</Text>
+              </View>
+            ) : internetTest.status === 'error' ? (
+              <View style={styles.errorContainer}>
+                <XCircle size={20} color={colors.error} />
+                <Text style={[styles.statusText, { color: colors.error }]}>Интернет недоступен</Text>
+              </View>
+            ) : internetTest.status === 'success' ? (
+              <View style={styles.successContainer}>
+                <CheckCircle size={20} color={colors.success} />
+                <Text style={[styles.statusText, { color: colors.success }]}>
+                  Интернет работает ({internetTest.data?.responseTime}ms)
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.unknownContainer}>
+                <TouchableOpacity onPress={testInternetConnection} style={styles.testButton}>
+                  <Globe size={20} color={colors.primary} />
+                  <Text style={[styles.statusText, { color: colors.primary }]}>Проверить интернет</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {internetTest.data && (
+            <View style={styles.responseContainer}>
+              <Text style={styles.responseLabel}>Результат теста:</Text>
+              <View style={styles.responseBox}>
+                <Text style={styles.responseText}>{JSON.stringify(internetTest.data, null, 2)}</Text>
+              </View>
+            </View>
+          )}
+
+          {internetTest.error && (
+            <View style={styles.errorDetails}>
+              <Text style={styles.errorLabel}>Детали ошибки:</Text>
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{internetTest.error}</Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Network Connection Test */}
+        <View style={styles.testCard}>
+          <View style={styles.testHeader}>
+            <Text style={styles.testTitle}>Network Connection</Text>
+            <TouchableOpacity 
+              style={styles.refreshButton} 
+              onPress={testNetworkConnection}
+              disabled={networkTest.status === 'loading'}
+            >
+              <RefreshCw 
+                size={16} 
+                color={colors.primary} 
+                style={[networkTest.status === 'loading' ? styles.spinning : null]} 
+              />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.statusContainer}>
+            {networkTest.status === 'loading' ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={styles.statusText}>Проверка сети...</Text>
+              </View>
+            ) : networkTest.status === 'error' ? (
+              <View style={styles.errorContainer}>
+                <XCircle size={20} color={colors.error} />
+                <Text style={[styles.statusText, { color: colors.error }]}>Сеть недоступна</Text>
+              </View>
+            ) : networkTest.status === 'success' ? (
+              <View style={styles.successContainer}>
+                <CheckCircle size={20} color={colors.success} />
+                <Text style={[styles.statusText, { color: colors.success }]}>
+                  Сеть работает ({networkTest.data?.responseTime}ms)
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.unknownContainer}>
+                <TouchableOpacity onPress={testNetworkConnection} style={styles.testButton}>
+                  <Wifi size={20} color={colors.primary} />
+                  <Text style={[styles.statusText, { color: colors.primary }]}>Проверить сеть</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {networkTest.data && (
+            <View style={styles.responseContainer}>
+              <Text style={styles.responseLabel}>Ответ сервера:</Text>
+              <View style={styles.responseBox}>
+                <Text style={styles.responseText}>{JSON.stringify(networkTest.data, null, 2)}</Text>
+              </View>
+            </View>
+          )}
+
+          {networkTest.error && (
+            <View style={styles.errorDetails}>
+              <Text style={styles.errorLabel}>Детали ошибки:</Text>
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{networkTest.error}</Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* tRPC Connection Test */}
         <View style={styles.testCard}>
           <View style={styles.testHeader}>
             <Text style={styles.testTitle}>tRPC Connection</Text>
@@ -298,6 +609,14 @@ export default function BackendTestScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Подразделение:</Text>
             <Text style={styles.infoValue}>{testUser?.unit || 'Не указано'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Платформа:</Text>
+            <Text style={styles.infoValue}>{Platform.OS} {Platform.Version}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Время:</Text>
+            <Text style={styles.infoValue}>{new Date().toLocaleString('ru-RU')}</Text>
           </View>
         </View>
 
