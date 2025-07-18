@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { getAppConfig, isDebugMode } from '@/utils/config';
 import { Server, CheckCircle, XCircle, RefreshCw, Wifi, Globe, Clock, Settings } from 'lucide-react-native';
 import { NetworkStatus } from '@/components/NetworkStatus';
+import { NetworkConnectionTest } from '@/components/NetworkConnectionTest';
 
 export default function BackendTestScreen() {
   const { user } = useAuthStore();
@@ -406,6 +407,13 @@ export default function BackendTestScreen() {
              overallStatus.status === 'loading' ? 'Выполняется проверка...' :
              'Проверка связи с сервером'}
           </Text>
+          
+          {/* Quick Connection Test */}
+          <NetworkConnectionTest 
+            onConnectionChange={(isConnected) => {
+              console.log('Connection status changed:', isConnected);
+            }}
+          />
           
           <TouchableOpacity 
             style={styles.runAllButton}

@@ -8,6 +8,23 @@ import { Platform } from 'react-native';
 // Create tRPC React hooks with proper typing
 export const trpc = createTRPCReact<AppRouter>();
 
+// Get the actual local IP address dynamically
+const getLocalIP = () => {
+  // Try to get from environment first
+  if (process.env.LOCAL_IP) {
+    return process.env.LOCAL_IP;
+  }
+  
+  // Common local IP ranges to try
+  const commonIPs = [
+    '192.168.1.100', '192.168.1.101', '192.168.1.102',
+    '192.168.0.100', '192.168.0.101', '192.168.0.102',
+    '10.0.0.100', '10.0.0.101', '10.0.0.102'
+  ];
+  
+  return commonIPs[0]; // Default to first common IP
+};
+
 const getBaseUrl = () => {
   // First try to get from expo-constants configuration
   const config = Constants.expoConfig?.extra;
@@ -28,7 +45,7 @@ const getBaseUrl = () => {
     return "http://localhost:3000";
   } else {
     // For mobile, try to use the local IP from environment
-    const localIP = process.env.LOCAL_IP || '192.168.1.100';
+    const localIP = getLocalIP();
     const mobileUrl = `http://${localIP}:3000`;
     console.log('Using mobile fallback:', mobileUrl);
     return mobileUrl;
@@ -42,7 +59,12 @@ const getApiConfig = () => {
     timeout: config?.backendConfig?.timeout || 30000,
     retries: config?.backendConfig?.retries || 3,
     enableDebugMode: config?.enableDebugMode || __DEV__,
-    enableMockData: config?.backendConfig?.enableMockData || __DEV__
+    enableMockData: config?.backendConfig?.enableMockData || true, // Always enable for fallback
+    fallbackUrls: config?.backendConfig?.fallbackUrls || [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      `http://${getLocalIP()}:3000`
+    ]
   };
   
   console.log('API Configuration:', apiConfig);
@@ -59,57 +81,97 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
       url: `${apiConfig.baseUrl}/api/trpc`,
       transformer: superjson,
       
-      // Custom fetch with comprehensive error handling
+      // Custom fetch with comprehensive error handling and fallback URLs
       fetch: async (url, options) => {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
-        
+        const tryFetch = async (fetchUrl: string, retryCount = 0): Promise<Response> => {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), apiConfig.timeout);
+          
+          try {
+            console.log(`Making tRPC request to: ${fetchUrl} (attempt ${retryCount + 1})`);
+            
+            const response = await fetch(fetchUrl, {
+              ...options,
+              signal: controller.signal,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options?.headers,
+              },
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+              const errorText = await response.text().catch(() => 'Unknown error');
+              console.error(`HTTP ${response.status}: ${response.statusText}`, errorText);
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            console.log(`tRPC request successful: ${response.status}`);
+            return response;
+          } catch (error: any) {
+            clearTimeout(timeoutId);
+            console.error(`Request failed for ${fetchUrl}:`, error.message);
+            throw error;
+          }
+        };
+
+        // Try the main URL first
         try {
-          console.log(`Making tRPC request to: ${url}`);
+          return await tryFetch(url as string);
+        } catch (mainError: any) {
+          console.log('Main URL failed, trying fallback URLs...');
           
-          const response = await fetch(url, {
-            ...options,
-            signal: controller.signal,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              ...options?.headers,
-            },
-          });
-          
-          clearTimeout(timeoutId);
-          
-          if (!response.ok) {
-            const errorText = await response.text().catch(() => 'Unknown error');
-            console.error(`HTTP ${response.status}: ${response.statusText}`, errorText);
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          // Try fallback URLs if main URL fails
+          if (apiConfig.fallbackUrls && typeof url === 'string') {
+            const urlPath = new URL(url).pathname + new URL(url).search;
+            
+            for (const fallbackBaseUrl of apiConfig.fallbackUrls) {
+              try {
+                const fallbackUrl = fallbackBaseUrl + urlPath;
+                console.log(`Trying fallback URL: ${fallbackUrl}`);
+                return await tryFetch(fallbackUrl);
+              } catch (fallbackError) {
+                console.log(`Fallback URL ${fallbackBaseUrl} also failed`);
+                continue;
+              }
+            }
           }
           
-          console.log(`tRPC request successful: ${response.status}`);
-          return response;
-        } catch (error: any) {
-          clearTimeout(timeoutId);
-          
-          console.error('tRPC fetch failed:', {
-            url,
-            error: error.message,
-            name: error.name,
-            stack: error.stack
-          });
-          
-          // Enhanced mock responses for development
+          // All URLs failed, provide mock response if enabled
           if (apiConfig.enableMockData && typeof url === 'string') {
-            console.log('Providing mock response for:', url);
+            console.log('All URLs failed, providing mock response for:', url);
             
-            // Mock responses for different endpoints
+            // Enhanced mock responses for different endpoints
             if (url.includes('example.hi')) {
               return new Response(JSON.stringify({
                 result: {
                   data: {
                     json: {
-                      message: 'Hello from mock backend! (Network unavailable)',
+                      message: 'Hello from mock backend! (All servers unavailable)',
                       timestamp: new Date().toISOString(),
-                      mock: true
+                      mock: true,
+                      reason: 'Network connection failed'
+                    }
+                  }
+                }
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            // Mock responses for other common endpoints
+            if (url.includes('auth')) {
+              return new Response(JSON.stringify({
+                result: {
+                  data: {
+                    json: {
+                      user: null,
+                      isAuthenticated: false,
+                      mock: true,
+                      message: 'Mock auth response - server unavailable'
                     }
                   }
                 }
@@ -124,9 +186,10 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
               result: {
                 data: {
                   json: {
-                    message: 'Mock data - backend unavailable',
+                    message: 'Mock data - all servers unavailable',
                     timestamp: new Date().toISOString(),
-                    mock: true
+                    mock: true,
+                    error: mainError.message
                   }
                 }
               }
@@ -137,7 +200,7 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
           }
           
           // Re-throw the original error if not in mock mode
-          throw error;
+          throw mainError;
         }
       },
     }),
