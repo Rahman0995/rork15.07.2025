@@ -11,7 +11,7 @@ import { useNotificationsStore } from "@/store/notificationsStore";
 import { useTheme } from "@/constants/theme";
 import { Platform, View, Text, TouchableOpacity } from "react-native";
 import { BlurView } from "expo-blur";
-import { trpc, trpcClient } from "@/lib/trpc";
+import { trpc, createTRPCClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -227,6 +227,8 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 }
 
 export default function RootLayout() {
+  const [trpcClient] = useState(() => createTRPCClient());
+  
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}

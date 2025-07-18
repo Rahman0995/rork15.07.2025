@@ -80,7 +80,7 @@ const apiConfig = getApiConfig();
 // Create vanilla tRPC client for use outside React components
 export const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
-    ...(apiConfig.enableDebugMode ? [loggerLink()] : []),
+    // Disable logger to prevent console spam
     httpBatchLink({
       url: `${apiConfig.baseUrl}/api/trpc`,
       transformer: superjson,
@@ -382,6 +382,314 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
     }),
   ],
 });
+
+// Create tRPC React client for use in React components
+export const createTRPCClient = () => {
+  return trpc.createClient({
+    links: [
+      // Disable logger to prevent console spam
+      httpBatchLink({
+        url: `${apiConfig.baseUrl}/api/trpc`,
+        transformer: superjson,
+        
+        // Use the same fetch logic as vanilla client
+        fetch: async (url, options) => {
+          const tryFetch = async (fetchUrl: string, retryCount = 0): Promise<Response> => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            try {
+              console.log(`Making tRPC request to: ${fetchUrl} (attempt ${retryCount + 1})`);
+              
+              const response = await fetch(fetchUrl, {
+                ...options,
+                signal: controller.signal,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  ...options?.headers,
+                },
+              });
+              
+              clearTimeout(timeoutId);
+              
+              if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Unknown error');
+                console.error(`HTTP ${response.status}: ${response.statusText}`, errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+              }
+              
+              console.log(`✅ tRPC request successful: ${response.status}`);
+              return response;
+            } catch (error: any) {
+              clearTimeout(timeoutId);
+              console.error(`❌ Request failed for ${fetchUrl}:`, error.message);
+              throw error;
+            }
+          };
+
+          // Always provide mock response immediately if enabled (faster UX)
+          if (apiConfig.enableMockData && typeof url === 'string') {
+            console.log('🔧 Using mock data for:', url);
+            
+            // Parse URL to understand the request
+            const urlObj = new URL(url);
+            const searchParams = urlObj.searchParams;
+            const input = searchParams.get('input');
+            
+            // Enhanced mock responses for different endpoints
+            if (url.includes('example.hi')) {
+              const mockResponse = {
+                result: {
+                  data: {
+                    json: {
+                      message: 'Hello from mock backend! (Server offline)',
+                      timestamp: new Date().toISOString(),
+                      mock: true,
+                      status: 'offline'
+                    }
+                  }
+                }
+              };
+              
+              // Handle batch requests
+              if (url.includes('batch=1')) {
+                return new Response(JSON.stringify([mockResponse]), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+              
+              return new Response(JSON.stringify(mockResponse), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            // Mock responses for batch requests (multiple endpoints)
+            if (url.includes('batch=1')) {
+              const responses = [];
+              
+              // Check what endpoints are being requested
+              if (url.includes('tasks.getAll')) {
+                responses.push({
+                  result: {
+                    data: {
+                      json: [
+                        {
+                          id: '1',
+                          title: 'Equipment Check (Mock)',
+                          description: 'Conduct routine equipment inspection in sector A',
+                          assignedTo: '1',
+                          createdBy: '2',
+                          dueDate: new Date(Date.now() + 86400000).toISOString(),
+                          status: 'pending',
+                          priority: 'high',
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        },
+                        {
+                          id: '2',
+                          title: 'Security Patrol (Mock)',
+                          description: 'Complete evening security patrol of perimeter',
+                          assignedTo: '2',
+                          createdBy: '1',
+                          dueDate: new Date(Date.now() + 172800000).toISOString(),
+                          status: 'in_progress',
+                          priority: 'medium',
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        }
+                      ]
+                    }
+                  }
+                });
+              }
+              
+              if (url.includes('reports.getAll')) {
+                responses.push({
+                  result: {
+                    data: {
+                      json: [
+                        {
+                          id: '1',
+                          title: 'Weekly Status Report (Mock)',
+                          content: 'All systems operational. Equipment check completed successfully.',
+                          authorId: '1',
+                          status: 'approved',
+                          type: 'text',
+                          unit: 'Alpha Squad',
+                          priority: 'medium',
+                          dueDate: new Date(Date.now() + 86400000).toISOString(),
+                          currentApprover: null,
+                          currentRevision: 1,
+                          createdAt: new Date(Date.now() - 86400000).toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        },
+                        {
+                          id: '2',
+                          title: 'Incident Report (Mock)',
+                          content: 'Minor equipment malfunction in sector B. Maintenance scheduled.',
+                          authorId: '2',
+                          status: 'pending',
+                          type: 'incident',
+                          unit: 'Beta Squad',
+                          priority: 'high',
+                          dueDate: new Date(Date.now() + 43200000).toISOString(),
+                          currentApprover: '1',
+                          currentRevision: 1,
+                          createdAt: new Date(Date.now() - 43200000).toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        }
+                      ]
+                    }
+                  }
+                });
+              }
+              
+              // Add example.hi responses if present
+              if (url.includes('example.hi')) {
+                responses.push({
+                  result: {
+                    data: {
+                      json: {
+                        message: 'Hello from mock backend! (Server offline)',
+                        timestamp: new Date().toISOString(),
+                        mock: true,
+                        status: 'offline'
+                      }
+                    }
+                  }
+                });
+              }
+              
+              // If no specific endpoints matched, provide generic responses
+              if (responses.length === 0) {
+                responses.push({
+                  result: {
+                    data: {
+                      json: {
+                        message: 'Mock data - server offline',
+                        timestamp: new Date().toISOString(),
+                        mock: true,
+                        status: 'offline'
+                      }
+                    }
+                  }
+                });
+              }
+              
+              return new Response(JSON.stringify(responses), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            // Individual endpoint responses
+            if (url.includes('tasks.getAll')) {
+              return new Response(JSON.stringify({
+                result: {
+                  data: {
+                    json: [
+                      {
+                        id: '1',
+                        title: 'Equipment Check (Mock)',
+                        description: 'Conduct routine equipment inspection in sector A',
+                        assignedTo: '1',
+                        createdBy: '2',
+                        dueDate: new Date(Date.now() + 86400000).toISOString(),
+                        status: 'pending',
+                        priority: 'high',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      }
+                    ]
+                  }
+                }
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            if (url.includes('reports.getAll')) {
+              return new Response(JSON.stringify({
+                result: {
+                  data: {
+                    json: [
+                      {
+                        id: '1',
+                        title: 'Weekly Status Report (Mock)',
+                        content: 'All systems operational. Equipment check completed successfully.',
+                        authorId: '1',
+                        status: 'approved',
+                        type: 'text',
+                        unit: 'Alpha Squad',
+                        priority: 'medium',
+                        dueDate: new Date(Date.now() + 86400000).toISOString(),
+                        currentApprover: null,
+                        currentRevision: 1,
+                        createdAt: new Date(Date.now() - 86400000).toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      }
+                    ]
+                  }
+                }
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            // Generic mock response
+            return new Response(JSON.stringify({
+              result: {
+                data: {
+                  json: {
+                    message: 'Mock data - server offline',
+                    timestamp: new Date().toISOString(),
+                    mock: true,
+                    status: 'offline'
+                  }
+                }
+              }
+            }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
+          // Try actual network requests only if mock data is disabled
+          try {
+            return await tryFetch(url as string);
+          } catch (mainError: any) {
+            console.log('🔄 Main URL failed, trying fallback URLs...');
+            
+            // Try fallback URLs if main URL fails
+            if (apiConfig.fallbackUrls && typeof url === 'string') {
+              const urlPath = new URL(url).pathname + new URL(url).search;
+              
+              for (const fallbackBaseUrl of apiConfig.fallbackUrls) {
+                try {
+                  const fallbackUrl = fallbackBaseUrl + urlPath;
+                  console.log(`🔄 Trying fallback URL: ${fallbackUrl}`);
+                  return await tryFetch(fallbackUrl);
+                } catch (fallbackError) {
+                  console.log(`❌ Fallback URL ${fallbackBaseUrl} also failed`);
+                  continue;
+                }
+              }
+            }
+            
+            // All URLs failed, re-throw error
+            console.error('❌ All backend URLs failed, network unavailable');
+            throw mainError;
+          }
+        },
+      }),
+    ],
+  });
+};
 
 // Legacy alias for backward compatibility
 export const vanillaTrpcClient = trpcClient;
