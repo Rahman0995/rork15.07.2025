@@ -23,14 +23,15 @@ export const NetworkConnectionTest: React.FC<NetworkConnectionTestProps> = ({
     
     try {
       console.log('Testing tRPC connection...');
-      const result = await trpcClient.example.hi.query();
+      const result = await trpcClient.example.hi.query({ name: 'NetworkTest' });
       console.log('tRPC test result:', result);
       
       const connected = !!result;
       setIsConnected(connected);
       onConnectionChange?.(connected);
       
-      if (result?.mock) {
+      // Check if the response indicates mock data
+      if (result?.message?.includes('mock') || result?.message?.includes('Mock')) {
         setLastError('Using mock data - server unavailable');
       }
     } catch (error: any) {
