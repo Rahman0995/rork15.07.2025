@@ -14,6 +14,7 @@ import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { NotificationBadge } from '@/components/NotificationBadge';
+import { NetworkConnectionTest } from '@/components/NetworkConnectionTest';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
 import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
@@ -170,6 +171,9 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
 
       >
+        {/* Network Diagnostics (Development Only) */}
+        {__DEV__ && <NetworkConnectionTest />}
+
         {/* Header Section */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
