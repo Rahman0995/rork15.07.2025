@@ -81,7 +81,6 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: reportData.type,
           unit: reportData.unit,
           priority: reportData.priority,
-          approvers: reportData.approvers,
           attachments: reportData.attachments,
         });
       } catch (backendError) {
@@ -100,7 +99,13 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       }
       
       // Transform backend data to match frontend interface
-      const transformedReport: Report = {
+      const transformedReport: Report = newReport.success ? {
+        ...newReport.report,
+        approvals: newReport.approvals || [],
+        comments: newReport.comments || [],
+        revisions: newReport.revisions || [],
+        currentRevision: newReport.currentRevision || 1,
+      } : {
         ...newReport,
         approvals: newReport.approvals || [],
         comments: newReport.comments || [],

@@ -65,11 +65,7 @@ export default function HomeScreen() {
       refetchOnWindowFocus: false,
       refetchOnMount: true,
       refetchOnReconnect: false,
-      onError: (error) => {
-        if (__DEV__) {
-          console.log('Backend connection failed, using mock data:', error.message);
-        }
-      }
+
     }
   );
   
@@ -200,7 +196,7 @@ export default function HomeScreen() {
             <View style={styles.headerRight}>
               <StatusIndicator 
                 isOnline={true}
-                serverStatus={backendError ? 'mock' : 'connected'}
+                serverStatus={backendError ? 'error' : 'connected'}
               />
               {Platform.OS !== 'web' && backendError && (
                 <Text style={styles.mockModeText}>Mock режим</Text>

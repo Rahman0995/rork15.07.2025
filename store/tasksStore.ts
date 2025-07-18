@@ -40,7 +40,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     try {
       const response = await trpcClient.tasks.getAll.query();
       // Backend returns { tasks, total }, we need just the tasks array
-      const tasks = Array.isArray(response) ? response : response.tasks || [];
+      const tasks = Array.isArray(response) ? response : (response?.tasks || []);
       set({ tasks, isLoading: false });
     } catch (error) {
       console.warn('Failed to fetch tasks from backend, using mock data:', error);
@@ -65,6 +65,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
           description: taskData.description,
           priority: taskData.priority,
           assignedTo: taskData.assignedTo,
+          createdBy: taskData.createdBy,
           dueDate: taskData.dueDate,
         });
       } catch (backendError) {
@@ -80,8 +81,9 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       
       set(state => {
         const currentTasks = Array.isArray(state.tasks) ? state.tasks : [];
+        const taskToAdd = newTask.success ? newTask.task : newTask;
         return {
-          tasks: [newTask, ...currentTasks],
+          tasks: [taskToAdd, ...currentTasks],
           isLoading: false,
         };
       });
@@ -91,17 +93,18 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       // Create notification for assigned user
       try {
         const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
+        const taskForNotification = newTask.success ? newTask.task : newTask;
         await createNotification({
           type: 'task_assigned',
           title: 'Новая задача',
-          body: `Вам назначена задача: ${newTask.title}`,
-          userId: newTask.assignedTo,
+          body: `Вам назначена задача: ${taskForNotification.title}`,
+          userId: taskForNotification.assignedTo,
           read: false,
-          data: { taskId: newTask.id }
+          data: { taskId: taskForNotification.id }
         });
         
         // Schedule reminder
-        await scheduleTaskReminder(newTask.id, newTask.title, newTask.dueDate);
+        await scheduleTaskReminder(taskForNotification.id, taskForNotification.title, taskForNotification.dueDate);
       } catch (notificationError) {
         console.warn('Failed to create notification:', notificationError);
         // Don't fail the task creation if notification fails
