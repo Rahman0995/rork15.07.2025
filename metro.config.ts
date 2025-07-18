@@ -1,10 +1,11 @@
 import { getDefaultConfig } from 'expo/metro-config';
+import { MetroConfig } from '@expo/metro-config';
 import path from 'path';
 
 const config = getDefaultConfig(__dirname);
 
 // Create a new configuration object to avoid read-only property issues
-const customConfig = {
+const customConfig: MetroConfig = {
   ...config,
   resolver: {
     ...config.resolver,
@@ -32,9 +33,11 @@ const customConfig = {
     platforms: ['ios', 'android', 'native', 'web'],
     sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
     resolverMainFields: ['react-native', 'browser', 'main'],
-    alias: process.env.EXPO_PLATFORM === 'web' ? {
-      'react-native': 'react-native-web',
-    } : undefined,
+    ...(process.env.EXPO_PLATFORM === 'web' && {
+      alias: {
+        'react-native': 'react-native-web',
+      }
+    }),
     resolveRequest: (context: any, moduleName: string, platform: string) => {
       // Block @trpc/server imports on client side
       if (moduleName === '@trpc/server' || moduleName.startsWith('@trpc/server/')) {
@@ -49,13 +52,16 @@ const customConfig = {
   },
   transformer: {
     ...config.transformer,
-    minifierConfig: {
-      // Disable minification that might cause issues with import.meta transformation
-      keep_fnames: true,
-      mangle: {
+    ...(config.transformer?.minifierConfig && {
+      minifierConfig: {
+        ...config.transformer.minifierConfig,
+        // Disable minification that might cause issues with import.meta transformation
         keep_fnames: true,
-      },
-    },
+        mangle: {
+          keep_fnames: true,
+        },
+      }
+    }),
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
