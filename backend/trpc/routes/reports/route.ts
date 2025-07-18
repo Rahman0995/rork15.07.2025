@@ -3,25 +3,74 @@ import { publicProcedure } from '../../create-context';
 import { mockReports, mockReportComments } from '../../../constants/mockData';
 import { Report, ReportComment, ReportStatus } from '../../../types';
 
+type ReportsInput = {
+  status?: 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+  unit?: string;
+  authorId?: string;
+};
+
+type ReportByIdInput = {
+  id: string;
+};
+
+type CreateReportInput = {
+  title: string;
+  content: string;
+  authorId: string;
+  unit?: string;
+  priority?: 'low' | 'medium' | 'high';
+  type?: 'text' | 'file' | 'video';
+};
+
+type UpdateReportInput = {
+  id: string;
+  title?: string;
+  content?: string;
+  status?: 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+  priority?: 'low' | 'medium' | 'high';
+};
+
+type DeleteReportInput = {
+  id: string;
+};
+
+type AddCommentInput = {
+  reportId: string;
+  authorId: string;
+  content: string;
+  isRevision?: boolean;
+};
+
+type ApproveReportInput = {
+  id: string;
+  approverId: string;
+  status: 'approved' | 'rejected' | 'needs_revision';
+  comment?: string;
+};
+
+type ReportsForApprovalInput = {
+  approverId: string;
+};
+
 export const getReportsProcedure = publicProcedure
   .input(z.object({
     status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
     unit: z.string().optional(),
     authorId: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: ReportsInput }) => {
     let reports = [...mockReports];
     
     if (input?.status) {
-      reports = reports.filter(r => r.status === input.status);
+      reports = reports.filter((r: Report) => r.status === input.status);
     }
     
     if (input?.unit) {
-      reports = reports.filter(r => r.unit === input.unit);
+      reports = reports.filter((r: Report) => r.unit === input.unit);
     }
     
     if (input?.authorId) {
-      reports = reports.filter(r => r.authorId === input.authorId);
+      reports = reports.filter((r: Report) => r.authorId === input.authorId);
     }
     
     return reports;
@@ -31,8 +80,8 @@ export const getReportByIdProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .query(({ input }) => {
-    const report = mockReports.find(r => r.id === input.id);
+  .query(({ input }: { input: ReportByIdInput }) => {
+    const report = mockReports.find((r: Report) => r.id === input.id);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -48,7 +97,7 @@ export const createReportProcedure = publicProcedure
     priority: z.enum(['low', 'medium', 'high']).optional(),
     type: z.enum(['text', 'file', 'video']).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: CreateReportInput }) => {
     const newReport: Report = {
       id: String(mockReports.length + 1),
       title: input.title,
@@ -80,8 +129,8 @@ export const updateReportProcedure = publicProcedure
     status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(r => r.id === input.id);
+  .mutation(({ input }: { input: UpdateReportInput }) => {
+    const reportIndex = mockReports.findIndex((r: Report) => r.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -104,8 +153,8 @@ export const deleteReportProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .mutation(({ input }) => {
-    const reportIndex = mockReports.findIndex(r => r.id === input.id);
+  .mutation(({ input }: { input: DeleteReportInput }) => {
+    const reportIndex = mockReports.findIndex((r: Report) => r.id === input.id);
     if (reportIndex === -1) {
       throw new Error('Report not found');
     }
@@ -121,8 +170,8 @@ export const addReportCommentProcedure = publicProcedure
     content: z.string(),
     isRevision: z.boolean().optional(),
   }))
-  .mutation(({ input }) => {
-    const report = mockReports.find(r => r.id === input.reportId);
+  .mutation(({ input }: { input: AddCommentInput }) => {
+    const report = mockReports.find((r: Report) => r.id === input.reportId);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -151,8 +200,8 @@ export const approveReportProcedure = publicProcedure
     status: z.enum(['approved', 'rejected', 'needs_revision']),
     comment: z.string().optional(),
   }))
-  .mutation(({ input }) => {
-    const report = mockReports.find(r => r.id === input.id);
+  .mutation(({ input }: { input: ApproveReportInput }) => {
+    const report = mockReports.find((r: Report) => r.id === input.id);
     if (!report) {
       throw new Error('Report not found');
     }
@@ -180,8 +229,8 @@ export const getReportsForApprovalProcedure = publicProcedure
   .input(z.object({
     approverId: z.string(),
   }))
-  .query(({ input }) => {
-    return mockReports.filter(r => 
+  .query(({ input }: { input: ReportsForApprovalInput }) => {
+    return mockReports.filter((r: Report) => 
       r.status === 'pending' && 
       r.approvers?.includes(input.approverId)
     );

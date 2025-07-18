@@ -3,6 +3,44 @@ import { publicProcedure } from '../../create-context';
 import { mockTasks } from '../../../constants/mockData';
 import { Task, TaskStatus, TaskPriority } from '../../../types';
 
+type TasksInput = {
+  assignedTo?: string;
+  createdBy?: string;
+  status?: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority?: 'low' | 'medium' | 'high';
+};
+
+type TaskByIdInput = {
+  id: string;
+};
+
+type CreateTaskInput = {
+  title: string;
+  description: string;
+  assignedTo: string;
+  createdBy: string;
+  dueDate: string;
+  priority?: 'low' | 'medium' | 'high';
+};
+
+type UpdateTaskInput = {
+  id: string;
+  title?: string;
+  description?: string;
+  status?: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: string;
+};
+
+type DeleteTaskInput = {
+  id: string;
+};
+
+type TaskStatsInput = {
+  assignedTo?: string;
+  createdBy?: string;
+};
+
 export const getTasksProcedure = publicProcedure
   .input(z.object({
     assignedTo: z.string().optional(),
@@ -10,23 +48,23 @@ export const getTasksProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: TasksInput }) => {
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
-      tasks = tasks.filter(t => t.assignedTo === input.assignedTo);
+      tasks = tasks.filter((t: Task) => t.assignedTo === input.assignedTo);
     }
     
     if (input?.createdBy) {
-      tasks = tasks.filter(t => t.createdBy === input.createdBy);
+      tasks = tasks.filter((t: Task) => t.createdBy === input.createdBy);
     }
     
     if (input?.status) {
-      tasks = tasks.filter(t => t.status === input.status);
+      tasks = tasks.filter((t: Task) => t.status === input.status);
     }
     
     if (input?.priority) {
-      tasks = tasks.filter(t => t.priority === input.priority);
+      tasks = tasks.filter((t: Task) => t.priority === input.priority);
     }
     
     return tasks;
@@ -36,8 +74,8 @@ export const getTaskByIdProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .query(({ input }) => {
-    const task = mockTasks.find(t => t.id === input.id);
+  .query(({ input }: { input: TaskByIdInput }) => {
+    const task = mockTasks.find((t: Task) => t.id === input.id);
     if (!task) {
       throw new Error('Task not found');
     }
@@ -53,7 +91,7 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(({ input }) => {
+  .mutation(({ input }: { input: CreateTaskInput }) => {
     const newTask: Task = {
       id: String(mockTasks.length + 1),
       title: input.title,
@@ -80,8 +118,8 @@ export const updateTaskProcedure = publicProcedure
     priority: z.enum(['low', 'medium', 'high']).optional(),
     dueDate: z.string().optional(),
   }))
-  .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(t => t.id === input.id);
+  .mutation(({ input }: { input: UpdateTaskInput }) => {
+    const taskIndex = mockTasks.findIndex((t: Task) => t.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -106,8 +144,8 @@ export const deleteTaskProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .mutation(({ input }) => {
-    const taskIndex = mockTasks.findIndex(t => t.id === input.id);
+  .mutation(({ input }: { input: DeleteTaskInput }) => {
+    const taskIndex = mockTasks.findIndex((t: Task) => t.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -121,32 +159,32 @@ export const getTaskStatsProcedure = publicProcedure
     assignedTo: z.string().optional(),
     createdBy: z.string().optional(),
   }).optional())
-  .query(({ input }) => {
+  .query(({ input }: { input?: TaskStatsInput }) => {
     let tasks = [...mockTasks];
     
     if (input?.assignedTo) {
-      tasks = tasks.filter(t => t.assignedTo === input.assignedTo);
+      tasks = tasks.filter((t: Task) => t.assignedTo === input.assignedTo);
     }
     
     if (input?.createdBy) {
-      tasks = tasks.filter(t => t.createdBy === input.createdBy);
+      tasks = tasks.filter((t: Task) => t.createdBy === input.createdBy);
     }
     
     return {
       total: tasks.length,
-      pending: tasks.filter(t => t.status === 'pending').length,
-      inProgress: tasks.filter(t => t.status === 'in_progress').length,
-      completed: tasks.filter(t => t.status === 'completed').length,
-      cancelled: tasks.filter(t => t.status === 'cancelled').length,
-      overdue: tasks.filter(t => 
+      pending: tasks.filter((t: Task) => t.status === 'pending').length,
+      inProgress: tasks.filter((t: Task) => t.status === 'in_progress').length,
+      completed: tasks.filter((t: Task) => t.status === 'completed').length,
+      cancelled: tasks.filter((t: Task) => t.status === 'cancelled').length,
+      overdue: tasks.filter((t: Task) => 
         t.status !== 'completed' && 
         t.status !== 'cancelled' && 
         new Date(t.dueDate) < new Date()
       ).length,
       byPriority: {
-        high: tasks.filter(t => t.priority === 'high').length,
-        medium: tasks.filter(t => t.priority === 'medium').length,
-        low: tasks.filter(t => t.priority === 'low').length,
+        high: tasks.filter((t: Task) => t.priority === 'high').length,
+        medium: tasks.filter((t: Task) => t.priority === 'medium').length,
+        low: tasks.filter((t: Task) => t.priority === 'low').length,
       },
     };
   });
