@@ -3,21 +3,25 @@ FROM oven/bun:1 as base
 WORKDIR /app
 
 # Install dependencies
-COPY backend/package.json backend/bun.lockb* ./
+COPY package.json bun.lock* ./
 RUN bun install --frozen-lockfile
 
 # Copy source code
-COPY backend/ .
+COPY backend/ ./backend/
+COPY types/ ./types/
+COPY utils/ ./utils/
 
-# Build the application
-RUN bun run build
+# Build the application (backend doesn't need separate build step)
+# RUN bun run build
 
 # Production stage
-FROM node:18-alpine as production
+FROM oven/bun:1 as production
 WORKDIR /app
 
-# Copy built application
-COPY --from=base /app/dist ./dist
+# Copy application files
+COPY --from=base /app/backend ./backend
+COPY --from=base /app/types ./types
+COPY --from=base /app/utils ./utils
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/package.json ./
 
@@ -29,4 +33,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application
-CMD ["node", "dist/hono.js"]
+CMD ["bun", "run", "backend/hono.ts"]

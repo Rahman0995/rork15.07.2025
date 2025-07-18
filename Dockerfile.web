@@ -1,21 +1,21 @@
 # Frontend Web Dockerfile
-FROM node:18-alpine as base
+FROM oven/bun:1 as base
 WORKDIR /app
 
 # Install dependencies
 COPY package.json bun.lock* ./
-RUN npm install
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build web version
-RUN npx expo export:web
+RUN bunx expo export --platform web
 
 # Production stage with nginx
 FROM nginx:alpine as production
 
-# Copy built web app
+# Copy built web app (expo export creates dist folder)
 COPY --from=base /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
