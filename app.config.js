@@ -51,6 +51,7 @@ expo: {
       : 'app.rork.militaryunitmanagement',
     googleServicesFile: './GoogleService-Info.plist',
     infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
       NSCameraUsageDescription: 'This app needs access to camera to take photos for reports',
       NSMicrophoneUsageDescription: 'This app needs access to microphone for voice recordings',
       NSPhotoLibraryUsageDescription: 'This app needs access to photo library to select images',

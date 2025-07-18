@@ -13,6 +13,11 @@ const baseResolver = {
     /.*\/home\/user\/rork-app\/.*\/node_modules\/.*/,
     // Block duplicate app directories
     /.*\/home\/user\/rork-app\/.*\/app\/.*/,
+    // Block backend directory from mobile builds (Node.js specific code)
+    /.*\/backend\/.*/,
+    // Block any server-side files that might use import.meta or Node.js APIs
+    /.*\.server\.(js|ts|jsx|tsx)$/,
+    /.*\/server\/.*/,
   ],
   platforms: ['ios', 'android', 'native', 'web'],
   sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],

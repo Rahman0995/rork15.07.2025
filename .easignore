@@ -1,0 +1,47 @@
+# Backend files (Node.js specific, not needed for mobile builds)
+backend/
+*.server.js
+*.server.ts
+*.server.jsx
+*.server.tsx
+
+# Development files
+.env.local
+.env.development
+*.log
+logs/
+
+# Build artifacts
+dist/
+build/
+.next/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
+# Node modules (handled by package.json)
+node_modules/
+
+# Duplicate nested directories
+home/
+
+# Test files
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Documentation
+docs/
+*.md
+!README.md
