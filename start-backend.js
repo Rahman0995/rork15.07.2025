@@ -5,14 +5,13 @@ const path = require('path');
 
 console.log('🚀 Starting Military Management System Backend...');
 
-// Change to backend directory and start the server
-const backendProcess = spawn('bun', ['index.ts'], {
-  cwd: path.join(__dirname, 'backend'),
+// Start the backend server
+const backendProcess = spawn('bun', ['run', 'backend/index.ts'], {
   stdio: 'inherit',
+  cwd: process.cwd(),
   env: {
     ...process.env,
     NODE_ENV: process.env.NODE_ENV || 'development',
-    PORT: process.env.PORT || '3000',
     API_PORT: process.env.API_PORT || '3000',
     API_HOST: process.env.API_HOST || '0.0.0.0',
   }
@@ -24,17 +23,17 @@ backendProcess.on('error', (error) => {
 });
 
 backendProcess.on('close', (code) => {
-  console.log(`Backend process exited with code ${code}`);
+  console.log(`🔄 Backend process exited with code ${code}`);
   process.exit(code);
 });
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n🔄 Shutting down backend...');
-  backendProcess.kill('SIGINT');
+process.on('SIGTERM', () => {
+  console.log('🔄 SIGTERM received, shutting down backend...');
+  backendProcess.kill('SIGTERM');
 });
 
-process.on('SIGTERM', () => {
-  console.log('\n🔄 Shutting down backend...');
-  backendProcess.kill('SIGTERM');
+process.on('SIGINT', () => {
+  console.log('🔄 SIGINT received, shutting down backend...');
+  backendProcess.kill('SIGINT');
 });

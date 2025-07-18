@@ -45,7 +45,7 @@ const getBaseUrl = () => {
     console.log('Using web fallback: http://localhost:3000');
     return "http://localhost:3000";
   } else {
-    // For mobile, prefer localhost first, then try local IP
+    // For mobile, try localhost first (works with tunneling)
     console.log('Using mobile fallback: http://localhost:3000');
     return "http://localhost:3000";
   }
@@ -62,8 +62,8 @@ const getApiConfig = () => {
     fallbackUrls: config?.backendConfig?.fallbackUrls || [
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      `http://${getLocalIP()}:3000`,
       'http://10.0.2.2:3000', // Android emulator
+      `http://${getLocalIP()}:3000`,
       'http://192.168.1.100:3000',
       'http://192.168.0.100:3000',
       'http://10.0.0.100:3000'
@@ -165,7 +165,86 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
               });
             }
             
-            // Mock responses for tasks
+            // Mock responses for batch requests (tasks.getAll,reports.getAll)
+            if (url.includes('tasks.getAll,reports.getAll') || url.includes('batch=1')) {
+              return new Response(JSON.stringify([
+                {
+                  result: {
+                    data: {
+                      json: [
+                        {
+                          id: '1',
+                          title: 'Equipment Check (Mock)',
+                          description: 'Conduct routine equipment inspection in sector A',
+                          assignedTo: '1',
+                          createdBy: '2',
+                          dueDate: new Date(Date.now() + 86400000).toISOString(),
+                          status: 'pending',
+                          priority: 'high',
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        },
+                        {
+                          id: '2',
+                          title: 'Security Patrol (Mock)',
+                          description: 'Complete evening security patrol of perimeter',
+                          assignedTo: '2',
+                          createdBy: '1',
+                          dueDate: new Date(Date.now() + 172800000).toISOString(),
+                          status: 'in_progress',
+                          priority: 'medium',
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  result: {
+                    data: {
+                      json: [
+                        {
+                          id: '1',
+                          title: 'Weekly Status Report (Mock)',
+                          content: 'All systems operational. Equipment check completed successfully.',
+                          authorId: '1',
+                          status: 'approved',
+                          type: 'text',
+                          unit: 'Alpha Squad',
+                          priority: 'medium',
+                          dueDate: new Date(Date.now() + 86400000).toISOString(),
+                          currentApprover: null,
+                          currentRevision: 1,
+                          createdAt: new Date(Date.now() - 86400000).toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        },
+                        {
+                          id: '2',
+                          title: 'Incident Report (Mock)',
+                          content: 'Minor equipment malfunction in sector B. Maintenance scheduled.',
+                          authorId: '2',
+                          status: 'pending',
+                          type: 'incident',
+                          unit: 'Beta Squad',
+                          priority: 'high',
+                          dueDate: new Date(Date.now() + 43200000).toISOString(),
+                          currentApprover: '1',
+                          currentRevision: 1,
+                          createdAt: new Date(Date.now() - 43200000).toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            
+            // Mock responses for individual tasks
             if (url.includes('tasks.getAll')) {
               return new Response(JSON.stringify([
                 {
@@ -194,7 +273,7 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
               });
             }
             
-            // Mock responses for reports
+            // Mock responses for individual reports
             if (url.includes('reports.getAll')) {
               return new Response(JSON.stringify([
                 {
