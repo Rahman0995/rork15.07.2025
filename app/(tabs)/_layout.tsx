@@ -2,7 +2,7 @@ import { Tabs, router } from "expo-router";
 import React from "react";
 import { View, TouchableOpacity, Platform } from "react-native";
 import { BlurView } from "expo-blur";
-import { FileText, Home, MessageSquare, BarChart3, User, Settings, Users, Bell } from "lucide-react-native";
+import { FileText, Home, MessageSquare, BarChart3, User, Calendar, Users, Bell } from "lucide-react-native";
 import { useTheme } from "@/constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NotificationBadge } from "@/components/NotificationBadge";
@@ -232,6 +232,13 @@ export default function TabLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: "Календарь",
+          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
+        }}
+      />
 
       <Tabs.Screen
         name="reports"
@@ -240,18 +247,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <FileText size={20} color={color} />,
         }}
       />
+
       <Tabs.Screen
         name="chat"
         options={{
           title: "Чат",
           tabBarIcon: ({ color }) => <MessageSquare size={20} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          title: "Аналитика",
-          tabBarIcon: ({ color }) => <BarChart3 size={20} color={color} />,
         }}
       />
 
@@ -262,16 +263,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <User size={20} color={color} />,
         }}
       />
-      
-      {__DEV__ && (
-        <Tabs.Screen
-          name="backend-test"
-          options={{
-            title: "Backend Test",
-            tabBarIcon: ({ color }) => <Settings size={20} color={color} />,
-          }}
-        />
-      )}
     </Tabs>
   );
 }
