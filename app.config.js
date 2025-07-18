@@ -48,7 +48,7 @@ expo: {
     supportsTablet: true,
     bundleIdentifier: 'app.rork.military-unit-management-application',
     googleServicesFile: './GoogleService-Info.plist',
-    buildNumber: '10',
+    buildNumber: '11',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSCameraUsageDescription: 'This app needs access to camera to take photos for reports',
