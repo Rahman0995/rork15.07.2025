@@ -1,4 +1,4 @@
-import { serve } from "bun";
+import { serve } from "@hono/node-server";
 import app from "./hono";
 import { config } from "./config";
 
@@ -21,12 +21,12 @@ console.log(`💚 Health check: http://${config.server.host}:${config.server.por
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
   console.log('🔄 SIGTERM received, shutting down gracefully...');
-  server.stop();
+  server.close();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('🔄 SIGINT received, shutting down gracefully...');
-  server.stop();
+  server.close();
   process.exit(0);
 });
