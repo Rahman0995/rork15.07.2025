@@ -16,7 +16,7 @@ export const initializeDatabase = async (): Promise<boolean> => {
     connection = await mysql.createConnection(config.database.url);
     
     // Create drizzle instance
-    db = drizzle(connection, { schema });
+    db = drizzle(connection, { schema, mode: 'default' });
     
     // Create tables if they don't exist
     await createTables();
