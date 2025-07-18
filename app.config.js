@@ -14,7 +14,7 @@ if (IS_DEV) {
 // Railway: return 'https://your-app.railway.app/api';
 // Render: return 'https://your-app.render.com/api';
 // Vercel: return 'https://your-app.vercel.app/api';
-return process.env.EXPO_PUBLIC_API_URL || 'https://your-actual-app-name.railway.app/api';
+return process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_RORK_API_BASE_URL || 'http://localhost:3000/api';
 };
 
 const getBaseUrl = () => {
@@ -25,14 +25,14 @@ if (IS_DEV) {
 // Railway: return 'https://your-app.railway.app';
 // Render: return 'https://your-app.render.com';
 // Vercel: return 'https://your-app.vercel.app';
-return process.env.EXPO_PUBLIC_BASE_URL || 'https://your-actual-app-name.railway.app';
+return process.env.EXPO_PUBLIC_BASE_URL || process.env.EXPO_PUBLIC_RORK_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
 };
 
 export default {
 expo: {
   name: IS_DEV ? 'sever_ahmat (Dev)' : 'sever_ahmat',
   slug: 'military-unit-management-application',
-  version: '1.0.6',
+  version: '1.0.7',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'myapp',
@@ -48,7 +48,7 @@ expo: {
     supportsTablet: true,
     bundleIdentifier: 'app.rork.military-unit-management-application',
     googleServicesFile: './GoogleService-Info.plist',
-    buildNumber: '13',
+    buildNumber: '14',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       NSCameraUsageDescription: 'This app needs access to camera to take photos for reports',
@@ -80,7 +80,7 @@ expo: {
     },
     package: 'app.rork.militaryunitmanagement',
     googleServicesFile: './google-services.json',
-    versionCode: 11,
+    versionCode: 12,
     permissions: [
       'android.permission.CAMERA',
       'android.permission.RECORD_AUDIO',
@@ -182,6 +182,9 @@ expo: {
   },
   runtimeVersion: {
     policy: 'sdkVersion'
+  },
+  cli: {
+    appVersionSource: 'local'
   },
   updates: {
     url: 'https://u.expo.dev/0bffb82a-ba27-4f8f-889a-624d89941f86'
