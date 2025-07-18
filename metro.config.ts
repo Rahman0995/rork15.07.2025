@@ -3,6 +3,11 @@ import path from 'path';
 
 const config = getDefaultConfig(__dirname);
 
+// Ensure resolver exists
+if (!config.resolver) {
+  config.resolver = {};
+}
+
 // Customize the Metro configuration to fix bundling issues
 config.resolver.blockList = [
   // Block any nested duplicate directories
@@ -22,9 +27,10 @@ config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 config.resolver.sourceExts = ['js', 'jsx', 'ts', 'tsx', 'json'];
 
 if (process.env.EXPO_PLATFORM === 'web') {
-  config.resolver.alias = {
-    'react-native': 'react-native-web',
-  };
+  if (!config.resolver.alias) {
+    config.resolver.alias = {};
+  }
+  config.resolver.alias['react-native'] = 'react-native-web';
 }
 
 config.watchFolders = [path.resolve(__dirname)];

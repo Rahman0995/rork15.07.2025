@@ -1,5 +1,5 @@
 import { createTRPCReact } from "@trpc/react-query";
-import { httpBatchLink, loggerLink } from "@trpc/client";
+import { httpBatchLink, loggerLink, createTRPCProxyClient } from "@trpc/client";
 import type { AppRouter } from "@/types/api";
 import superjson from "superjson";
 import Constants from 'expo-constants';
@@ -34,13 +34,9 @@ const getApiConfig = () => {
 
 const apiConfig = getApiConfig();
 
-// Create tRPC client for React components
-export const trpcClient = trpc.createClient({
+// Create vanilla tRPC client for use outside React components
+export const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
-    // Logger link disabled to prevent CSS styling issues in React Native
-    // ...(apiConfig.enableDebugMode ? [loggerLink()] : []),
-    
-    // HTTP batch link for better performance
     httpBatchLink({
       url: `${apiConfig.baseUrl}/api/trpc`,
       transformer: superjson,
@@ -95,18 +91,5 @@ export const trpcClient = trpc.createClient({
   ],
 });
 
-// Create vanilla tRPC client for use outside React components
-import { createTRPCProxyClient } from '@trpc/client';
-
-export const vanillaTrpcClient = createTRPCProxyClient<AppRouter>({
-  links: [
-    httpBatchLink({
-      url: `${apiConfig.baseUrl}/api/trpc`,
-      transformer: superjson,
-      headers: () => ({
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      }),
-    }),
-  ],
-});
+// Legacy alias for backward compatibility
+export const vanillaTrpcClient = trpcClient;
