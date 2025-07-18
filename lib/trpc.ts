@@ -1,6 +1,6 @@
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink, loggerLink } from "@trpc/client";
-import type { AppRouter } from "@/backend/trpc/app-router";
+import type { AppRouter } from "@/types/api";
 import superjson from "superjson";
 import Constants from 'expo-constants';
 
