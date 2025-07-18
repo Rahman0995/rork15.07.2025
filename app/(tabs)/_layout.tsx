@@ -142,6 +142,13 @@ export default function TabLayout() {
         >
           {state.routes.map((route: any, index: number) => {
             const { options } = descriptors[route.key];
+            const IconComponent = options.tabBarIcon;
+            
+            // Only render tabs that have icons configured
+            if (!IconComponent) {
+              return null;
+            }
+
             const label = options.tabBarLabel !== undefined
               ? options.tabBarLabel
               : options.title !== undefined
@@ -163,7 +170,6 @@ export default function TabLayout() {
             };
 
             const color = isFocused ? colors.primary : colors.textTertiary;
-            const IconComponent = options.tabBarIcon;
 
             return (
               <TouchableOpacity
@@ -176,10 +182,10 @@ export default function TabLayout() {
                   paddingVertical: 8,
                 }}
               >
-                {IconComponent && <IconComponent color={color} />}
+                <IconComponent color={color} />
               </TouchableOpacity>
             );
-          })}
+          }).filter(Boolean)}
         </View>
       </View>
     );
@@ -229,6 +235,14 @@ export default function TabLayout() {
         options={{
           title: "Главная",
           tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: "Календарь",
+          tabBarIcon: ({ color }) => <Calendar size={22} color={color} strokeWidth={2} />,
         }}
       />
 
