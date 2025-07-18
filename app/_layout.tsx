@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ErrorInfo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -230,7 +230,7 @@ export default function RootLayout() {
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
-      onError={(error: Error, errorInfo) => {
+      onError={(error: Error, errorInfo: ErrorInfo) => {
         console.error('App Error Boundary:', error, errorInfo);
       }}
     >
