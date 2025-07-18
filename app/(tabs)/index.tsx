@@ -15,6 +15,7 @@ import { DataManager } from '@/components/DataManager';
 import { QuickAddCard } from '@/components/QuickAddCard';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { NotificationBadge } from '@/components/NotificationBadge';
 import { NetworkConnectionTest } from '@/components/NetworkConnectionTest';
 import { Platform } from 'react-native';
@@ -196,7 +197,7 @@ export default function HomeScreen() {
             <View style={styles.headerRight}>
               <StatusIndicator 
                 isOnline={true}
-                serverStatus={backendError ? 'error' : 'connected'}
+                serverStatus={backendError ? 'error' : (backendTest ? 'connected' : 'disconnected')}
               />
               {Platform.OS !== 'web' && backendError && (
                 <Text style={styles.mockModeText}>Mock режим</Text>

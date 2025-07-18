@@ -45,9 +45,10 @@ const getBaseUrl = () => {
     console.log('Using web fallback: http://localhost:3000');
     return "http://localhost:3000";
   } else {
-    // For mobile devices, use mock mode by default since localhost won't work
-    console.log('Mobile device detected - using mock mode');
-    return "http://mock-server:3000"; // This will trigger mock responses
+    // For mobile devices, try local IP first, then fallback to mock
+    const localIP = getLocalIP();
+    console.log(`Mobile device detected - trying local IP: ${localIP}`);
+    return `http://${localIP}:3000`;
   }
 };
 
