@@ -171,23 +171,20 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
                 {
                   result: {
                     data: {
-                      json: {
-                        tasks: [
-                          {
-                            id: '1',
-                            title: 'Equipment Check (Mock)',
-                            description: 'Conduct routine equipment inspection in sector A',
-                            assignedTo: '1',
-                            createdBy: '2',
-                            dueDate: new Date(Date.now() + 86400000).toISOString(),
-                            status: 'pending',
-                            priority: 'high',
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString(),
-                          }
-                        ],
-                        total: 1,
-                      }
+                      json: [
+                        {
+                          id: '1',
+                          title: 'Equipment Check (Mock)',
+                          description: 'Conduct routine equipment inspection in sector A',
+                          assignedTo: '1',
+                          createdBy: '2',
+                          dueDate: new Date(Date.now() + 86400000).toISOString(),
+                          status: 'pending',
+                          priority: 'high',
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        }
+                      ]
                     }
                   }
                 }
@@ -203,26 +200,23 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
                 {
                   result: {
                     data: {
-                      json: {
-                        reports: [
-                          {
-                            id: '1',
-                            title: 'Weekly Status Report (Mock)',
-                            content: 'All systems operational. Equipment check completed successfully.',
-                            authorId: '1',
-                            status: 'approved',
-                            type: 'text',
-                            unit: 'Alpha Squad',
-                            priority: 'medium',
-                            dueDate: new Date(Date.now() + 86400000).toISOString(),
-                            currentApprover: null,
-                            currentRevision: 1,
-                            createdAt: new Date(Date.now() - 86400000).toISOString(),
-                            updatedAt: new Date().toISOString(),
-                          }
-                        ],
-                        total: 1,
-                      }
+                      json: [
+                        {
+                          id: '1',
+                          title: 'Weekly Status Report (Mock)',
+                          content: 'All systems operational. Equipment check completed successfully.',
+                          authorId: '1',
+                          status: 'approved',
+                          type: 'text',
+                          unit: 'Alpha Squad',
+                          priority: 'medium',
+                          dueDate: new Date(Date.now() + 86400000).toISOString(),
+                          currentApprover: null,
+                          currentRevision: 1,
+                          createdAt: new Date(Date.now() - 86400000).toISOString(),
+                          updatedAt: new Date().toISOString(),
+                        }
+                      ]
                     }
                   }
                 }

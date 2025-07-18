@@ -3,16 +3,18 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-console.log('🚀 Starting backend server...');
+console.log('🚀 Starting Military Management System Backend...');
 
 // Change to backend directory and start the server
-const backendProcess = spawn('bun', ['run', 'hono.ts'], {
+const backendProcess = spawn('bun', ['index.ts'], {
   cwd: path.join(__dirname, 'backend'),
   stdio: 'inherit',
   env: {
     ...process.env,
-    NODE_ENV: 'development',
-    PORT: '3000'
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    PORT: process.env.PORT || '3000',
+    API_PORT: process.env.API_PORT || '3000',
+    API_HOST: process.env.API_HOST || '0.0.0.0',
   }
 });
 
