@@ -11,10 +11,10 @@ if (IS_DEV) {
   return `http://${YOUR_IP_ADDRESS}:3000/api`;
 }
 // Для production используйте один из этих вариантов:
-// return 'https://your-app.vercel.app/api';
-// return 'https://your-app.railway.app/api';
-// return 'https://your-app.render.com/api';
-return process.env.EXPO_PUBLIC_API_URL || 'https://your-production-api.com/api';
+// Railway: return 'https://your-app.railway.app/api';
+// Render: return 'https://your-app.render.com/api';
+// Vercel: return 'https://your-app.vercel.app/api';
+return process.env.EXPO_PUBLIC_API_URL || 'https://your-app.railway.app/api';
 };
 
 const getBaseUrl = () => {
@@ -22,10 +22,10 @@ if (IS_DEV) {
   return `http://${YOUR_IP_ADDRESS}:3000`;
 }
 // Для production используйте один из этих вариантов:
-// return 'https://your-app.vercel.app';
-// return 'https://your-app.railway.app';
-// return 'https://your-app.render.com';
-return process.env.EXPO_PUBLIC_BASE_URL || 'https://your-production-domain.com';
+// Railway: return 'https://your-app.railway.app';
+// Render: return 'https://your-app.render.com';
+// Vercel: return 'https://your-app.vercel.app';
+return process.env.EXPO_PUBLIC_BASE_URL || 'https://your-app.railway.app';
 };
 
 export default {
