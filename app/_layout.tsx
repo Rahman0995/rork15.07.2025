@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, ErrorBoundary } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/authStore";
@@ -34,22 +34,32 @@ function RootLayoutNav() {
   const router = useRouter();
   const [isNavigationReady, setIsNavigationReady] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   
   // Ensure auth store is initialized
   useEffect(() => {
-    try {
-      if (__DEV__) {
-        console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
+    const initializeAuth = async () => {
+      if (isInitializing) return;
+      
+      try {
+        setIsInitializing(true);
+        if (__DEV__) {
+          console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
+        }
+        if (!isInitialized) {
+          if (__DEV__) console.log('Initializing auth store...');
+          await initialize();
+        }
+      } catch (error) {
+        console.error('Error during auth initialization:', error);
+        setHasError(true);
+      } finally {
+        setIsInitializing(false);
       }
-      if (!isInitialized) {
-        if (__DEV__) console.log('Initializing auth store...');
-        initialize();
-      }
-    } catch (error) {
-      console.error('Error during auth initialization:', error);
-      setHasError(true);
-    }
-  }, [isInitialized, initialize]);
+    };
+    
+    initializeAuth();
+  }, [isInitialized, initialize, isInitializing]);
 
   useEffect(() => {
     try {
@@ -92,8 +102,8 @@ function RootLayoutNav() {
       });
     }
     
-    // Use setTimeout to prevent navigation conflicts
-    setTimeout(() => {
+    // Use requestAnimationFrame to prevent navigation conflicts
+    requestAnimationFrame(() => {
       if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
         // Redirect to login if not authenticated and trying to access protected routes
         if (__DEV__) console.log('Redirecting to login - not authenticated');
@@ -107,25 +117,22 @@ function RootLayoutNav() {
         if (__DEV__) console.log('Redirecting to tabs - authenticated on root');
         router.replace('/(tabs)');
       }
-    }, 100);
+    });
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);
 
   useEffect(() => {
-    // Set navigation ready after a short delay to ensure everything is loaded
-    const timer = setTimeout(() => {
+    // Set navigation ready after initialization
+    if (isInitialized) {
       try {
         setIsNavigationReady(true);
-        if (isInitialized) {
-          SplashScreen.hideAsync();
-        }
+        SplashScreen.hideAsync().catch((error) => {
+          console.error('Error hiding splash screen:', error);
+        });
       } catch (error) {
-        console.error('Error hiding splash screen:', error);
-        // Still set navigation ready even if splash screen fails
+        console.error('Error in navigation setup:', error);
         setIsNavigationReady(true);
       }
-    }, 500); // Increased delay to ensure everything is loaded
-
-    return () => clearTimeout(timer);
+    }
   }, [isInitialized]);
 
   // Show error screen if there's a critical error
@@ -160,16 +167,14 @@ function RootLayoutNav() {
       },
       headerShadowVisible: Platform.OS === 'web',
       headerBackground: Platform.OS !== 'web' ? () => (
-        <BlurView
-          intensity={95}
-          tint={isDark ? 'dark' : 'light'}
+        <View
           style={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)',
+            backgroundColor: isDark ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)',
           }}
         />
       ) : undefined,
@@ -197,13 +202,43 @@ function RootLayoutNav() {
   );
 }
 
+function ErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+      <Text style={{ fontSize: 18, marginBottom: 20, textAlign: 'center' }}>
+        Произошла ошибка в приложении
+      </Text>
+      <Text style={{ fontSize: 14, marginBottom: 20, textAlign: 'center', color: '#666' }}>
+        {error.message}
+      </Text>
+      <TouchableOpacity 
+        style={{ 
+          backgroundColor: '#007AFF', 
+          padding: 15, 
+          borderRadius: 8 
+        }}
+        onPress={resetError}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Перезапустить</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 export default function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <RootLayoutWrapper />
-      </trpc.Provider>
-    </QueryClientProvider>
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={(error, errorInfo) => {
+        console.error('App Error Boundary:', error, errorInfo);
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <RootLayoutWrapper />
+        </trpc.Provider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

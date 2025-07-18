@@ -17,7 +17,7 @@ interface AuthState {
   updateUser: (updatedUser: User) => void;
   clearError: () => void;
   getCurrentUser: () => User | null;
-  initialize: () => void;
+  initialize: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -88,7 +88,7 @@ export const useAuthStore = create<AuthState>()(
       },
       clearError: () => set({ error: null }),
       getCurrentUser: () => get().user,
-      initialize: () => {
+      initialize: async () => {
         try {
           const state = get();
           
@@ -138,24 +138,32 @@ export const useAuthStore = create<AuthState>()(
             console.log('Auth: Rehydrating storage, state:', state);
           }
           
-          // Use setTimeout to ensure initialization happens after rehydration
-          setTimeout(() => {
-            const currentState = useAuthStore.getState();
-            if (!currentState.isInitialized) {
-              currentState.initialize();
+          // Use requestAnimationFrame to ensure initialization happens after rehydration
+          requestAnimationFrame(async () => {
+            try {
+              const currentState = useAuthStore.getState();
+              if (!currentState.isInitialized) {
+                await currentState.initialize();
+              }
+              
+              if (isDebugMode()) {
+                console.log('Auth: Storage rehydrated and initialized');
+              }
+            } catch (error) {
+              console.error('Auth: Error during post-rehydration initialization:', error);
             }
-            
-            if (isDebugMode()) {
-              console.log('Auth: Storage rehydrated and initialized');
-            }
-          }, 0);
+          });
         } catch (error) {
           console.error('Auth: Error during rehydration:', error);
           // Ensure initialization even on error
-          setTimeout(() => {
-            const currentState = useAuthStore.getState();
-            currentState.initialize();
-          }, 0);
+          requestAnimationFrame(async () => {
+            try {
+              const currentState = useAuthStore.getState();
+              await currentState.initialize();
+            } catch (initError) {
+              console.error('Auth: Error during fallback initialization:', initError);
+            }
+          });
         }
       },
     }
