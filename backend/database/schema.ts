@@ -1,50 +1,50 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { mysqlTable, varchar, text, int, boolean, timestamp, bigint } from 'drizzle-orm/mysql-core';
 import { sql } from 'drizzle-orm';
 
 // Users table
-export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  rank: text('rank').notNull(),
-  role: text('role').notNull(),
+export const users = mysqlTable('users', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  rank: varchar('rank', { length: 100 }).notNull(),
+  role: varchar('role', { length: 100 }).notNull(),
   avatar: text('avatar').notNull(),
-  unit: text('unit').notNull(),
-  email: text('email').notNull().unique(),
-  phone: text('phone').notNull(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  unit: varchar('unit', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  phone: varchar('phone', { length: 50 }).notNull(),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Reports table
-export const reports = sqliteTable('reports', {
-  id: text('id').primaryKey(),
-  title: text('title').notNull(),
+export const reports = mysqlTable('reports', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  title: varchar('title', { length: 500 }).notNull(),
   content: text('content').notNull(),
-  authorId: text('author_id').notNull().references(() => users.id),
-  status: text('status').notNull().default('draft'),
-  type: text('type').default('text'),
-  unit: text('unit'),
-  priority: text('priority').default('medium'),
-  dueDate: text('due_date'),
-  currentApprover: text('current_approver'),
-  currentRevision: integer('current_revision').default(1),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  authorId: varchar('author_id', { length: 255 }).notNull().references(() => users.id),
+  status: varchar('status', { length: 50 }).notNull().default('draft'),
+  type: varchar('type', { length: 50 }).default('text'),
+  unit: varchar('unit', { length: 255 }),
+  priority: varchar('priority', { length: 50 }).default('medium'),
+  dueDate: timestamp('due_date'),
+  currentApprover: varchar('current_approver', { length: 255 }),
+  currentRevision: int('current_revision').default(1),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Tasks table
-export const tasks = sqliteTable('tasks', {
-  id: text('id').primaryKey(),
-  title: text('title').notNull(),
+export const tasks = mysqlTable('tasks', {
+  id: varchar('id', { length: 255 }).primaryKey(),
+  title: varchar('title', { length: 500 }).notNull(),
   description: text('description').notNull(),
-  assignedTo: text('assigned_to').notNull().references(() => users.id),
-  createdBy: text('created_by').notNull().references(() => users.id),
-  dueDate: text('due_date').notNull(),
-  status: text('status').notNull().default('pending'),
-  priority: text('priority').notNull().default('medium'),
-  completedAt: text('completed_at'),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  assignedTo: varchar('assigned_to', { length: 255 }).notNull().references(() => users.id),
+  createdBy: varchar('created_by', { length: 255 }).notNull().references(() => users.id),
+  dueDate: timestamp('due_date').notNull(),
+  status: varchar('status', { length: 50 }).notNull().default('pending'),
+  priority: varchar('priority', { length: 50 }).notNull().default('medium'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 });
 
 // Chats table

@@ -1,24 +1,21 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
 import * as schema from './schema';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { sql } from 'drizzle-orm';
+import { config } from '../config';
 
 let db: ReturnType<typeof drizzle>;
-let sqlite: Database.Database;
+let connection: mysql.Connection;
 
 export const initializeDatabase = async (): Promise<boolean> => {
   try {
-    console.log('🔧 Initializing SQLite database...');
+    console.log('🔧 Initializing MySQL database...');
     
-    // Create SQLite database
-    sqlite = new Database('military_app.db');
-    
-    // Enable WAL mode for better performance
-    sqlite.pragma('journal_mode = WAL');
+    // Create MySQL connection
+    connection = await mysql.createConnection(config.database.url);
     
     // Create drizzle instance
-    db = drizzle(sqlite, { schema });
+    db = drizzle(connection, { schema });
     
     // Create tables if they don't exist
     await createTables();
@@ -38,8 +35,8 @@ export const closeDatabase = async (): Promise<void> => {
   try {
     console.log('🔄 Closing database connections...');
     
-    if (sqlite) {
-      sqlite.close();
+    if (connection) {
+      await connection.end();
     }
     
     console.log('✅ Database connections closed successfully');
@@ -52,174 +49,194 @@ const createTables = async () => {
   // Create tables using raw SQL since we don't have migrations set up
   const createTablesSQL = `
     CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      rank TEXT NOT NULL,
-      role TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      rank VARCHAR(100) NOT NULL,
+      role VARCHAR(100) NOT NULL,
       avatar TEXT NOT NULL,
-      unit TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      phone TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      unit VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      phone VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS reports (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      title VARCHAR(500) NOT NULL,
       content TEXT NOT NULL,
-      author_id TEXT NOT NULL REFERENCES users(id),
-      status TEXT NOT NULL DEFAULT 'draft',
-      type TEXT DEFAULT 'text',
-      unit TEXT,
-      priority TEXT DEFAULT 'medium',
-      due_date TEXT,
-      current_approver TEXT,
-      current_revision INTEGER DEFAULT 1,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      author_id VARCHAR(255) NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'draft',
+      type VARCHAR(50) DEFAULT 'text',
+      unit VARCHAR(255),
+      priority VARCHAR(50) DEFAULT 'medium',
+      due_date DATETIME,
+      current_approver VARCHAR(255),
+      current_revision INT DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (author_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS tasks (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      title VARCHAR(500) NOT NULL,
       description TEXT NOT NULL,
-      assigned_to TEXT NOT NULL REFERENCES users(id),
-      created_by TEXT NOT NULL REFERENCES users(id),
-      due_date TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
-      priority TEXT NOT NULL DEFAULT 'medium',
-      completed_at TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      assigned_to VARCHAR(255) NOT NULL,
+      created_by VARCHAR(255) NOT NULL,
+      due_date DATETIME NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'pending',
+      priority VARCHAR(50) NOT NULL DEFAULT 'medium',
+      completed_at DATETIME,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (assigned_to) REFERENCES users(id),
+      FOREIGN KEY (created_by) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS chats (
-      id TEXT PRIMARY KEY,
-      name TEXT,
-      is_group INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(255),
+      is_group BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS chat_participants (
-      id TEXT PRIMARY KEY,
-      chat_id TEXT NOT NULL REFERENCES chats(id),
-      user_id TEXT NOT NULL REFERENCES users(id),
-      joined_at TEXT DEFAULT CURRENT_TIMESTAMP
+      id VARCHAR(255) PRIMARY KEY,
+      chat_id VARCHAR(255) NOT NULL,
+      user_id VARCHAR(255) NOT NULL,
+      joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (chat_id) REFERENCES chats(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS chat_messages (
-      id TEXT PRIMARY KEY,
-      chat_id TEXT NOT NULL REFERENCES chats(id),
-      sender_id TEXT NOT NULL REFERENCES users(id),
+      id VARCHAR(255) PRIMARY KEY,
+      chat_id VARCHAR(255) NOT NULL,
+      sender_id VARCHAR(255) NOT NULL,
       text TEXT,
-      type TEXT NOT NULL DEFAULT 'text',
-      read INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      type VARCHAR(50) NOT NULL DEFAULT 'text',
+      read BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (chat_id) REFERENCES chats(id),
+      FOREIGN KEY (sender_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS calendar_events (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      title VARCHAR(500) NOT NULL,
       description TEXT NOT NULL,
-      type TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'scheduled',
-      start_date TEXT NOT NULL,
-      end_date TEXT NOT NULL,
-      location TEXT,
-      organizer TEXT NOT NULL REFERENCES users(id),
-      unit TEXT NOT NULL,
-      color TEXT,
-      is_all_day INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+      type VARCHAR(100) NOT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'scheduled',
+      start_date DATETIME NOT NULL,
+      end_date DATETIME NOT NULL,
+      location VARCHAR(500),
+      organizer VARCHAR(255) NOT NULL,
+      unit VARCHAR(255) NOT NULL,
+      color VARCHAR(20),
+      is_all_day BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (organizer) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS event_participants (
-      id TEXT PRIMARY KEY,
-      event_id TEXT NOT NULL REFERENCES calendar_events(id),
-      user_id TEXT NOT NULL REFERENCES users(id),
-      status TEXT DEFAULT 'invited',
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      id VARCHAR(255) PRIMARY KEY,
+      event_id VARCHAR(255) NOT NULL,
+      user_id VARCHAR(255) NOT NULL,
+      status VARCHAR(50) DEFAULT 'invited',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (event_id) REFERENCES calendar_events(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS attachments (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      type TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(500) NOT NULL,
+      type VARCHAR(100) NOT NULL,
       url TEXT NOT NULL,
-      size INTEGER,
-      duration INTEGER,
-      entity_type TEXT NOT NULL,
-      entity_id TEXT NOT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      size BIGINT,
+      duration INT,
+      entity_type VARCHAR(100) NOT NULL,
+      entity_id VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS report_comments (
-      id TEXT PRIMARY KEY,
-      report_id TEXT NOT NULL REFERENCES reports(id),
-      author_id TEXT NOT NULL REFERENCES users(id),
+      id VARCHAR(255) PRIMARY KEY,
+      report_id VARCHAR(255) NOT NULL,
+      author_id VARCHAR(255) NOT NULL,
       content TEXT NOT NULL,
-      is_revision INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      is_revision BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (report_id) REFERENCES reports(id),
+      FOREIGN KEY (author_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS report_approvals (
-      id TEXT PRIMARY KEY,
-      report_id TEXT NOT NULL REFERENCES reports(id),
-      approver_id TEXT NOT NULL REFERENCES users(id),
-      status TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      report_id VARCHAR(255) NOT NULL,
+      approver_id VARCHAR(255) NOT NULL,
+      status VARCHAR(50) NOT NULL,
       comment TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (report_id) REFERENCES reports(id),
+      FOREIGN KEY (approver_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS report_revisions (
-      id TEXT PRIMARY KEY,
-      report_id TEXT NOT NULL REFERENCES reports(id),
-      version INTEGER NOT NULL,
-      title TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      report_id VARCHAR(255) NOT NULL,
+      version INT NOT NULL,
+      title VARCHAR(500) NOT NULL,
       content TEXT NOT NULL,
-      created_by TEXT NOT NULL REFERENCES users(id),
-      author_id TEXT NOT NULL REFERENCES users(id),
+      created_by VARCHAR(255) NOT NULL,
+      author_id VARCHAR(255) NOT NULL,
       changes TEXT,
       comment TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (report_id) REFERENCES reports(id),
+      FOREIGN KEY (created_by) REFERENCES users(id),
+      FOREIGN KEY (author_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS notifications (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id),
-      title TEXT NOT NULL,
+      id VARCHAR(255) PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      title VARCHAR(500) NOT NULL,
       message TEXT NOT NULL,
-      type TEXT NOT NULL,
-      read INTEGER NOT NULL DEFAULT 0,
+      type VARCHAR(100) NOT NULL,
+      read BOOLEAN NOT NULL DEFAULT FALSE,
       data TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS user_activity_log (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id),
-      action TEXT NOT NULL,
-      entity_type TEXT NOT NULL,
-      entity_id TEXT,
+      id VARCHAR(255) PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      action VARCHAR(255) NOT NULL,
+      entity_type VARCHAR(100) NOT NULL,
+      entity_id VARCHAR(255),
       details TEXT,
-      ip_address TEXT,
+      ip_address VARCHAR(45),
       user_agent TEXT,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS user_sessions (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id),
-      token TEXT NOT NULL UNIQUE,
+      id VARCHAR(255) PRIMARY KEY,
+      user_id VARCHAR(255) NOT NULL,
+      token VARCHAR(500) NOT NULL UNIQUE,
       device_info TEXT,
-      ip_address TEXT,
-      is_active INTEGER NOT NULL DEFAULT 1,
-      last_activity TEXT DEFAULT CURRENT_TIMESTAMP,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      expires_at TEXT NOT NULL
+      ip_address VARCHAR(45),
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      expires_at TIMESTAMP NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
     CREATE INDEX IF NOT EXISTS idx_reports_author_id ON reports(author_id);
@@ -240,22 +257,17 @@ const createTables = async () => {
     CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token);
   `;
 
-  sqlite.exec(createTablesSQL);
+  await connection.execute(createTablesSQL);
 };
 
 const insertDefaultData = async () => {
   // Check if users already exist
-  const existingUsers = sqlite.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+  const [rows] = await connection.execute('SELECT COUNT(*) as count FROM users');
+  const existingUsers = rows as { count: number }[];
   
-  if (existingUsers.count === 0) {
+  if (existingUsers[0].count === 0) {
     console.log('📝 Inserting default data...');
     
-    // Insert default users
-    const insertUser = sqlite.prepare(`
-      INSERT INTO users (id, name, rank, role, avatar, unit, email, phone)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
     const defaultUsers = [
       {
         id: 'user-1',
@@ -300,7 +312,10 @@ const insertDefaultData = async () => {
     ];
 
     for (const user of defaultUsers) {
-      insertUser.run(user.id, user.name, user.rank, user.role, user.avatar, user.unit, user.email, user.phone);
+      await connection.execute(
+        'INSERT INTO users (id, name, rank, role, avatar, unit, email, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [user.id, user.name, user.rank, user.role, user.avatar, user.unit, user.email, user.phone]
+      );
     }
 
     console.log('✅ Default data inserted successfully');
