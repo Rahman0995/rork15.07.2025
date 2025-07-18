@@ -40,7 +40,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     try {
       const response = await trpcClient.tasks.getAll.query();
       // Backend returns { tasks, total }, we need just the tasks array
-      const tasks = Array.isArray(response) ? response : (response?.tasks || []);
+      const tasks = Array.isArray(response) ? response : ((response as any)?.tasks || []);
       set({ tasks, isLoading: false });
     } catch (error) {
       console.warn('Failed to fetch tasks from backend, using mock data:', error);

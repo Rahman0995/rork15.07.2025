@@ -101,16 +101,16 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       // Transform backend data to match frontend interface
       const transformedReport: Report = 'success' in newReport && newReport.success ? {
         ...newReport.report,
-        approvals: newReport.approvals || [],
-        comments: newReport.comments || [],
-        revisions: newReport.revisions || [],
-        currentRevision: newReport.currentRevision || 1,
+        approvals: newReport.report.approvals || [],
+        comments: newReport.report.comments || [],
+        revisions: newReport.report.revisions || [],
+        currentRevision: newReport.report.currentRevision || 1,
       } : {
         ...newReport,
-        approvals: newReport.approvals || [],
-        comments: newReport.comments || [],
-        revisions: newReport.revisions || [],
-        currentRevision: newReport.currentRevision || 1,
+        approvals: (newReport as any).approvals || [],
+        comments: (newReport as any).comments || [],
+        revisions: (newReport as any).revisions || [],
+        currentRevision: (newReport as any).currentRevision || 1,
       };
       
       set(state => ({

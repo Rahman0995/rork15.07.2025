@@ -60,7 +60,7 @@ export function QuickAddCard({ type, onClose }: QuickAddCardProps) {
         status: 'pending',
         type: 'text',
         attachments: [],
-        unit: user.unit || undefined,
+        unit: user.unit ?? undefined,
         priority: 'medium',
         approvers: [],
         currentApprover: undefined,
