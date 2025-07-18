@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockTasks } from '../../../constants/mockData';
-import { Task, TaskStatus, TaskPriority } from '../../../types';
+import { mockTasks } from '../../../../constants/mockData';
+import { Task, TaskStatus, TaskPriority } from '../../../../types';
 
 type TasksInput = {
   assignedTo?: string;
@@ -75,7 +75,7 @@ export const getTaskByIdProcedure = publicProcedure
     id: z.string(),
   }))
   .query(({ input }: { input: TaskByIdInput }) => {
-    const task = mockTasks.find((t) => t.id === input.id);
+    const task = mockTasks.find((t: Task) => t.id === input.id);
     if (!task) {
       throw new Error('Task not found');
     }
@@ -119,7 +119,7 @@ export const updateTaskProcedure = publicProcedure
     dueDate: z.string().optional(),
   }))
   .mutation(({ input }: { input: UpdateTaskInput }) => {
-    const taskIndex = mockTasks.findIndex((t) => t.id === input.id);
+    const taskIndex = mockTasks.findIndex((t: Task) => t.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
@@ -145,7 +145,7 @@ export const deleteTaskProcedure = publicProcedure
     id: z.string(),
   }))
   .mutation(({ input }: { input: DeleteTaskInput }) => {
-    const taskIndex = mockTasks.findIndex((t) => t.id === input.id);
+    const taskIndex = mockTasks.findIndex((t: Task) => t.id === input.id);
     if (taskIndex === -1) {
       throw new Error('Task not found');
     }
