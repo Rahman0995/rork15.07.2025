@@ -230,7 +230,7 @@ export default function HomeScreen() {
             {backendTest && (
               <TouchableOpacity 
                 style={styles.backendTestButton}
-                onPress={() => router.push('/(tabs)/backend-test')}
+                onPress={() => router.push('/settings/backend-test')}
               >
                 <Text style={styles.backendTestText}>Те��тировать Backend</Text>
               </TouchableOpacity>

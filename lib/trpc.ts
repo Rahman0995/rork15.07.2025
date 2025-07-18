@@ -1,11 +1,11 @@
 import { createTRPCReact } from "@trpc/react-query";
 import { httpBatchLink, loggerLink, createTRPCProxyClient } from "@trpc/client";
-import type { AppRouter } from "@/types/api";
+import type { AppRouter } from "../backend/trpc/app-router";
 import superjson from "superjson";
 import Constants from 'expo-constants';
 
-// Create tRPC React hooks with any type to avoid type issues
-export const trpc = createTRPCReact<any>();
+// Create tRPC React hooks with proper typing
+export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
   // First try to get from expo-constants configuration
@@ -36,7 +36,7 @@ const getApiConfig = () => {
 const apiConfig = getApiConfig();
 
 // Create vanilla tRPC client for use outside React components
-export const trpcClient = createTRPCProxyClient<any>({
+export const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${apiConfig.baseUrl}/api/trpc`,
