@@ -32,7 +32,7 @@ export default {
 expo: {
   name: IS_DEV ? 'sever_ahmat (Dev)' : 'sever_ahmat',
   slug: 'military-unit-management-application',
-  version: '1.0.4',
+  version: '1.0.5',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'myapp',
