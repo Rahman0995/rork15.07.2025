@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockTasks } from '../../../../constants/mockData';
-import { Task, TaskStatus, TaskPriority } from '../../../../types';
+import { mockTasks } from '../../../constants/mockData';
+import { Task, TaskStatus, TaskPriority } from '../../../types';
 
 export const getTasksProcedure = publicProcedure
   .input(z.object({
