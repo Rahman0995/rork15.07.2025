@@ -1,11 +1,6 @@
-import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import * as schema from './schema';
-import { sql } from 'drizzle-orm';
 import { config } from '../config';
-import type { MySql2Database } from 'drizzle-orm/mysql2';
 
-let db: MySql2Database<typeof schema>;
 let connection: mysql.Connection;
 
 export const initializeDatabase = async (): Promise<boolean> => {
@@ -14,9 +9,6 @@ export const initializeDatabase = async (): Promise<boolean> => {
     
     // Create MySQL connection
     connection = await mysql.createConnection(config.database.url);
-    
-    // Create drizzle instance
-    db = drizzle(connection, { schema, mode: 'default' });
     
     // Create tables if they don't exist
     await createTables();
@@ -323,11 +315,11 @@ const insertDefaultData = async () => {
   }
 };
 
-export const getDatabase = () => {
-  if (!db) {
+export const getConnection = () => {
+  if (!connection) {
     throw new Error('Database not initialized. Call initializeDatabase() first.');
   }
-  return db;
+  return connection;
 };
 
 export const logUserActivity = async (
@@ -340,21 +332,22 @@ export const logUserActivity = async (
   userAgent?: string
 ) => {
   try {
-    const database = getDatabase();
+    const conn = getConnection();
     
-    await database.insert(schema.userActivityLog).values({
-      id: `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      userId,
-      action,
-      entityType,
-      entityId,
-      details: details ? JSON.stringify(details) : null,
-      ipAddress,
-      userAgent,
-    });
+    await conn.execute(
+      'INSERT INTO user_activity_log (id, user_id, action, entity_type, entity_id, details, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        userId,
+        action,
+        entityType,
+        entityId,
+        details ? JSON.stringify(details) : null,
+        ipAddress,
+        userAgent,
+      ]
+    );
   } catch (error) {
     console.error('Failed to log user activity:', error);
   }
 };
-
-export { schema };
