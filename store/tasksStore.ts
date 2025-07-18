@@ -11,6 +11,7 @@ interface TasksState {
   fetchTasks: () => Promise<void>;
   getTaskById: (id: string) => Task | undefined;
   createTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
+  addTask: (task: Task) => void;
   updateTaskStatus: (id: string, status: TaskStatus) => Promise<void>;
   getUserTasks: (userId: string) => Task[];
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
@@ -56,13 +57,26 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     console.log('Creating task:', taskData);
     set({ isLoading: true, error: null });
     try {
-      const newTask = await trpcClient.tasks.create.mutate({
-        title: taskData.title,
-        description: taskData.description,
-        priority: taskData.priority,
-        assignedTo: taskData.assignedTo,
-        dueDate: taskData.dueDate,
-      });
+      // Try backend first, fallback to local creation
+      let newTask;
+      try {
+        newTask = await trpcClient.tasks.create.mutate({
+          title: taskData.title,
+          description: taskData.description,
+          priority: taskData.priority,
+          assignedTo: taskData.assignedTo,
+          dueDate: taskData.dueDate,
+        });
+      } catch (backendError) {
+        console.warn('Backend task creation failed, creating locally:', backendError);
+        // Create task locally if backend fails
+        newTask = {
+          id: Date.now().toString(),
+          ...taskData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }
       
       set(state => {
         const currentTasks = Array.isArray(state.tasks) ? state.tasks : [];
@@ -98,6 +112,14 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       set({ error: 'Ошибка при создании задачи', isLoading: false });
       throw error; // Re-throw to handle in component
     }
+  },
+  addTask: (task) => {
+    set(state => {
+      const currentTasks = Array.isArray(state.tasks) ? state.tasks : [];
+      return {
+        tasks: [task, ...currentTasks],
+      };
+    });
   },
   updateTaskStatus: async (id: string, status: TaskStatus) => {
     set({ isLoading: true, error: null });

@@ -12,6 +12,7 @@ interface ReportsState {
   fetchReports: () => Promise<void>;
   getReportById: (id: string) => Report | undefined;
   createReport: (report: Omit<Report, 'id' | 'createdAt' | 'updatedAt' | 'approvals' | 'comments' | 'revisions' | 'currentRevision'>) => Promise<void>;
+  addReport: (report: Report) => void;
   updateReportStatus: (id: string, status: ReportStatus) => Promise<void>;
   approveReport: (reportId: string, comment?: string) => Promise<void>;
   rejectReport: (reportId: string, comment: string) => Promise<void>;
@@ -70,24 +71,41 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   createReport: async (reportData) => {
     set({ isLoading: true, error: null });
     try {
-      const newReport = await trpcClient.reports.create.mutate({
-        title: reportData.title,
-        content: reportData.content,
-        authorId: reportData.authorId,
-        type: reportData.type,
-        unit: reportData.unit,
-        priority: reportData.priority,
-        approvers: reportData.approvers,
-        attachments: reportData.attachments,
-      });
+      // Try backend first, fallback to local creation
+      let newReport;
+      try {
+        newReport = await trpcClient.reports.create.mutate({
+          title: reportData.title,
+          content: reportData.content,
+          authorId: reportData.authorId,
+          type: reportData.type,
+          unit: reportData.unit,
+          priority: reportData.priority,
+          approvers: reportData.approvers,
+          attachments: reportData.attachments,
+        });
+      } catch (backendError) {
+        console.warn('Backend report creation failed, creating locally:', backendError);
+        // Create report locally if backend fails
+        newReport = {
+          id: Date.now().toString(),
+          ...reportData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          approvals: [],
+          comments: [],
+          revisions: [],
+          currentRevision: 1,
+        };
+      }
       
       // Transform backend data to match frontend interface
       const transformedReport: Report = {
         ...newReport,
         approvals: newReport.approvals || [],
         comments: newReport.comments || [],
-        revisions: [],
-        currentRevision: 1,
+        revisions: newReport.revisions || [],
+        currentRevision: newReport.currentRevision || 1,
       };
       
       set(state => ({
@@ -96,24 +114,33 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       }));
       
       // Create notification for approvers
-      const { createNotification } = useNotificationsStore.getState();
-      
-      // Notify all approvers
-      for (const approverId of transformedReport.approvers ?? []) {
-        await createNotification({
-          type: 'report_created',
-          title: 'Новый отчет на утверждение',
-          body: `Отчет "${transformedReport.title}" ожидает вашего утверждения`,
-          userId: approverId,
-          read: false,
-          data: { reportId: transformedReport.id }
-        });
+      try {
+        const { createNotification } = useNotificationsStore.getState();
+        
+        // Notify all approvers
+        for (const approverId of transformedReport.approvers ?? []) {
+          await createNotification({
+            type: 'report_created',
+            title: 'Новый отчет на утверждение',
+            body: `Отчет "${transformedReport.title}" ожидает вашего утверждения`,
+            userId: approverId,
+            read: false,
+            data: { reportId: transformedReport.id }
+          });
+        }
+      } catch (notificationError) {
+        console.warn('Failed to create notification:', notificationError);
       }
       
     } catch (error) {
       console.error('Error creating report:', error);
       set({ error: 'Ошибка при создании отчета', isLoading: false });
     }
+  },
+  addReport: (report) => {
+    set(state => ({
+      reports: [report, ...state.reports],
+    }));
   },
   updateReportStatus: async (id: string, status: ReportStatus) => {
     set({ isLoading: true, error: null });

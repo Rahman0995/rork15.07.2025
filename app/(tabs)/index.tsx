@@ -11,10 +11,13 @@ import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
+import { DataManager } from '@/components/DataManager';
+import { QuickAddCard } from '@/components/QuickAddCard';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { NotificationBadge } from '@/components/NotificationBadge';
 import { NetworkConnectionTest } from '@/components/NetworkConnectionTest';
+import { Platform } from 'react-native';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
 import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
@@ -32,6 +35,8 @@ export default function HomeScreen() {
   const { colors, isDark } = useTheme();
   const styles = createStyles(colors);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isDataManagerVisible, setIsDataManagerVisible] = useState(false);
+  const [quickAddType, setQuickAddType] = useState<'task' | 'report' | null>(null);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
   
@@ -50,16 +55,21 @@ export default function HomeScreen() {
   }
 
   
-  // Test tRPC connection (disabled for production to prevent crashes)
+  // Test tRPC connection (enabled for mobile with proper error handling)
   const { data: backendTest, isLoading: backendLoading, error: backendError } = trpc.example.hi.useQuery(
     { name: user?.name || 'Anonymous' },
     { 
-      enabled: false, // Disabled to prevent app crashes on device
-      retry: 0,
-      staleTime: 30000,
+      enabled: !!user, // Enable when user is available
+      retry: 1, // Only retry once
+      staleTime: 60000, // Cache for 1 minute
       refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      onError: (error) => {
+        if (__DEV__) {
+          console.log('Backend connection failed, using mock data:', error.message);
+        }
+      }
     }
   );
   
@@ -190,8 +200,11 @@ export default function HomeScreen() {
             <View style={styles.headerRight}>
               <StatusIndicator 
                 isOnline={true}
-                serverStatus={'connected'} // Always show connected for production
+                serverStatus={backendError ? 'mock' : 'connected'}
               />
+              {Platform.OS !== 'web' && backendError && (
+                <Text style={styles.mockModeText}>Mock режим</Text>
+              )}
             </View>
 
           </View>
@@ -324,7 +337,13 @@ export default function HomeScreen() {
       </ScrollView>
       
       {/* Floating Action Button */}
-      <FloatingActionButton onPress={() => setIsMenuVisible(true)} />
+      <FloatingActionButton onPress={() => setIsDataManagerVisible(true)} />
+      
+      {/* Data Manager Modal */}
+      <DataManager 
+        visible={isDataManagerVisible} 
+        onClose={() => setIsDataManagerVisible(false)} 
+      />
       
       {/* Floating Menu */}
       <FloatingMenu 
@@ -408,6 +427,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  mockModeText: {
+    fontSize: 10,
+    color: colors.warning,
+    fontWeight: '500',
   },
 
 

@@ -39,15 +39,15 @@ const getBaseUrl = () => {
     return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   }
 
-  // Platform-specific fallbacks with better defaults
+  // Platform-specific fallbacks with better mobile support
   if (Platform.OS === 'web') {
     // For web, always use localhost
     console.log('Using web fallback: http://localhost:3000');
     return "http://localhost:3000";
   } else {
-    // For mobile, try localhost first (works with tunneling)
-    console.log('Using mobile fallback: http://localhost:3000');
-    return "http://localhost:3000";
+    // For mobile devices, use mock mode by default since localhost won't work
+    console.log('Mobile device detected - using mock mode');
+    return "http://mock-server:3000"; // This will trigger mock responses
   }
 };
 
