@@ -230,7 +230,7 @@ export default function RootLayout() {
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
-      onError={(error: Error, errorInfo: { componentStack: string | null | undefined }) => {
+      onError={(error: Error, errorInfo) => {
         console.error('App Error Boundary:', error, errorInfo);
       }}
     >
