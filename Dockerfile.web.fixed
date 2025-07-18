@@ -1,19 +1,21 @@
-# Frontend Web Dockerfile - Fixed for deployment
-FROM node:18-alpine as base
-
-# Install Python and build tools for native dependencies
-RUN apk add --no-cache python3 make g++ sqlite
-
+# Web-only Dockerfile that handles native dependencies properly
+FROM oven/bun:1 as base
 WORKDIR /app
+
+# Install system dependencies including node-gyp
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    node-gyp \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
 COPY package.json bun.lock* ./
 
-# Install bun
-RUN npm install -g bun
-
-# Install dependencies with better error handling
-RUN bun install --frozen-lockfile || bun install
+# Install all dependencies first (including native ones for the build process)
+RUN bun install --no-frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -25,19 +27,13 @@ ENV EXPO_USE_FAST_RESOLVER=1
 # Clean any existing builds
 RUN rm -rf dist/ build/ .expo/
 
-# Prebuild for web (skip native dependencies)
-RUN bunx expo prebuild --clean --platform web || echo "Prebuild completed with warnings"
-
-# Export web version (this replaces the deprecated expo build)
-RUN bunx expo export --platform web
-
-# Verify build output
-RUN ls -la dist/ || echo "No dist directory found"
+# Export web version directly (this doesn't need native dependencies at runtime)
+RUN bunx expo export --platform web --output-dir dist
 
 # Production stage with nginx
 FROM nginx:alpine as production
 
-# Copy built web app (expo export creates dist folder)
+# Copy built web app
 COPY --from=base /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
