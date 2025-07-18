@@ -155,17 +155,21 @@ process.on('SIGINT', async () => {
 });
 
 // Initialize database on startup
-if (config.development.mockData) {
-  console.log('🔧 Using mock data for development');
-} else {
-  initializeDatabase().then((success) => {
-    if (success) {
-      console.log('✅ Database initialized successfully');
+console.log('🔧 Initializing database connection...');
+initializeDatabase().then((success) => {
+  if (success) {
+    console.log('✅ Database initialized successfully');
+    if (config.development.mockData) {
+      console.log('🔧 Mock data fallback is enabled for development');
+    }
+  } else {
+    console.error('❌ Failed to initialize database');
+    if (config.development.mockData) {
+      console.log('🔧 Continuing with mock data fallback');
     } else {
-      console.error('❌ Failed to initialize database');
       process.exit(1);
     }
-  });
-}
+  }
+});
 
 export default app;

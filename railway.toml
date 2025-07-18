@@ -1,0 +1,19 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "bun run backend/index.ts"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[variables]
+NODE_ENV = "production"
+DATABASE_URL = "mysql://root:iIZFrgdMlpXAJrScrhPwSsYjmjKcyfLT@switchyard.proxy.rlwy.net:13348/railway"
+MYSQL_MYSQL_URL = "mysql://root:iIZFrgdMlpXAJrScrhPwSsYjmjKcyfLT@switchyard.proxy.rlwy.net:13348/railway"
+JWT_SECRET = "your-super-secret-jwt-key-change-this-in-production"
+API_PORT = "3000"
+API_HOST = "0.0.0.0"
+CORS_ORIGIN = "*"
+ENABLE_MOCK_DATA = "false"
