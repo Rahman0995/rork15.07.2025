@@ -203,7 +203,7 @@ function RootLayoutNav() {
   );
 }
 
-function ErrorFallback({ error, resetError }: { error: Error; resetError: () => void }) {
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
       <Text style={{ fontSize: 18, marginBottom: 20, textAlign: 'center' }}>
@@ -218,7 +218,7 @@ function ErrorFallback({ error, resetError }: { error: Error; resetError: () => 
           padding: 15, 
           borderRadius: 8 
         }}
-        onPress={resetError}
+        onPress={resetErrorBoundary}
       >
         <Text style={{ color: 'white', fontWeight: 'bold' }}>Перезапустить</Text>
       </TouchableOpacity>
@@ -230,7 +230,7 @@ export default function RootLayout() {
   return (
     <ErrorBoundary
       FallbackComponent={ErrorFallback}
-      onError={(error: Error, errorInfo: { componentStack: string }) => {
+      onError={(error: Error, errorInfo: { componentStack: string | null | undefined }) => {
         console.error('App Error Boundary:', error, errorInfo);
       }}
     >
