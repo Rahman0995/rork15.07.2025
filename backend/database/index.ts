@@ -3,8 +3,9 @@ import mysql from 'mysql2/promise';
 import * as schema from './schema';
 import { sql } from 'drizzle-orm';
 import { config } from '../config';
+import type { MySql2Database } from 'drizzle-orm/mysql2';
 
-let db: ReturnType<typeof drizzle>;
+let db: MySql2Database<typeof schema>;
 let connection: mysql.Connection;
 
 export const initializeDatabase = async (): Promise<boolean> => {
@@ -15,7 +16,7 @@ export const initializeDatabase = async (): Promise<boolean> => {
     connection = await mysql.createConnection(config.database.url);
     
     // Create drizzle instance
-    db = drizzle(connection, { schema });
+    db = drizzle(connection, { schema, mode: 'default' });
     
     // Create tables if they don't exist
     await createTables();
