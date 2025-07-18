@@ -81,7 +81,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       
       set(state => {
         const currentTasks = Array.isArray(state.tasks) ? state.tasks : [];
-        const taskToAdd = newTask.success ? newTask.task : newTask;
+        const taskToAdd = 'success' in newTask && newTask.success ? newTask.task : newTask;
         return {
           tasks: [taskToAdd, ...currentTasks],
           isLoading: false,
@@ -93,7 +93,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       // Create notification for assigned user
       try {
         const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
-        const taskForNotification = newTask.success ? newTask.task : newTask;
+        const taskForNotification = 'success' in newTask && newTask.success ? newTask.task : newTask;
         await createNotification({
           type: 'task_assigned',
           title: 'Новая задача',

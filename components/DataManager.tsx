@@ -76,7 +76,7 @@ export function DataManager({ visible, onClose }: DataManagerProps) {
       unit: user.unit || undefined,
       priority: 'medium',
       approvers: [],
-      currentApprover: null,
+      currentApprover: undefined,
       approvals: [],
       comments: [],
       revisions: [],

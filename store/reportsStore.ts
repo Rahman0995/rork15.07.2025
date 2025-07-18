@@ -81,7 +81,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           type: reportData.type,
           unit: reportData.unit,
           priority: reportData.priority,
-          attachments: reportData.attachments,
+
         });
       } catch (backendError) {
         console.warn('Backend report creation failed, creating locally:', backendError);
@@ -99,7 +99,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       }
       
       // Transform backend data to match frontend interface
-      const transformedReport: Report = newReport.success ? {
+      const transformedReport: Report = 'success' in newReport && newReport.success ? {
         ...newReport.report,
         approvals: newReport.approvals || [],
         comments: newReport.comments || [],

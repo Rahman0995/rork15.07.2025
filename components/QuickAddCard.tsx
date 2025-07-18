@@ -63,7 +63,7 @@ export function QuickAddCard({ type, onClose }: QuickAddCardProps) {
         unit: user.unit || undefined,
         priority: 'medium',
         approvers: [],
-        currentApprover: null,
+        currentApprover: undefined,
         approvals: [],
         comments: [],
         revisions: [],
