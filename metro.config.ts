@@ -3,13 +3,10 @@ import path from 'path';
 
 const config = getDefaultConfig(__dirname);
 
-// Ensure resolver exists
-if (!config.resolver) {
-  config.resolver = {};
-}
-
 // Customize the Metro configuration to fix bundling issues
-config.resolver.blockList = [
+const resolver = config.resolver || {};
+
+resolver.blockList = [
   // Block any nested duplicate directories
   /.*\/home\/user\/rork-app\/home\/.*/,
   // Block node_modules in nested directories
@@ -23,16 +20,16 @@ config.resolver.blockList = [
   /.*\/server\/.*/,
 ];
 
-config.resolver.platforms = ['ios', 'android', 'native', 'web'];
-config.resolver.sourceExts = ['js', 'jsx', 'ts', 'tsx', 'json'];
+resolver.platforms = ['ios', 'android', 'native', 'web'];
+resolver.sourceExts = ['js', 'jsx', 'ts', 'tsx', 'json'];
 
 if (process.env.EXPO_PLATFORM === 'web') {
-  if (!config.resolver.alias) {
-    config.resolver.alias = {};
-  }
-  config.resolver.alias['react-native'] = 'react-native-web';
+  const alias = resolver.alias || {};
+  alias['react-native'] = 'react-native-web';
+  resolver.alias = alias;
 }
 
+config.resolver = resolver;
 config.watchFolders = [path.resolve(__dirname)];
 
 export default config;
