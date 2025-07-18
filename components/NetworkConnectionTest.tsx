@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { Wifi, WifiOff, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react-native';
-import { trpc } from '@/lib/trpc';
+import { trpcClient } from '@/lib/trpc';
 import { diagnoseNetwork, NetworkDiagnostics } from '@/utils/networkDiagnostics';
 
 interface NetworkConnectionTestProps {
@@ -23,7 +23,7 @@ export const NetworkConnectionTest: React.FC<NetworkConnectionTestProps> = ({
     
     try {
       console.log('Testing tRPC connection...');
-      const result = await trpc.example.hi.query();
+      const result = await trpcClient.example.hi.query();
       console.log('tRPC test result:', result);
       
       const connected = !!result;
