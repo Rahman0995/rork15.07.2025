@@ -2,7 +2,7 @@ services:
   - type: web
     name: military-app-web
     env: docker
-    dockerfilePath: ./Dockerfile.web
+    dockerfilePath: ./Dockerfile.web.simple
     plan: free
     region: oregon
     envVars:

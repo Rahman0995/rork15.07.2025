@@ -1,4 +1,4 @@
-# Frontend Web Dockerfile
+# Simple Frontend Web Dockerfile
 FROM oven/bun:1 as base
 WORKDIR /app
 
@@ -16,17 +16,13 @@ ENV EXPO_USE_FAST_RESOLVER=1
 # Clean any existing builds
 RUN rm -rf dist/ build/ .expo/
 
-# Prebuild and export web version
-RUN bunx expo prebuild --clean --platform web || echo "Prebuild completed with warnings"
-RUN bunx expo export --platform web
-
-# Verify build output
-RUN ls -la dist/ || echo "No dist directory found"
+# Export web version directly (skip prebuild to avoid issues)
+RUN bunx expo export --platform web --output-dir dist
 
 # Production stage with nginx
 FROM nginx:alpine as production
 
-# Copy built web app (expo export creates dist folder)
+# Copy built web app
 COPY --from=base /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
