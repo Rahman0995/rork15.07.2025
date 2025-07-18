@@ -1,57 +1,46 @@
-# Railway Deployment Fix Guide
+# Railway Deployment Fix
 
 ## Problem
-The deployment is failing because `better-sqlite3` (a native dependency) can't be compiled during the build process. Your app uses MySQL, so SQLite is not needed.
+The deployment was failing because of `better-sqlite3` dependency which requires native compilation with `node-gyp`. Since you're using MySQL for your database, SQLite dependencies are not needed.
 
 ## Solution
 
-### Step 1: Remove SQLite Dependencies
-Run this script to remove unnecessary SQLite dependencies:
+### Option 1: Quick Fix (Recommended)
+1. Run the cleanup script to remove SQLite dependencies:
+   ```bash
+   node remove-sqlite-deps.js
+   bun install
+   ```
 
-```bash
-node remove-sqlite-deps.js
-bun install
-```
+2. Commit and push the changes:
+   ```bash
+   git add .
+   git commit -m "Remove SQLite dependencies for Railway deployment"
+   git push
+   ```
 
-Or manually remove these lines from `package.json`:
-- `"better-sqlite3": "^12.2.0",`
-- `"@types/better-sqlite3": "^7.6.13",`
+### Option 2: Use Clean Dockerfile
+The `Dockerfile.web.clean` automatically removes problematic dependencies during build:
+- Uses `railway.json` configuration
+- Automatically excludes native dependencies
+- Optimized for web-only deployment
 
-### Step 2: Use Fixed Dockerfile
-The Railway configuration has been updated to use `Dockerfile.web.fixed` which properly handles native dependencies.
-
-### Step 3: Deploy to Railway
-1. Commit your changes:
-```bash
-git add .
-git commit -m "Fix: Remove SQLite dependencies for web deployment"
-git push
-```
-
-2. Railway will automatically redeploy using the fixed configuration.
-
-## What the Fix Does
-
-1. **Dockerfile.web.fixed**: 
-   - Installs `node-gyp` and build tools
-   - Handles native dependencies during build
-   - Creates web-only build that doesn't need native deps at runtime
-
-2. **Railway.json**: Updated to use the fixed Dockerfile
-
-3. **Package.json cleanup**: Removes SQLite dependencies since you're using MySQL
-
-## Alternative: Environment Variables
-If you need to keep SQLite for local development, you can use environment-based conditional imports in your database code.
+## Files Created/Modified
+- `remove-sqlite-deps.js` - Script to clean package.json
+- `Dockerfile.web.clean` - Clean Dockerfile without native deps
+- `railway.json` - Updated to use clean Dockerfile
+- `create-web-package.js` - Alternative web-specific package.json creator
 
 ## Verification
 After deployment, your app should:
-- ✅ Build successfully on Railway
-- ✅ Serve the web version via nginx
-- ✅ Connect to your MySQL database for backend operations
+- ✅ Build successfully without node-gyp errors
+- ✅ Use MySQL database (not SQLite)
+- ✅ Work properly on web and mobile
 
-## Troubleshooting
-If you still get build errors:
-1. Check Railway build logs for specific error messages
-2. Ensure all environment variables are set in Railway dashboard
-3. Verify your MySQL database connection string is correct
+## Database Configuration
+Your app is correctly configured to use MySQL:
+- Database: MySQL via `mysql2` package
+- Connection: Via environment variables
+- Schema: Defined in `backend/database/schema.ts`
+
+The SQLite dependencies were leftover from initial setup and not actually used in your application.

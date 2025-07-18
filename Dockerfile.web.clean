@@ -1,0 +1,54 @@
+# Clean web-only Dockerfile without native dependencies
+FROM oven/bun:1 as base
+WORKDIR /app
+
+# Install minimal system dependencies
+RUN apt-get update && apt-get install -y \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY package.json bun.lock* ./
+
+# Create web-specific package.json (exclude native deps)
+RUN node -e "
+const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
+const excludeForWeb = ['better-sqlite3', '@types/better-sqlite3', 'expo-sqlite'];
+excludeForWeb.forEach(dep => {
+  delete pkg.dependencies[dep];
+  delete pkg.devDependencies[dep];
+});
+require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('✅ Cleaned package.json for web build');
+"
+
+# Install dependencies (now without problematic native deps)
+RUN bun install --no-frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV EXPO_USE_FAST_RESOLVER=1
+
+# Clean any existing builds
+RUN rm -rf dist/ build/ .expo/
+
+# Export web version
+RUN bunx expo export --platform web --output-dir dist
+
+# Production stage with nginx
+FROM nginx:alpine as production
+
+# Copy built web app
+COPY --from=base /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
