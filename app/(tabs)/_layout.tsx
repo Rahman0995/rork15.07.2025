@@ -228,15 +228,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Главная",
-          tabBarIcon: ({ color }) => <Home size={20} color={color} />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: "Календарь",
-          tabBarIcon: ({ color }) => <Calendar size={20} color={color} />,
+          tabBarIcon: ({ color }) => <Home size={22} color={color} strokeWidth={2} />,
         }}
       />
 
@@ -244,7 +236,7 @@ export default function TabLayout() {
         name="reports"
         options={{
           title: "Отчеты",
-          tabBarIcon: ({ color }) => <FileText size={20} color={color} />,
+          tabBarIcon: ({ color }) => <FileText size={22} color={color} strokeWidth={2} />,
         }}
       />
 
@@ -252,7 +244,7 @@ export default function TabLayout() {
         name="chat"
         options={{
           title: "Чат",
-          tabBarIcon: ({ color }) => <MessageSquare size={20} color={color} />,
+          tabBarIcon: ({ color }) => <MessageSquare size={22} color={color} strokeWidth={2} />,
         }}
       />
 
@@ -260,7 +252,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Профиль",
-          tabBarIcon: ({ color }) => <User size={20} color={color} />,
+          tabBarIcon: ({ color }) => <User size={22} color={color} strokeWidth={2} />,
         }}
       />
     </Tabs>
