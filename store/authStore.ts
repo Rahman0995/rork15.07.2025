@@ -183,8 +183,11 @@ export const useAuthStore = create<AuthState>()(
                 set({ user: null, currentUser: null, isAuthenticated: false });
               }
             } catch (error) {
-              console.warn('Auth: Session verification failed, logging out');
-              set({ user: null, currentUser: null, isAuthenticated: false });
+              if (isDebugMode()) {
+                console.warn('Auth: Session verification failed, but continuing with stored session');
+              }
+              // Don't logout on verification failure - could be network issue
+              // set({ user: null, currentUser: null, isAuthenticated: false });
             }
           }
         } catch (error) {

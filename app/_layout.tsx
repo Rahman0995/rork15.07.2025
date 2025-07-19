@@ -105,18 +105,22 @@ function RootLayoutNav() {
     
     // Use requestAnimationFrame to prevent navigation conflicts
     requestAnimationFrame(() => {
-      if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login') {
-        // Redirect to login if not authenticated and trying to access protected routes
-        if (__DEV__) console.log('Redirecting to login - not authenticated');
-        router.replace('/login');
-      } else if (isAuthenticated && segments[0] === 'login') {
-        // Redirect to tabs if authenticated and on login page
-        if (__DEV__) console.log('Redirecting to tabs - authenticated on login page');
+      if (!isAuthenticated && inProtectedRoute && currentRoute !== 'login' && currentRoute !== 'register' && currentRoute !== 'welcome') {
+        // Redirect to welcome if not authenticated and trying to access protected routes
+        if (__DEV__) console.log('Redirecting to welcome - not authenticated');
+        router.replace('/welcome');
+      } else if (isAuthenticated && (segments[0] === 'login' || segments[0] === 'register' || segments[0] === 'welcome')) {
+        // Redirect to tabs if authenticated and on auth pages
+        if (__DEV__) console.log('Redirecting to tabs - authenticated on auth page');
         router.replace('/(tabs)');
       } else if (isAuthenticated && segments.length < 1) {
         // Redirect to tabs if authenticated and on root
         if (__DEV__) console.log('Redirecting to tabs - authenticated on root');
         router.replace('/(tabs)');
+      } else if (!isAuthenticated && segments.length < 1) {
+        // Redirect to welcome if not authenticated and on root
+        if (__DEV__) console.log('Redirecting to welcome - not authenticated on root');
+        router.replace('/welcome');
       }
     });
   }, [isAuthenticated, segments, isNavigationReady, isInitialized]);
@@ -188,7 +192,9 @@ function RootLayoutNav() {
         fontSize: 16,
       },
     }}>
+      <Stack.Screen name="welcome" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="report/[id]" options={{ title: "Отчет" }} />
       <Stack.Screen name="report/create" options={{ title: "Создать отчет" }} />
