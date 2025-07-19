@@ -1,11 +1,9 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { getConnection } from '../../database';
-import { Report } from '../../database/schema';
-import { config } from '../../config';
+import { Report, ReportStatus } from '@/types';
 
 type ReportsInput = {
-  status?: 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+  status?: ReportStatus;
   unit?: string;
   authorId?: string;
 };
@@ -27,7 +25,7 @@ type UpdateReportInput = {
   id: string;
   title?: string;
   content?: string;
-  status?: 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+  status?: ReportStatus;
   priority?: 'low' | 'medium' | 'high';
 };
 
@@ -53,7 +51,7 @@ type ReportsForApprovalInput = {
   approverId: string;
 };
 
-export const getReportsProcedure = publicProcedure
+export const getAllProcedure = publicProcedure
   .input(z.object({
     status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
     unit: z.string().optional(),
@@ -61,108 +59,94 @@ export const getReportsProcedure = publicProcedure
   }).optional())
   .query(async ({ input }: { input?: ReportsInput | undefined }) => {
     try {
-      const connection = getConnection();
+      console.log('Fetching reports with filters:', input);
+      const mockReports: Report[] = [
+        {
+          id: 'report-1',
+          title: 'Отчет о проведении учений',
+          content: 'Проведены плановые учения по тактической подготовке.',
+          authorId: 'user-1',
+          status: 'pending',
+          type: 'text',
+          unit: '1-й батальон',
+          priority: 'high',
+          currentRevision: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          approvals: [],
+          comments: [],
+          revisions: [],
+          approvers: ['user-2'],
+        },
+        {
+          id: 'report-2',
+          title: 'Отчет о техническом обслуживании',
+          content: 'Выполнено плановое техническое обслуживание оборудования.',
+          authorId: 'user-2',
+          status: 'approved',
+          type: 'maintenance',
+          unit: 'Техническая служба',
+          priority: 'medium',
+          currentRevision: 1,
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date().toISOString(),
+          approvals: [],
+          comments: [],
+          revisions: [],
+          approvers: ['user-1'],
+        },
+      ];
       
-      let query = 'SELECT * FROM reports WHERE 1=1';
-      const params: any[] = [];
+      let reports = [...mockReports];
       
       if (input?.status) {
-        query += ' AND status = ?';
-        params.push(input.status);
+        reports = reports.filter((r) => r.status === input.status);
       }
       
       if (input?.unit) {
-        query += ' AND unit = ?';
-        params.push(input.unit);
+        reports = reports.filter((r) => r.unit === input.unit);
       }
       
       if (input?.authorId) {
-        query += ' AND author_id = ?';
-        params.push(input.authorId);
+        reports = reports.filter((r) => r.authorId === input.authorId);
       }
       
-      query += ' ORDER BY created_at DESC';
-      
-      const [rows] = await connection.execute(query, params);
-      return rows as Report[];
+      return reports;
     } catch (error) {
       console.error('Error fetching reports:', error);
-      
-      if (config.development.mockData) {
-        const mockReports = [
-          {
-            id: 'report-1',
-            title: 'Отчет о проведении учений',
-            content: 'Проведены плановые учения по тактической подготовке.',
-            author_id: 'user-1',
-            status: 'pending',
-            type: 'text',
-            unit: '1-й батальон',
-            priority: 'high',
-            current_revision: 1,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ];
-        
-        let reports = [...mockReports];
-        
-        if (input?.status) {
-          reports = reports.filter((r) => r.status === input.status);
-        }
-        
-        if (input?.unit) {
-          reports = reports.filter((r) => r.unit === input.unit);
-        }
-        
-        if (input?.authorId) {
-          reports = reports.filter((r) => r.author_id === input.authorId);
-        }
-        
-        return reports;
-      }
-      
-      throw new Error('Failed to fetch reports');
+      return [];
     }
   });
 
-export const getReportByIdProcedure = publicProcedure
+export const getByIdProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
   .query(async ({ input }: { input: ReportByIdInput }) => {
     try {
-      const connection = getConnection();
-      const [rows] = await connection.execute(
-        'SELECT * FROM reports WHERE id = ?',
-        [input.id]
-      );
+      console.log('Fetching report by ID:', input.id);
       
-      const reports = rows as Report[];
-      if (reports.length === 0) {
-        throw new Error('Report not found');
-      }
+      const mockReport: Report = {
+        id: input.id,
+        title: 'Mock Report',
+        content: 'This is a mock report for development.',
+        authorId: 'user-1',
+        status: 'draft',
+        type: 'text',
+        unit: 'Mock Unit',
+        priority: 'medium',
+        currentRevision: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        approvals: [],
+        comments: [],
+        revisions: [],
+        approvers: ['user-2'],
+      };
       
-      return reports[0];
+      return mockReport;
     } catch (error) {
       console.error('Error fetching report by ID:', error);
-      
-      if (config.development.mockData) {
-        return {
-          id: input.id,
-          title: 'Mock Report',
-          content: 'This is a mock report for development.',
-          author_id: 'user-1',
-          status: 'draft',
-          type: 'text',
-          unit: 'Mock Unit',
-          priority: 'medium',
-          current_revision: 1,
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-      }
-      
       throw new Error('Report not found');
     }
   });

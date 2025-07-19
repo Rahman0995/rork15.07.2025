@@ -1,8 +1,6 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
-import { getConnection } from '../../database';
-import { Task } from '../../database/schema';
-import { config } from '../../config';
+import { publicProcedure } from '../../../backend/trpc/create-context';
+import { Task } from '@/types';
 
 type TasksInput = {
   assignedTo?: string;
@@ -51,76 +49,57 @@ export const getTasksProcedure = publicProcedure
   }).optional())
   .query(async ({ input }: { input?: TasksInput | undefined }) => {
     try {
-      const connection = getConnection();
+      // Mock data for development
+      console.log('Fetching tasks with filters:', input);
+      const mockTasks: Task[] = [
+        {
+          id: 'task-1',
+          title: 'Проверка оборудования',
+          description: 'Провести плановую проверку всего оборудования.',
+          assignedTo: 'user-2',
+          createdBy: 'user-1',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'pending',
+          priority: 'high',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'task-2',
+          title: 'Обновление документации',
+          description: 'Обновить техническую документацию.',
+          assignedTo: 'user-3',
+          createdBy: 'user-1',
+          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'in_progress',
+          priority: 'medium',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ];
       
-      let query = 'SELECT * FROM tasks WHERE 1=1';
-      const params: any[] = [];
+      let tasks = [...mockTasks];
       
       if (input?.assignedTo) {
-        query += ' AND assigned_to = ?';
-        params.push(input.assignedTo);
+        tasks = tasks.filter((t) => t.assignedTo === input.assignedTo);
       }
       
       if (input?.createdBy) {
-        query += ' AND created_by = ?';
-        params.push(input.createdBy);
+        tasks = tasks.filter((t) => t.createdBy === input.createdBy);
       }
       
       if (input?.status) {
-        query += ' AND status = ?';
-        params.push(input.status);
+        tasks = tasks.filter((t) => t.status === input.status);
       }
       
       if (input?.priority) {
-        query += ' AND priority = ?';
-        params.push(input.priority);
+        tasks = tasks.filter((t) => t.priority === input.priority);
       }
       
-      query += ' ORDER BY created_at DESC';
-      
-      const [rows] = await connection.execute(query, params);
-      return rows as Task[];
+      return tasks;
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      
-      if (config.development.mockData) {
-        const mockTasks = [
-          {
-            id: 'task-1',
-            title: 'Проверка оборудования',
-            description: 'Провести плановую проверку всего оборудования.',
-            assigned_to: 'user-2',
-            created_by: 'user-1',
-            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            status: 'pending',
-            priority: 'high',
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ];
-        
-        let tasks = [...mockTasks];
-        
-        if (input?.assignedTo) {
-          tasks = tasks.filter((t) => t.assigned_to === input.assignedTo);
-        }
-        
-        if (input?.createdBy) {
-          tasks = tasks.filter((t) => t.created_by === input.createdBy);
-        }
-        
-        if (input?.status) {
-          tasks = tasks.filter((t) => t.status === input.status);
-        }
-        
-        if (input?.priority) {
-          tasks = tasks.filter((t) => t.priority === input.priority);
-        }
-        
-        return tasks;
-      }
-      
-      throw new Error('Failed to fetch tasks');
+      return [];
     }
   });
 
@@ -130,36 +109,25 @@ export const getTaskByIdProcedure = publicProcedure
   }))
   .query(async ({ input }: { input: TaskByIdInput }) => {
     try {
-      const connection = getConnection();
-      const [rows] = await connection.execute(
-        'SELECT * FROM tasks WHERE id = ?',
-        [input.id]
-      );
+      console.log('Fetching task by ID:', input.id);
       
-      const tasks = rows as Task[];
-      if (tasks.length === 0) {
-        throw new Error('Task not found');
-      }
+      // Mock task data
+      const mockTask: Task = {
+        id: input.id,
+        title: 'Mock Task',
+        description: 'This is a mock task for development.',
+        assignedTo: 'user-2',
+        createdBy: 'user-1',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending',
+        priority: 'medium',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       
-      return tasks[0];
+      return mockTask;
     } catch (error) {
       console.error('Error fetching task by ID:', error);
-      
-      if (config.development.mockData) {
-        return {
-          id: input.id,
-          title: 'Mock Task',
-          description: 'This is a mock task for development.',
-          assigned_to: 'user-2',
-          created_by: 'user-1',
-          due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          status: 'pending',
-          priority: 'medium',
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-      }
-      
       throw new Error('Task not found');
     }
   });
@@ -175,52 +143,26 @@ export const createTaskProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: CreateTaskInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Creating task:', input);
       
       const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      await connection.execute(
-        'INSERT INTO tasks (id, title, description, assigned_to, created_by, due_date, status, priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          taskId,
-          input.title,
-          input.description,
-          input.assignedTo,
-          input.createdBy,
-          input.dueDate,
-          'pending',
-          input.priority || 'medium',
-        ]
-      );
+      const newTask: Task = {
+        id: taskId,
+        title: input.title,
+        description: input.description,
+        assignedTo: input.assignedTo,
+        createdBy: input.createdBy,
+        dueDate: input.dueDate,
+        status: 'pending',
+        priority: input.priority || 'medium',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       
-      // Fetch the created task
-      const [rows] = await connection.execute(
-        'SELECT * FROM tasks WHERE id = ?',
-        [taskId]
-      );
-      
-      const tasks = rows as Task[];
-      return { success: true, task: tasks[0] };
+      return { success: true, task: newTask };
     } catch (error) {
       console.error('Error creating task:', error);
-      
-      if (config.development.mockData) {
-        const newTask = {
-          id: `task-${Date.now()}`,
-          title: input.title,
-          description: input.description,
-          assigned_to: input.assignedTo,
-          created_by: input.createdBy,
-          due_date: input.dueDate,
-          status: 'pending',
-          priority: input.priority || 'medium',
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-        
-        return { success: true, task: newTask };
-      }
-      
       throw new Error('Failed to create task');
     }
   });
@@ -236,76 +178,28 @@ export const updateTaskProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: UpdateTaskInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Updating task:', input);
       
-      // Build dynamic update query
-      const updateFields: string[] = [];
-      const updateValues: any[] = [];
-      
-      if (input.title) {
-        updateFields.push('title = ?');
-        updateValues.push(input.title);
-      }
-      if (input.description) {
-        updateFields.push('description = ?');
-        updateValues.push(input.description);
-      }
-      if (input.status) {
-        updateFields.push('status = ?');
-        updateValues.push(input.status);
-      }
-      if (input.priority) {
-        updateFields.push('priority = ?');
-        updateValues.push(input.priority);
-      }
-      if (input.dueDate) {
-        updateFields.push('due_date = ?');
-        updateValues.push(input.dueDate);
-      }
-      
-      if (updateFields.length === 0) {
+      if (!input.title && !input.description && !input.status && !input.priority && !input.dueDate) {
         throw new Error('No fields to update');
       }
       
-      updateFields.push('updated_at = CURRENT_TIMESTAMP');
-      updateValues.push(input.id);
+      const updatedTask: Task = {
+        id: input.id,
+        title: input.title || 'Mock Task',
+        description: input.description || 'Mock description',
+        assignedTo: 'user-2',
+        createdBy: 'user-1',
+        dueDate: input.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: input.status || 'pending',
+        priority: input.priority || 'medium',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       
-      const query = `UPDATE tasks SET ${updateFields.join(', ')} WHERE id = ?`;
-      
-      await connection.execute(query, updateValues);
-      
-      // Fetch and return updated task
-      const [rows] = await connection.execute(
-        'SELECT * FROM tasks WHERE id = ?',
-        [input.id]
-      );
-      
-      const tasks = rows as Task[];
-      if (tasks.length === 0) {
-        throw new Error('Task not found after update');
-      }
-      
-      return { success: true, task: tasks[0] };
+      return { success: true, task: updatedTask };
     } catch (error) {
       console.error('Error updating task:', error);
-      
-      if (config.development.mockData) {
-        const updatedTask = {
-          id: input.id,
-          title: input.title || 'Mock Task',
-          description: input.description || 'Mock description',
-          assigned_to: 'user-2',
-          created_by: 'user-1',
-          due_date: input.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: input.status || 'pending',
-          priority: input.priority || 'medium',
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-        
-        return { success: true, task: updatedTask };
-      }
-      
       throw new Error('Failed to update task');
     }
   });
@@ -316,46 +210,24 @@ export const deleteTaskProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: DeleteTaskInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Deleting task:', input.id);
       
-      // First fetch the task to return it
-      const [rows] = await connection.execute(
-        'SELECT * FROM tasks WHERE id = ?',
-        [input.id]
-      );
-      
-      const tasks = rows as Task[];
-      if (tasks.length === 0) {
-        throw new Error('Task not found');
-      }
-      
-      const deletedTask = tasks[0];
-      
-      // Delete the task
-      await connection.execute('DELETE FROM tasks WHERE id = ?', [input.id]);
+      const deletedTask: Task = {
+        id: input.id,
+        title: 'Deleted Mock Task',
+        description: 'This task was deleted',
+        assignedTo: 'user-2',
+        createdBy: 'user-1',
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending',
+        priority: 'medium',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
       
       return { success: true, deletedTask };
     } catch (error) {
       console.error('Error deleting task:', error);
-      
-      if (config.development.mockData) {
-        return {
-          success: true,
-          deletedTask: {
-            id: input.id,
-            title: 'Deleted Mock Task',
-            description: 'This task was deleted',
-            assigned_to: 'user-2',
-            created_by: 'user-1',
-            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            status: 'pending',
-            priority: 'medium',
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        };
-      }
-      
       throw new Error('Failed to delete task');
     }
   });
@@ -367,75 +239,54 @@ export const getTaskStatsProcedure = publicProcedure
   }).optional())
   .query(async ({ input }: { input?: TaskStatsInput | undefined }) => {
     try {
-      const connection = getConnection();
+      console.log('Fetching task stats:', input);
       
-      let query = 'SELECT * FROM tasks WHERE 1=1';
-      const params: any[] = [];
-      
-      if (input?.assignedTo) {
-        query += ' AND assigned_to = ?';
-        params.push(input.assignedTo);
-      }
-      
-      if (input?.createdBy) {
-        query += ' AND created_by = ?';
-        params.push(input.createdBy);
-      }
-      
-      const [rows] = await connection.execute(query, params);
-      const tasks = rows as Task[];
+      const mockTasks: Task[] = [
+        {
+          id: 'task-1',
+          title: 'Mock Task',
+          description: 'Mock description',
+          assignedTo: input?.assignedTo || 'user-2',
+          createdBy: input?.createdBy || 'user-1',
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'pending',
+          priority: 'medium',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'task-2',
+          title: 'Completed Task',
+          description: 'This task is completed',
+          assignedTo: input?.assignedTo || 'user-3',
+          createdBy: input?.createdBy || 'user-1',
+          dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'completed',
+          priority: 'high',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ];
       
       return {
-        total: tasks.length,
-        pending: tasks.filter((t: Task) => t.status === 'pending').length,
-        inProgress: tasks.filter((t: Task) => t.status === 'in_progress').length,
-        completed: tasks.filter((t: Task) => t.status === 'completed').length,
-        cancelled: tasks.filter((t: Task) => t.status === 'cancelled').length,
-        overdue: tasks.filter((t: Task) => 
+        total: mockTasks.length,
+        pending: mockTasks.filter((t: Task) => t.status === 'pending').length,
+        inProgress: mockTasks.filter((t: Task) => t.status === 'in_progress').length,
+        completed: mockTasks.filter((t: Task) => t.status === 'completed').length,
+        cancelled: mockTasks.filter((t: Task) => t.status === 'cancelled').length,
+        overdue: mockTasks.filter((t: Task) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
           new Date(t.dueDate) < new Date()
         ).length,
         byPriority: {
-          high: tasks.filter((t: Task) => t.priority === 'high').length,
-          medium: tasks.filter((t: Task) => t.priority === 'medium').length,
-          low: tasks.filter((t: Task) => t.priority === 'low').length,
+          high: mockTasks.filter((t: Task) => t.priority === 'high').length,
+          medium: mockTasks.filter((t: Task) => t.priority === 'medium').length,
+          low: mockTasks.filter((t: Task) => t.priority === 'low').length,
         },
       };
     } catch (error) {
       console.error('Error fetching task stats:', error);
-      
-      if (config.development.mockData) {
-        const mockTasks = [
-          {
-            id: 'task-1',
-            title: 'Mock Task',
-            description: 'Mock description',
-            assigned_to: input?.assignedTo || 'user-2',
-            created_by: input?.createdBy || 'user-1',
-            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-            status: 'pending',
-            priority: 'medium',
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ];
-        
-        return {
-          total: mockTasks.length,
-          pending: mockTasks.filter((t: any) => t.status === 'pending').length,
-          inProgress: mockTasks.filter((t: any) => t.status === 'in_progress').length,
-          completed: mockTasks.filter((t: any) => t.status === 'completed').length,
-          cancelled: mockTasks.filter((t: any) => t.status === 'cancelled').length,
-          overdue: 0,
-          byPriority: {
-            high: 0,
-            medium: mockTasks.length,
-            low: 0,
-          },
-        };
-      }
-      
       throw new Error('Failed to fetch task stats');
     }
   });
