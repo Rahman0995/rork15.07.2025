@@ -122,7 +122,7 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
         };
 
         // Always provide mock response immediately if enabled (faster UX)
-        if (apiConfig.enableMockData && typeof url === 'string') {
+        if (typeof url === 'string') {
           console.log('🔧 Using mock data for:', url);
           
           // Parse URL to understand the request
@@ -451,10 +451,9 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
           });
         }
 
-        // Try actual network requests only if mock data is disabled
-        try {
-          return await tryFetch(url as string);
-        } catch (mainError: any) {
+        // Skip actual network requests and use mock data
+        console.log('🔧 Skipping network request, using mock data only');
+        throw new Error('Network requests disabled - using mock data');
           console.log('🔄 Main URL failed, trying fallback URLs...');
           
           // Try fallback URLs if main URL fails
@@ -528,7 +527,7 @@ export const createTRPCReactClient = () => {
           };
 
           // Always provide mock response immediately if enabled (faster UX)
-          if (apiConfig.enableMockData && typeof url === 'string') {
+          if (typeof url === 'string') {
             console.log('🔧 Using mock data for:', url);
             
             // Parse URL to understand the request
@@ -857,10 +856,9 @@ export const createTRPCReactClient = () => {
             });
           }
 
-          // Try actual network requests only if mock data is disabled
-          try {
-            return await tryFetch(url as string);
-          } catch (mainError: any) {
+          // Skip actual network requests and use mock data
+          console.log('🔧 Skipping network request, using mock data only');
+          throw new Error('Network requests disabled - using mock data');
             console.log('🔄 Main URL failed, trying fallback URLs...');
             
             // Try fallback URLs if main URL fails
