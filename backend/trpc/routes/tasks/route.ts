@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { Task, TaskStatus } from '@/types';
-import { config } from '../../config';
-import { getConnection } from '../../database';
 
 type TasksInput = {
   assignedTo?: string;

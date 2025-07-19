@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { Report, ReportStatus, ReportType } from '@/types';
-import { config } from '../../config';
-import { getConnection } from '../../database';
 
 type ReportsInput = {
   status?: ReportStatus;
@@ -53,7 +51,7 @@ type ReportsForApprovalInput = {
   approverId: string;
 };
 
-export const getAllProcedure = publicProcedure
+export const getReportsProcedure = publicProcedure
   .input(z.object({
     status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
     unit: z.string().optional(),
@@ -120,7 +118,7 @@ export const getAllProcedure = publicProcedure
     }
   });
 
-export const getByIdProcedure = publicProcedure
+export const getReportByIdProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
@@ -164,54 +162,31 @@ export const createReportProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: CreateReportInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Creating report:', input);
       
       const reportId = `report-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      await connection.execute(
-        'INSERT INTO reports (id, title, content, author_id, status, type, unit, priority, current_revision) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          reportId,
-          input.title,
-          input.content,
-          input.authorId,
-          'draft',
-          input.type || 'text',
-          input.unit,
-          input.priority || 'medium',
-          1,
-        ]
-      );
+      const newReport: Report = {
+        id: reportId,
+        title: input.title,
+        content: input.content,
+        authorId: input.authorId,
+        status: 'draft',
+        type: (input.type || 'text') as ReportType,
+        unit: input.unit || 'Default Unit',
+        priority: input.priority || 'medium',
+        currentRevision: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        approvals: [],
+        comments: [],
+        revisions: [],
+        approvers: [],
+      };
       
-      // Fetch the created report
-      const [rows] = await connection.execute(
-        'SELECT * FROM reports WHERE id = ?',
-        [reportId]
-      );
-      
-      const reports = rows as Report[];
-      return { success: true, report: reports[0] };
+      return { success: true, report: newReport };
     } catch (error) {
       console.error('Error creating report:', error);
-      
-      if (config.development.mockData) {
-        const newReport = {
-          id: `report-${Date.now()}`,
-          title: input.title,
-          content: input.content,
-          author_id: input.authorId,
-          status: 'draft',
-          type: input.type || 'text',
-          unit: input.unit,
-          priority: input.priority || 'medium',
-          current_revision: 1,
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-        
-        return { success: true, report: newReport };
-      }
-      
       throw new Error('Failed to create report');
     }
   });
@@ -226,73 +201,33 @@ export const updateReportProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: UpdateReportInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Updating report:', input);
       
-      // Build dynamic update query
-      const updateFields: string[] = [];
-      const updateValues: any[] = [];
-      
-      if (input.title) {
-        updateFields.push('title = ?');
-        updateValues.push(input.title);
-      }
-      if (input.content) {
-        updateFields.push('content = ?');
-        updateValues.push(input.content);
-      }
-      if (input.status) {
-        updateFields.push('status = ?');
-        updateValues.push(input.status);
-      }
-      if (input.priority) {
-        updateFields.push('priority = ?');
-        updateValues.push(input.priority);
-      }
-      
-      if (updateFields.length === 0) {
+      if (!input.title && !input.content && !input.status && !input.priority) {
         throw new Error('No fields to update');
       }
       
-      updateFields.push('updated_at = CURRENT_TIMESTAMP');
-      updateValues.push(input.id);
+      const updatedReport: Report = {
+        id: input.id,
+        title: input.title || 'Mock Report',
+        content: input.content || 'Mock content',
+        authorId: 'user-1',
+        status: input.status || 'draft',
+        type: 'text',
+        unit: 'Mock Unit',
+        priority: input.priority || 'medium',
+        currentRevision: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        approvals: [],
+        comments: [],
+        revisions: [],
+        approvers: [],
+      };
       
-      const query = `UPDATE reports SET ${updateFields.join(', ')} WHERE id = ?`;
-      
-      await connection.execute(query, updateValues);
-      
-      // Fetch and return updated report
-      const [rows] = await connection.execute(
-        'SELECT * FROM reports WHERE id = ?',
-        [input.id]
-      );
-      
-      const reports = rows as Report[];
-      if (reports.length === 0) {
-        throw new Error('Report not found after update');
-      }
-      
-      return { success: true, report: reports[0] };
+      return { success: true, report: updatedReport };
     } catch (error) {
       console.error('Error updating report:', error);
-      
-      if (config.development.mockData) {
-        const updatedReport = {
-          id: input.id,
-          title: input.title || 'Mock Report',
-          content: input.content || 'Mock content',
-          author_id: 'user-1',
-          status: input.status || 'draft',
-          type: 'text',
-          unit: 'Mock Unit',
-          priority: input.priority || 'medium',
-          current_revision: 1,
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-        
-        return { success: true, report: updatedReport };
-      }
-      
       throw new Error('Failed to update report');
     }
   });
@@ -303,52 +238,29 @@ export const deleteReportProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: DeleteReportInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Deleting report:', input.id);
       
-      // First fetch the report to return it
-      const [rows] = await connection.execute(
-        'SELECT * FROM reports WHERE id = ?',
-        [input.id]
-      );
-      
-      const reports = rows as Report[];
-      if (reports.length === 0) {
-        throw new Error('Report not found');
-      }
-      
-      const deletedReport = reports[0];
-      
-      // Delete related data first (comments, approvals, etc.)
-      await connection.execute('DELETE FROM report_comments WHERE report_id = ?', [input.id]);
-      await connection.execute('DELETE FROM report_approvals WHERE report_id = ?', [input.id]);
-      await connection.execute('DELETE FROM report_revisions WHERE report_id = ?', [input.id]);
-      
-      // Delete the report
-      await connection.execute('DELETE FROM reports WHERE id = ?', [input.id]);
+      const deletedReport: Report = {
+        id: input.id,
+        title: 'Deleted Mock Report',
+        content: 'This report was deleted',
+        authorId: 'user-1',
+        status: 'draft',
+        type: 'text',
+        unit: 'Mock Unit',
+        priority: 'medium',
+        currentRevision: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        approvals: [],
+        comments: [],
+        revisions: [],
+        approvers: [],
+      };
       
       return { success: true, deletedReport };
     } catch (error) {
       console.error('Error deleting report:', error);
-      
-      if (config.development.mockData) {
-        return {
-          success: true,
-          deletedReport: {
-            id: input.id,
-            title: 'Deleted Mock Report',
-            content: 'This report was deleted',
-            author_id: 'user-1',
-            status: 'draft',
-            type: 'text',
-            unit: 'Mock Unit',
-            priority: 'medium',
-            current_revision: 1,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        };
-      }
-      
       throw new Error('Failed to delete report');
     }
   });
@@ -362,55 +274,22 @@ export const addReportCommentProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: AddCommentInput }) => {
     try {
-      const connection = getConnection();
-      
-      // Check if report exists
-      const [reportRows] = await connection.execute(
-        'SELECT id FROM reports WHERE id = ?',
-        [input.reportId]
-      );
-      
-      if ((reportRows as any[]).length === 0) {
-        throw new Error('Report not found');
-      }
+      console.log('Adding comment to report:', input.reportId);
       
       const commentId = `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      await connection.execute(
-        'INSERT INTO report_comments (id, report_id, author_id, content, is_revision) VALUES (?, ?, ?, ?, ?)',
-        [
-          commentId,
-          input.reportId,
-          input.authorId,
-          input.content,
-          input.isRevision || false,
-        ]
-      );
+      const newComment = {
+        id: commentId,
+        reportId: input.reportId,
+        authorId: input.authorId,
+        content: input.content,
+        isRevision: input.isRevision || false,
+        createdAt: new Date().toISOString(),
+      };
       
-      // Fetch the created comment
-      const [rows] = await connection.execute(
-        'SELECT * FROM report_comments WHERE id = ?',
-        [commentId]
-      );
-      
-      const comments = rows as any[];
-      return { success: true, comment: comments[0] };
+      return { success: true, comment: newComment };
     } catch (error) {
       console.error('Error adding report comment:', error);
-      
-      if (config.development.mockData) {
-        const newComment = {
-          id: `comment-${Date.now()}`,
-          report_id: input.reportId,
-          author_id: input.authorId,
-          content: input.content,
-          is_revision: input.isRevision || false,
-          created_at: new Date(),
-        };
-        
-        return { success: true, comment: newComment };
-      }
-      
       throw new Error('Failed to add comment');
     }
   });
@@ -424,62 +303,22 @@ export const approveReportProcedure = publicProcedure
   }))
   .mutation(async ({ input }: { input: ApproveReportInput }) => {
     try {
-      const connection = getConnection();
-      
-      // Check if report exists
-      const [reportRows] = await connection.execute(
-        'SELECT id FROM reports WHERE id = ?',
-        [input.id]
-      );
-      
-      if ((reportRows as any[]).length === 0) {
-        throw new Error('Report not found');
-      }
+      console.log('Approving report:', input.id);
       
       const approvalId = `approval-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Insert approval record
-      await connection.execute(
-        'INSERT INTO report_approvals (id, report_id, approver_id, status, comment) VALUES (?, ?, ?, ?, ?)',
-        [
-          approvalId,
-          input.id,
-          input.approverId,
-          input.status,
-          input.comment,
-        ]
-      );
+      const approval = {
+        id: approvalId,
+        reportId: input.id,
+        approverId: input.approverId,
+        status: input.status,
+        comment: input.comment,
+        createdAt: new Date().toISOString(),
+      };
       
-      // Update report status
-      await connection.execute(
-        'UPDATE reports SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [input.status, input.id]
-      );
-      
-      // Fetch the created approval
-      const [rows] = await connection.execute(
-        'SELECT * FROM report_approvals WHERE id = ?',
-        [approvalId]
-      );
-      
-      const approvals = rows as any[];
-      return { success: true, approval: approvals[0] };
+      return { success: true, approval };
     } catch (error) {
       console.error('Error approving report:', error);
-      
-      if (config.development.mockData) {
-        const approval = {
-          id: `approval-${Date.now()}`,
-          report_id: input.id,
-          approver_id: input.approverId,
-          status: input.status,
-          comment: input.comment,
-          created_at: new Date(),
-        };
-        
-        return { success: true, approval };
-      }
-      
       throw new Error('Failed to approve report');
     }
   });
@@ -490,37 +329,31 @@ export const getReportsForApprovalProcedure = publicProcedure
   }))
   .query(async ({ input }: { input: ReportsForApprovalInput }) => {
     try {
-      const connection = getConnection();
+      console.log('Fetching reports for approval:', input.approverId);
       
-      // For now, return all pending reports
-      // In a real app, you'd have a proper approval workflow
-      const [rows] = await connection.execute(
-        'SELECT * FROM reports WHERE status = ? ORDER BY created_at DESC',
-        ['pending']
-      );
+      const mockReports: Report[] = [
+        {
+          id: 'report-pending-1',
+          title: 'Отчет на согласование',
+          content: 'Отчет ожидает согласования.',
+          authorId: 'user-2',
+          status: 'pending',
+          type: 'text',
+          unit: '1-я рота',
+          priority: 'medium',
+          currentRevision: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          approvals: [],
+          comments: [],
+          revisions: [],
+          approvers: [input.approverId],
+        },
+      ];
       
-      return rows as Report[];
+      return mockReports;
     } catch (error) {
       console.error('Error fetching reports for approval:', error);
-      
-      if (config.development.mockData) {
-        return [
-          {
-            id: 'report-pending-1',
-            title: 'Отчет на согласование',
-            content: 'Отчет ожидает согласования.',
-            author_id: 'user-2',
-            status: 'pending',
-            type: 'text',
-            unit: '1-я рота',
-            priority: 'medium',
-            current_revision: 1,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ];
-      }
-      
       throw new Error('Failed to fetch reports for approval');
     }
   });

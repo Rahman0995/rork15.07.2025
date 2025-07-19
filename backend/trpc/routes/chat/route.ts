@@ -1,35 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-// Mock data for chat - defined locally to avoid import issues
-type MessageType = 'text' | 'image' | 'file' | 'voice';
-
-interface MessageAttachment {
-  id: string;
-  name: string;
-  type: 'image' | 'file' | 'voice';
-  url: string;
-  size?: number;
-  duration?: number;
-}
-
-interface ChatMessage {
-  id: string;
-  senderId: string;
-  text?: string;
-  type: MessageType;
-  attachment?: MessageAttachment;
-  createdAt: string;
-  read: boolean;
-}
-
-interface Chat {
-  id: string;
-  participants: string[];
-  lastMessage?: ChatMessage;
-  unreadCount: number;
-  isGroup: boolean;
-  name?: string;
-}
+import { Chat, ChatMessage, MessageType, MessageAttachment } from '@/types';
 
 const mockChatMessages: Record<string, ChatMessage[]> = {
   'chat_1_2': [
