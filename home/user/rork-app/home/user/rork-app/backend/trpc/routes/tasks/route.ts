@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { Task, TaskStatus } from '../../../types';
+import { Task, TaskStatus } from '../../../../types';
 
 type TasksInput = {
   assignedTo?: string;
@@ -79,7 +79,7 @@ export const getTasksProcedure = publicProcedure
         },
       ];
       
-      return mockTasks.filter((t: Task) => {
+      return mockTasks.filter((t) => {
         if (input?.assignedTo && t.assignedTo !== input.assignedTo) return false;
         if (input?.createdBy && t.createdBy !== input.createdBy) return false;
         if (input?.status && t.status !== input.status) return false;

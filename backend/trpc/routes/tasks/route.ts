@@ -268,18 +268,18 @@ export const getTaskStatsProcedure = publicProcedure
       
       return {
         total: mockTasks.length,
-        pending: mockTasks.filter((t: Task) => t.status === 'pending').length,
-        inProgress: mockTasks.filter((t: Task) => t.status === 'in_progress').length,
-        completed: mockTasks.filter((t: Task) => t.status === 'completed').length,
-        cancelled: mockTasks.filter((t: Task) => t.status === 'cancelled').length,
-        overdue: mockTasks.filter((t: Task) => 
+        pending: mockTasks.filter((t) => t.status === 'pending').length,
+        inProgress: mockTasks.filter((t) => t.status === 'in_progress').length,
+        completed: mockTasks.filter((t) => t.status === 'completed').length,
+        cancelled: mockTasks.filter((t) => t.status === 'cancelled').length,
+        overdue: mockTasks.filter((t) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
           new Date(t.dueDate) < new Date()
         ).length,
         byPriority: {
-          high: mockTasks.filter((t: Task) => t.priority === 'high').length,
-          medium: mockTasks.filter((t: Task) => t.priority === 'medium').length,
+          high: mockTasks.filter((t) => t.priority === 'high').length,
+          medium: mockTasks.filter((t) => t.priority === 'medium').length,
           low: mockTasks.filter((t: Task) => t.priority === 'low').length,
         },
       };
