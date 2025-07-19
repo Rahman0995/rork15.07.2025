@@ -272,5 +272,27 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
 
 
 
+// Create tRPC React client factory function  
+export function createTRPCReactClient() {
+  console.log('Creating tRPC React client...');
+  
+  try {
+    const client = trpc.createClient({
+      links: [
+        httpBatchLink({
+          url: `${apiConfig.baseUrl}/api/trpc`,
+          transformer: superjson,
+        }),
+      ],
+    });
+    
+    console.log('✅ tRPC React client created successfully');
+    return client;
+  } catch (error) {
+    console.error('❌ Error creating tRPC React client:', error);
+    throw error;
+  }
+}
+
 // Legacy alias for backward compatibility
 export const vanillaTrpcClient = trpcClient;

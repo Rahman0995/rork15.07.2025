@@ -13,6 +13,9 @@ import { Platform, View, Text, TouchableOpacity } from "react-native";
 import { BlurView } from "expo-blur";
 import { trpc, createTRPCReactClient } from "@/lib/trpc";
 
+// Debug: Check if imports are working
+console.log('tRPC imports:', { trpc: typeof trpc, createTRPCReactClient: typeof createTRPCReactClient });
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -233,7 +236,17 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 }
 
 export default function RootLayout() {
-  const [trpcClient] = useState(() => createTRPCReactClient());
+  const [trpcClient] = useState(() => {
+    console.log('Attempting to create tRPC client...');
+    console.log('createTRPCReactClient type:', typeof createTRPCReactClient);
+    
+    if (typeof createTRPCReactClient !== 'function') {
+      console.error('createTRPCReactClient is not a function!', createTRPCReactClient);
+      throw new Error('createTRPCReactClient is not a function');
+    }
+    
+    return createTRPCReactClient();
+  });
   
   return (
     <ErrorBoundary
