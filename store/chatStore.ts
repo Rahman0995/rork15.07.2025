@@ -191,7 +191,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
         
         recording = new Audio.Recording();
-        await recording.prepareToRecordAsync({
+        const recordingOptions = {
           android: {
             extension: '.m4a',
             outputFormat: Audio.AndroidOutputFormat.MPEG_4,
@@ -215,7 +215,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
             mimeType: 'audio/webm',
             bitsPerSecond: 128000,
           },
-        });
+        };
+        
+        await recording.prepareToRecordAsync(recordingOptions);
         
         await recording.startAsync();
         set({ isRecording: true, recordingDuration: 0 });
