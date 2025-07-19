@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../create-context';
-import { Task, TaskStatus } from '../../../../types';
+import { publicProcedure } from '../../create-context';
+import { Task, TaskStatus } from '../../../types';
+import { mockTasks } from '../../../constants/mockData';
 
 type TasksInput = {
   assignedTo?: string;
@@ -47,7 +48,7 @@ export const getTasksProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }).optional())
-  .query(async ({ input }: { input?: TasksInput | undefined }) => {
+  .query(async ({ input }) => {
     try {
       console.log('Fetching tasks with filters:', input);
       
@@ -79,7 +80,7 @@ export const getTasksProcedure = publicProcedure
         },
       ];
       
-      return mockTasks.filter((t: Task) => {
+      return mockTasks.filter((t) => {
         if (input?.assignedTo && t.assignedTo !== input.assignedTo) return false;
         if (input?.createdBy && t.createdBy !== input.createdBy) return false;
         if (input?.status && t.status !== input.status) return false;
@@ -96,7 +97,7 @@ export const getTaskByIdProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .query(async ({ input }: { input: TaskByIdInput }) => {
+  .query(async ({ input }) => {
     try {
       console.log('Fetching task by ID:', input.id);
       
@@ -130,7 +131,7 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(async ({ input }: { input: CreateTaskInput }) => {
+  .mutation(async ({ input }) => {
     try {
       console.log('Creating task:', input);
       
@@ -165,7 +166,7 @@ export const updateTaskProcedure = publicProcedure
     priority: z.enum(['low', 'medium', 'high']).optional(),
     dueDate: z.string().optional(),
   }))
-  .mutation(async ({ input }: { input: UpdateTaskInput }) => {
+  .mutation(async ({ input }) => {
     try {
       console.log('Updating task:', input);
       
@@ -197,7 +198,7 @@ export const deleteTaskProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .mutation(async ({ input }: { input: DeleteTaskInput }) => {
+  .mutation(async ({ input }) => {
     try {
       console.log('Deleting task:', input.id);
       
@@ -226,7 +227,7 @@ export const getTaskStatsProcedure = publicProcedure
     assignedTo: z.string().optional(),
     createdBy: z.string().optional(),
   }).optional())
-  .query(async ({ input }: { input?: TaskStatsInput | undefined }) => {
+  .query(async ({ input }) => {
     try {
       console.log('Fetching task stats:', input);
       
@@ -259,19 +260,19 @@ export const getTaskStatsProcedure = publicProcedure
       
       return {
         total: mockTasks.length,
-        pending: mockTasks.filter((t: Task) => t.status === 'pending').length,
-        inProgress: mockTasks.filter((t: Task) => t.status === 'in_progress').length,
-        completed: mockTasks.filter((t: Task) => t.status === 'completed').length,
-        cancelled: mockTasks.filter((t: Task) => t.status === 'cancelled').length,
-        overdue: mockTasks.filter((t: Task) => 
+        pending: mockTasks.filter((t) => t.status === 'pending').length,
+        inProgress: mockTasks.filter((t) => t.status === 'in_progress').length,
+        completed: mockTasks.filter((t) => t.status === 'completed').length,
+        cancelled: mockTasks.filter((t) => t.status === 'cancelled').length,
+        overdue: mockTasks.filter((t) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
           new Date(t.dueDate) < new Date()
         ).length,
         byPriority: {
-          high: mockTasks.filter((t: Task) => t.priority === 'high').length,
-          medium: mockTasks.filter((t: Task) => t.priority === 'medium').length,
-          low: mockTasks.filter((t: Task) => t.priority === 'low').length,
+          high: mockTasks.filter((t) => t.priority === 'high').length,
+          medium: mockTasks.filter((t) => t.priority === 'medium').length,
+          low: mockTasks.filter((t) => t.priority === 'low').length,
         },
       };
     } catch (error) {
