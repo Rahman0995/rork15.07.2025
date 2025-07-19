@@ -113,9 +113,11 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const trpcReactClient = createTRPCReactClient();
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <trpc.Provider client={trpcReactClient} queryClient={queryClient}>
         <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
           <RootLayoutNav />
         </GestureHandlerRootView>
