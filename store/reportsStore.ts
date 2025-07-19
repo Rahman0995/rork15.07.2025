@@ -96,23 +96,47 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       }
       
       // Transform backend data to match frontend interface
-      const transformedReport: Report = {
-        id: ('success' in newReport && newReport.success ? newReport.report.id : newReport.id) || Date.now().toString(),
-        title: ('success' in newReport && newReport.success ? newReport.report.title : newReport.title) || reportData.title,
-        content: ('success' in newReport && newReport.success ? newReport.report.content : newReport.content) || reportData.content,
-        authorId: ('success' in newReport && newReport.success ? newReport.report.authorId : newReport.authorId) || reportData.authorId,
-        createdAt: ('success' in newReport && newReport.success ? newReport.report.createdAt : newReport.createdAt) || new Date().toISOString(),
-        updatedAt: ('success' in newReport && newReport.success ? newReport.report.updatedAt : newReport.updatedAt) || new Date().toISOString(),
-        status: ('success' in newReport && newReport.success ? newReport.report.status : newReport.status) || 'pending',
-        approvals: [],
-        comments: [],
-        revisions: [],
-        currentRevision: 1,
-        type: reportData.type || 'text',
-        unit: reportData.unit || 'default',
-        priority: reportData.priority || 'medium',
-        approvers: [],
-      };
+      let transformedReport: Report;
+      
+      if ('success' in newReport && newReport.success) {
+        // Backend response format
+        transformedReport = {
+          id: newReport.report.id || Date.now().toString(),
+          title: newReport.report.title || reportData.title,
+          content: newReport.report.content || reportData.content,
+          authorId: newReport.report.authorId || reportData.authorId,
+          createdAt: newReport.report.createdAt || new Date().toISOString(),
+          updatedAt: newReport.report.updatedAt || new Date().toISOString(),
+          status: newReport.report.status || 'pending',
+          approvals: [],
+          comments: [],
+          revisions: [],
+          currentRevision: 1,
+          type: reportData.type || 'text',
+          unit: reportData.unit || 'default',
+          priority: reportData.priority || 'medium',
+          approvers: [],
+        };
+      } else {
+        // Direct report object
+        transformedReport = {
+          id: newReport.id || Date.now().toString(),
+          title: newReport.title || reportData.title,
+          content: newReport.content || reportData.content,
+          authorId: newReport.authorId || reportData.authorId,
+          createdAt: newReport.createdAt || new Date().toISOString(),
+          updatedAt: newReport.updatedAt || new Date().toISOString(),
+          status: newReport.status || 'pending',
+          approvals: [],
+          comments: [],
+          revisions: [],
+          currentRevision: 1,
+          type: reportData.type || 'text',
+          unit: reportData.unit || 'default',
+          priority: reportData.priority || 'medium',
+          approvers: [],
+        };
+      }
       
       set(state => ({
         reports: [transformedReport, ...state.reports],
