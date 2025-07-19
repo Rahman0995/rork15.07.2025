@@ -211,6 +211,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
             linearPCMIsBigEndian: false,
             linearPCMIsFloat: false,
           },
+          web: {
+            mimeType: 'audio/webm',
+            bitsPerSecond: 128000,
+          },
         });
         
         await recording.startAsync();
