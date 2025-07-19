@@ -51,7 +51,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const userChats = mockChats.filter(chat => 
+      const userChats = mockChats.filter((chat: Chat) => 
         chat.participants.includes(userId) || 
         (chat.isGroup && chat.participants.includes(userId))
       );

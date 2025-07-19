@@ -97,7 +97,13 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       
       // Transform backend data to match frontend interface
       const transformedReport: Report = {
-        ...newReport,
+        id: newReport.id || Date.now().toString(),
+        title: newReport.title || reportData.title,
+        content: newReport.content || reportData.content,
+        authorId: newReport.authorId || reportData.authorId,
+        createdAt: newReport.createdAt || new Date().toISOString(),
+        updatedAt: newReport.updatedAt || new Date().toISOString(),
+        status: newReport.status || 'pending',
         approvals: [],
         comments: [],
         revisions: [],
