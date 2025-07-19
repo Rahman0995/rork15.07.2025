@@ -36,7 +36,8 @@ export default function ChatDetailScreen() {
     markAsRead,
     getUserStatus,
     isRecording,
-    recordingDuration
+    recordingDuration,
+    error
   } = useChatStore();
   const { user } = useAuthStore();
   const [messageText, setMessageText] = useState('');
@@ -65,8 +66,16 @@ export default function ChatDetailScreen() {
   const handleSend = async () => {
     if (!messageText.trim() || !user || !id) return;
     
-    await sendMessage(id, user.id, messageText.trim());
-    setMessageText('');
+    try {
+      await sendMessage(id, user.id, messageText.trim());
+      setMessageText('');
+    } catch (error) {
+      Alert.alert(
+        'Ошибка отправки',
+        'Не удалось отправить сообщение. Проверьте подключение к интернету.',
+        [{ text: 'OK' }]
+      );
+    }
   };
   
   const handleAttachmentPress = () => {
@@ -168,6 +177,12 @@ export default function ChatDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       {renderHeader()}
+      
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      )}
       
       {isLoading && chatMessages.length === 0 ? (
         <View style={styles.loadingContainer}>
@@ -389,5 +404,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  errorContainer: {
+    backgroundColor: colors.error + '20',
+    padding: 12,
+    margin: 16,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.error,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

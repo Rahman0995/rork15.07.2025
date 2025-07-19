@@ -5,6 +5,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
+import { trpcClient } from '@/lib/trpc';
+import { useAuthStore } from './authStore';
 
 interface ChatState {
   chats: Chat[];
@@ -48,26 +50,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
   fetchChats: async (userId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      const userChats = await trpcClient.chat.getAll.query({ userId });
+      set({ chats: userChats, isLoading: false });
+    } catch (error) {
+      console.error('Failed to fetch chats:', error);
+      // Fallback to mock data
       const userChats = mockChats.filter(chat => 
         chat.participants.includes(userId) || 
         (chat.isGroup && chat.participants.includes(userId))
       );
-      
       set({ chats: userChats, isLoading: false });
-    } catch (error) {
-      set({ error: 'Ошибка при загрузке чатов', isLoading: false });
     }
   },
   fetchMessages: async (chatId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const chatMessages = mockChatMessages[chatId] || [];
+      const result = await trpcClient.chat.getMessages.query({ chatId });
+      const chatMessages = result.messages || [];
       
       set(state => ({
         messages: {
@@ -77,24 +76,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
-      set({ error: 'Ошибка при загрузке сообщений', isLoading: false });
+      console.error('Failed to fetch messages:', error);
+      // Fallback to mock data
+      const chatMessages = mockChatMessages[chatId] || [];
+      set(state => ({
+        messages: {
+          ...state.messages,
+          [chatId]: chatMessages,
+        },
+        isLoading: false,
+      }));
     }
   },
   sendMessage: async (chatId: string, senderId: string, text: string, type: MessageType = 'text', attachment?: MessageAttachment) => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newMessage: ChatMessage = {
-        id: `${Date.now()}`,
+      const newMessage = await trpcClient.chat.sendMessage.mutate({
+        chatId,
         senderId,
         text: type === 'text' ? text : undefined,
         type,
         attachment,
-        createdAt: new Date().toISOString(),
-        read: false,
-      };
+      });
       
       set(state => {
         const chatMessages = state.messages[chatId] || [];
@@ -120,7 +123,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       });
     } catch (error) {
+      console.error('Failed to send message:', error);
       set({ error: 'Ошибка при отправке сообщения', isLoading: false });
+      throw error; // Re-throw to handle in UI
     }
   },
   sendImageMessage: async (chatId: string, senderId: string) => {
@@ -265,8 +270,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   markAsRead: async (chatId: string) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 300));
+      const { user } = useAuthStore.getState();
+      if (!user) return;
+      
+      await trpcClient.chat.markAsRead.mutate({
+        chatId,
+        userId: user.id,
+      });
       
       set(state => {
         const chatMessages = state.messages[chatId] || [];
@@ -291,6 +301,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         };
       });
     } catch (error) {
+      console.error('Failed to mark messages as read:', error);
       set({ error: 'Ошибка при отметке сообщений как прочитанных' });
     }
   },
@@ -314,28 +325,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
   createChat: async (participants: string[], isGroup = false, name?: string) => {
     set({ isLoading: true, error: null });
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const chatId = `chat_${Date.now()}`;
-      const newChat: Chat = {
-        id: chatId,
+      const newChat = await trpcClient.chat.create.mutate({
         participants,
         isGroup,
         name,
-        unreadCount: 0,
-      };
+      });
       
       set(state => ({
         chats: [newChat, ...state.chats],
         messages: {
           ...state.messages,
-          [chatId]: [],
+          [newChat.id]: [],
         },
         isLoading: false,
       }));
       
-      return chatId;
+      return newChat.id;
     } catch (error) {
+      console.error('Failed to create chat:', error);
       set({ error: 'Ошибка при создании чата', isLoading: false });
       throw error;
     }
