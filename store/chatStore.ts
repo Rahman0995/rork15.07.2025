@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { Chat, ChatMessage, MessageType, MessageAttachment, UserStatus } from '@/types';
-import { mockChats, mockChatMessages } from '@/constants/mockData';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
@@ -54,12 +53,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set({ chats: Array.isArray(userChats) ? userChats : [], isLoading: false });
     } catch (error) {
       console.error('Failed to fetch chats:', error);
-      // Fallback to mock data
-      const userChats = mockChats.filter(chat => 
-        chat.participants.includes(userId) || 
-        (chat.isGroup && chat.participants.includes(userId))
-      );
-      set({ chats: Array.isArray(userChats) ? userChats : [], isLoading: false });
+      set({ chats: [], isLoading: false, error: 'Ошибка при загрузке чатов' });
     }
   },
   fetchMessages: async (chatId: string) => {
@@ -77,14 +71,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
     } catch (error) {
       console.error('Failed to fetch messages:', error);
-      // Fallback to mock data
-      const chatMessages = mockChatMessages[chatId] || [];
       set(state => ({
         messages: {
           ...state.messages,
-          [chatId]: chatMessages,
+          [chatId]: [],
         },
         isLoading: false,
+        error: 'Ошибка при загрузке сообщений',
       }));
     }
   },

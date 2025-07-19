@@ -3,7 +3,6 @@ import { Report, ReportStatus, ReportComment, ReportApproval, ReportRevision } f
 import { trpcClient } from '@/lib/trpc';
 import { useNotificationsStore } from './notificationsStore';
 import { useAuthStore } from '@/store/authStore';
-import { mockReports } from '@/constants/mockData';
 
 interface ReportsState {
   reports: Report[];
@@ -38,7 +37,7 @@ interface ReportsState {
 }
 
 export const useReportsStore = create<ReportsState>((set, get) => ({
-  reports: mockReports,
+  reports: [],
   isLoading: false,
   error: null,
   fetchReports: async () => {
@@ -48,21 +47,20 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       // Transform backend data to match frontend interface
       const transformedReports = reports.map((report: Report) => ({
         ...report,
-        type: 'text' as const,
-        attachments: [],
-        unit: 'default',
-        priority: 'medium' as const,
-        approvers: [],
-        approvals: [],
-        comments: [],
-        revisions: [],
-        currentRevision: 1,
+        type: report.type || 'text' as const,
+        attachments: report.attachments || [],
+        unit: report.unit || 'default',
+        priority: report.priority || 'medium' as const,
+        approvers: report.approvers || [],
+        approvals: report.approvals || [],
+        comments: report.comments || [],
+        revisions: report.revisions || [],
+        currentRevision: report.currentRevision || 1,
       }));
       set({ reports: transformedReports, isLoading: false });
     } catch (error) {
-      console.warn('Failed to fetch reports from backend, using mock data:', error);
-      // Always ensure we have data, even if it's mock data
-      set({ reports: mockReports, isLoading: false });
+      console.error('Failed to fetch reports from backend:', error);
+      set({ reports: [], isLoading: false, error: 'Ошибка при загрузке отчетов' });
     }
   },
   getReportById: (id: string) => {

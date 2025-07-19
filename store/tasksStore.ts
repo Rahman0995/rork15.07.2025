@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { Task, TaskStatus } from '@/types';
 import { trpcClient } from '@/lib/trpc';
 import { useNotificationsStore } from './notificationsStore';
-import { mockTasks } from '@/constants/mockData';
 
 interface TasksState {
   tasks: Task[];
@@ -32,7 +31,7 @@ interface TasksState {
 }
 
 export const useTasksStore = create<TasksState>((set, get) => ({
-  tasks: Array.isArray(mockTasks) ? mockTasks : [],
+  tasks: [],
   isLoading: false,
   error: null,
   fetchTasks: async () => {
@@ -43,9 +42,8 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       const tasks = Array.isArray(response) ? response : ((response as any)?.tasks || []);
       set({ tasks, isLoading: false });
     } catch (error) {
-      console.warn('Failed to fetch tasks from backend, using mock data:', error);
-      // Always ensure we have data, even if it's mock data
-      set({ tasks: mockTasks, isLoading: false });
+      console.error('Failed to fetch tasks from backend:', error);
+      set({ tasks: [], isLoading: false, error: 'Ошибка при загрузке задач' });
     }
   },
   getTaskById: (id: string) => {

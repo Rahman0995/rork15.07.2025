@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '@/types';
-import { mockUsers } from '@/constants/mockData';
 import { isDebugMode } from '@/utils/config';
+import { trpcClient } from '@/lib/trpc';
 
 interface AuthState {
   user: User | null;
@@ -37,17 +37,20 @@ export const useAuthStore = create<AuthState>()(
         }
         
         try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Try to authenticate with backend
+          const response = await trpcClient.auth.login.mutate({ email, password });
           
-          // In a real app, this would be an API call to validate credentials
-          const user = mockUsers.find(u => u.email === email);
-          
-          if (user && password === '123456') { // Simple mock password check
+          if (response.success && response.user) {
             if (isDebugMode()) {
-              console.log('Auth: Login successful for user:', user.name);
+              console.log('Auth: Login successful for user:', response.user.name);
             }
-            set({ user, currentUser: user, isAuthenticated: true, isLoading: false, error: null });
+            set({ 
+              user: response.user, 
+              currentUser: response.user, 
+              isAuthenticated: true, 
+              isLoading: false, 
+              error: null 
+            });
           } else {
             if (isDebugMode()) {
               console.log('Auth: Login failed - invalid credentials');
@@ -102,19 +105,19 @@ export const useAuthStore = create<AuthState>()(
           // Always set initialized to true first to prevent loops
           set({ isInitialized: true });
           
-          // If no user is logged in, auto-login with demo user for development
-          if (!state.user && !state.isAuthenticated) {
-            if (isDebugMode()) {
-              console.log('Auth: No user found, auto-logging in demo user');
+          // If user is authenticated but we need to verify with backend
+          if (state.user && state.isAuthenticated) {
+            try {
+              // Verify user session with backend
+              const response = await trpcClient.auth.verify.query();
+              if (!response.success) {
+                // Session invalid, logout
+                set({ user: null, currentUser: null, isAuthenticated: false });
+              }
+            } catch (error) {
+              console.warn('Auth: Session verification failed, logging out');
+              set({ user: null, currentUser: null, isAuthenticated: false });
             }
-            
-            // Auto-login with the first mock user (Полковник Зингиев)
-            const demoUser = mockUsers[0];
-            set({ 
-              user: demoUser, 
-              currentUser: demoUser, 
-              isAuthenticated: true
-            });
           }
         } catch (error) {
           console.error('Auth: Error during initialization:', error);
