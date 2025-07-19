@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { Report, ReportStatus } from '@/types';
+import { Report, ReportStatus, ReportType } from '@/types';
+import { config } from '../../config';
+import { getConnection } from '../../database';
 
 type ReportsInput = {
   status?: ReportStatus;
@@ -84,7 +86,7 @@ export const getAllProcedure = publicProcedure
           content: 'Выполнено плановое техническое обслуживание оборудования.',
           authorId: 'user-2',
           status: 'approved',
-          type: 'maintenance',
+          type: 'text' as ReportType,
           unit: 'Техническая служба',
           priority: 'medium',
           currentRevision: 1,
