@@ -45,8 +45,9 @@ export default function ChatScreen() {
   );
   
   // Group chats into direct messages and group chats
-  const directChats = chats.filter(chat => !chat.isGroup);
-  const groupChats = chats.filter(chat => chat.isGroup);
+  const safeChats = Array.isArray(chats) ? chats : [];
+  const directChats = safeChats.filter(chat => !chat.isGroup);
+  const groupChats = safeChats.filter(chat => chat.isGroup);
   
   const listData: ListItem[] = [
     { type: 'header', id: 'direct-header', title: 'Личные сообщения' },
@@ -81,7 +82,7 @@ export default function ChatScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
-      ) : chats.length > 0 ? (
+      ) : safeChats.length > 0 ? (
         <FlatList
           data={listData}
           renderItem={({ item }) => {

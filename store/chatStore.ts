@@ -51,7 +51,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const userChats = await trpcClient.chat.getAll.query({ userId });
-      set({ chats: userChats, isLoading: false });
+      set({ chats: Array.isArray(userChats) ? userChats : [], isLoading: false });
     } catch (error) {
       console.error('Failed to fetch chats:', error);
       // Fallback to mock data
@@ -59,7 +59,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         chat.participants.includes(userId) || 
         (chat.isGroup && chat.participants.includes(userId))
       );
-      set({ chats: userChats, isLoading: false });
+      set({ chats: Array.isArray(userChats) ? userChats : [], isLoading: false });
     }
   },
   fetchMessages: async (chatId: string) => {
@@ -106,7 +106,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
           [chatId]: [...chatMessages, newMessage],
         };
         
-        const updatedChats = state.chats.map(chat => {
+        const safeChats = Array.isArray(state.chats) ? state.chats : [];
+        const updatedChats = safeChats.map(chat => {
           if (chat.id === chatId) {
             return {
               ...chat,
@@ -191,7 +192,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
         
         recording = new Audio.Recording();
-        const recordingOptions: Audio.RecordingOptions = {
+        const recordingOptions = {
           android: {
             extension: '.m4a',
             outputFormat: Audio.AndroidOutputFormat.MPEG_4,
@@ -288,7 +289,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const chatMessages = state.messages[chatId] || [];
         const updatedMessages = chatMessages.map(msg => ({ ...msg, read: true }));
         
-        const updatedChats = state.chats.map(chat => {
+        const safeChats = Array.isArray(state.chats) ? state.chats : [];
+        const updatedChats = safeChats.map(chat => {
           if (chat.id === chatId) {
             return {
               ...chat,
@@ -337,14 +339,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         name,
       });
       
-      set(state => ({
-        chats: [newChat, ...state.chats],
-        messages: {
-          ...state.messages,
-          [newChat.id]: [],
-        },
-        isLoading: false,
-      }));
+      set(state => {
+        const safeChats = Array.isArray(state.chats) ? state.chats : [];
+        return {
+          chats: [newChat, ...safeChats],
+          messages: {
+            ...state.messages,
+            [newChat.id]: [],
+          },
+          isLoading: false,
+        };
+      });
       
       return newChat.id;
     } catch (error) {
@@ -417,7 +422,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   
   getUnreadCount: (userId: string) => {
     const { chats } = get();
-    return chats
+    const safeChats = Array.isArray(chats) ? chats : [];
+    return safeChats
       .filter(chat => chat.participants.includes(userId))
       .reduce((total, chat) => total + chat.unreadCount, 0);
   },
