@@ -45,9 +45,15 @@ export const useAuthStore = create<AuthState>()(
               console.log('Auth: Login successful for user:', response.user.name);
             }
             // Ensure user has correct role type
-            const user = {
-              ...response.user,
-              role: response.user.role as UserRole
+            const user: User = {
+              id: response.user.id,
+              email: response.user.email,
+              name: response.user.name,
+              rank: response.user.rank || 'Рядовой',
+              role: response.user.role as UserRole,
+              avatar: response.user.avatar || '',
+              unit: response.user.unit,
+              phone: response.user.phone || '',
             };
             set({ 
               user, 

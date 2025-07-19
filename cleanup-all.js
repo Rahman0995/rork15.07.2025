@@ -12,7 +12,7 @@ function removeDirectory(dirPath) {
   }
 }
 
-// Remove all nested home/user/rork-app directories
+// Remove all nested home directories
 const nestedDirs = [
   'home',
 ];

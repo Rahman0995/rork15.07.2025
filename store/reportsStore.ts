@@ -97,13 +97,13 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       
       // Transform backend data to match frontend interface
       const transformedReport: Report = {
-        id: (newReport.success ? newReport.report.id : newReport.id) || Date.now().toString(),
-        title: (newReport.success ? newReport.report.title : newReport.title) || reportData.title,
-        content: (newReport.success ? newReport.report.content : newReport.content) || reportData.content,
-        authorId: (newReport.success ? newReport.report.authorId : newReport.authorId) || reportData.authorId,
-        createdAt: (newReport.success ? newReport.report.createdAt : newReport.createdAt) || new Date().toISOString(),
-        updatedAt: (newReport.success ? newReport.report.updatedAt : newReport.updatedAt) || new Date().toISOString(),
-        status: (newReport.success ? newReport.report.status : newReport.status) || 'pending',
+        id: ('success' in newReport && newReport.success ? newReport.report.id : newReport.id) || Date.now().toString(),
+        title: ('success' in newReport && newReport.success ? newReport.report.title : newReport.title) || reportData.title,
+        content: ('success' in newReport && newReport.success ? newReport.report.content : newReport.content) || reportData.content,
+        authorId: ('success' in newReport && newReport.success ? newReport.report.authorId : newReport.authorId) || reportData.authorId,
+        createdAt: ('success' in newReport && newReport.success ? newReport.report.createdAt : newReport.createdAt) || new Date().toISOString(),
+        updatedAt: ('success' in newReport && newReport.success ? newReport.report.updatedAt : newReport.updatedAt) || new Date().toISOString(),
+        status: ('success' in newReport && newReport.success ? newReport.report.status : newReport.status) || 'pending',
         approvals: [],
         comments: [],
         revisions: [],
