@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { mockTasks } from '../../../constants/mockData';
-import { Task, TaskStatus, TaskPriority } from '../../../types';
+import { getConnection } from '../../database';
+import { Task } from '../../database/schema';
+import { config } from '../../config';
 
 type TasksInput = {
   assignedTo?: string;
@@ -48,26 +49,79 @@ export const getTasksProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }).optional())
-  .query(({ input }: { input?: TasksInput | undefined }) => {
-    let tasks = [...mockTasks];
-    
-    if (input?.assignedTo) {
-      tasks = tasks.filter((t: Task) => t.assignedTo === input.assignedTo);
+  .query(async ({ input }: { input?: TasksInput | undefined }) => {
+    try {
+      const connection = getConnection();
+      
+      let query = 'SELECT * FROM tasks WHERE 1=1';
+      const params: any[] = [];
+      
+      if (input?.assignedTo) {
+        query += ' AND assigned_to = ?';
+        params.push(input.assignedTo);
+      }
+      
+      if (input?.createdBy) {
+        query += ' AND created_by = ?';
+        params.push(input.createdBy);
+      }
+      
+      if (input?.status) {
+        query += ' AND status = ?';
+        params.push(input.status);
+      }
+      
+      if (input?.priority) {
+        query += ' AND priority = ?';
+        params.push(input.priority);
+      }
+      
+      query += ' ORDER BY created_at DESC';
+      
+      const [rows] = await connection.execute(query, params);
+      return rows as Task[];
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      
+      if (config.development.mockData) {
+        const mockTasks = [
+          {
+            id: 'task-1',
+            title: 'Проверка оборудования',
+            description: 'Провести плановую проверку всего оборудования.',
+            assigned_to: 'user-2',
+            created_by: 'user-1',
+            due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            status: 'pending',
+            priority: 'high',
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        ];
+        
+        let tasks = [...mockTasks];
+        
+        if (input?.assignedTo) {
+          tasks = tasks.filter((t) => t.assigned_to === input.assignedTo);
+        }
+        
+        if (input?.createdBy) {
+          tasks = tasks.filter((t) => t.created_by === input.createdBy);
+        }
+        
+        if (input?.status) {
+          tasks = tasks.filter((t) => t.status === input.status);
+        }
+        
+        if (input?.priority) {
+          tasks = tasks.filter((t) => t.priority === input.priority);
+        }
+        
+        return tasks;
+      }
+      
+      throw new Error('Failed to fetch tasks');
     }
-    
-    if (input?.createdBy) {
-      tasks = tasks.filter((t: Task) => t.createdBy === input.createdBy);
-    }
-    
-    if (input?.status) {
-      tasks = tasks.filter((t: Task) => t.status === input.status);
-    }
-    
-    if (input?.priority) {
-      tasks = tasks.filter((t: Task) => t.priority === input.priority);
-    }
-    
-    return tasks;
   });
 
 export const getTaskByIdProcedure = publicProcedure

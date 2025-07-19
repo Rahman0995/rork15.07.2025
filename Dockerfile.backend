@@ -1,22 +1,23 @@
-# Backend Dockerfile
+# Multi-stage build for production
 FROM oven/bun:1 as base
 WORKDIR /app
 
 # Install dependencies
 COPY package.json bun.lock* ./
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --production
 
 # Copy source code
 COPY backend/ ./backend/
 COPY types/ ./types/
 COPY utils/ ./utils/
 
-# Build the application (backend doesn't need separate build step)
-# RUN bun run build
-
 # Production stage
 FROM oven/bun:1 as production
 WORKDIR /app
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nodejs
 
 # Copy application files
 COPY --from=base /app/backend ./backend
@@ -25,6 +26,12 @@ COPY --from=base /app/utils ./utils
 COPY --from=base /app/node_modules ./node_modules
 COPY --from=base /app/package.json ./
 
+# Create uploads directory
+RUN mkdir -p /app/uploads && chown -R nodejs:nodejs /app/uploads
+
+# Switch to non-root user
+USER nodejs
+
 # Expose port
 EXPOSE 3000
 
@@ -32,5 +39,8 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
+# Set production environment
+ENV NODE_ENV=production
+
 # Start the application
-CMD ["bun", "run", "backend/hono.ts"]
+CMD ["bun", "backend/index.ts"]

@@ -2,31 +2,41 @@ import { serve } from "@hono/node-server";
 import app from "./hono";
 import { config } from "./config";
 
-console.log(`🚀 Starting Military Management System Backend...`);
-console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`🔧 Port: ${config.server.port}`);
-console.log(`🌐 Host: ${config.server.host}`);
+const port = config.server.port;
+const host = config.server.host;
 
-const server = serve({
+console.log(`🚀 Starting Military Management System API...`);
+console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🌐 Server: http://${host}:${port}`);
+console.log(`🔗 API Base: http://${host}:${port}/api`);
+console.log(`❤️ Health Check: http://${host}:${port}/api/health`);
+console.log(`📡 tRPC Endpoint: http://${host}:${port}/api/trpc`);
+
+serve({
   fetch: app.fetch,
-  port: config.server.port,
-  hostname: config.server.host,
+  port,
+  hostname: host,
+}, (info) => {
+  console.log(`✅ Server is running on http://${info.address}:${info.port}`);
 });
 
-console.log(`✅ Server running at http://${config.server.host}:${config.server.port}`);
-console.log(`📡 API available at http://${config.server.host}:${config.server.port}/api`);
-console.log(`🔗 tRPC endpoint: http://${config.server.host}:${config.server.port}/api/trpc`);
-console.log(`💚 Health check: http://${config.server.host}:${config.server.port}/api/health`);
-
-// Handle graceful shutdown
+// Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('🔄 SIGTERM received, shutting down gracefully...');
-  server.close();
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('🔄 SIGINT received, shutting down gracefully...');
-  server.close();
   process.exit(0);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });
