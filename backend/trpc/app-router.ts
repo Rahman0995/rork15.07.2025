@@ -9,6 +9,7 @@ import {
   changePasswordProcedure,
   resetPasswordProcedure,
   verifyProcedure,
+  registerProcedure,
 } from "./routes/auth/route";
 
 // Users
@@ -103,6 +104,7 @@ export const appRouter = createTRPCRouter({
   
   auth: createTRPCRouter({
     login: loginProcedure,
+    register: registerProcedure,
     logout: logoutProcedure,
     refreshToken: refreshTokenProcedure,
     changePassword: changePasswordProcedure,

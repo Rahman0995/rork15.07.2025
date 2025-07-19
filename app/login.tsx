@@ -71,8 +71,8 @@ export default function LoginScreen() {
   
   // For demo purposes, prefill with a mock user
   const fillDemoCredentials = () => {
-    setEmail('ivanov@mil.ru');
-    setPassword('123456');
+    setEmail('admin@example.com');
+    setPassword('password');
   };
   
   return (
@@ -137,6 +137,15 @@ export default function LoginScreen() {
               onPress={fillDemoCredentials}
             >
               <Text style={styles.demoButtonText}>Демо вход (Полковник)</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.registerLink}
+              onPress={() => router.push('/register')}
+            >
+              <Text style={styles.registerLinkText}>
+                Нет аккаунта? <Text style={styles.registerLinkTextBold}>Зарегистрироваться</Text>
+              </Text>
             </TouchableOpacity>
           </View>
           
@@ -235,6 +244,20 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 15,
     fontWeight: '600',
+  },
+  registerLink: {
+    marginTop: 16,
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  registerLinkText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  registerLinkTextBold: {
+    color: colors.primary,
+    fontWeight: '700',
   },
   version: {
     textAlign: 'center',

@@ -13,11 +13,22 @@ interface AuthState {
   isInitialized: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (updatedUser: User) => void;
   clearError: () => void;
   getCurrentUser: () => User | null;
   initialize: () => Promise<void>;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  name: string;
+  rank: string;
+  unit: string;
+  phone?: string;
+  role?: UserRole;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -73,6 +84,52 @@ export const useAuthStore = create<AuthState>()(
             console.error('Auth: Login error:', error);
           }
           set({ error: 'Ошибка при входе в систему', isLoading: false });
+        }
+      },
+      register: async (data: RegisterData) => {
+        set({ isLoading: true, error: null });
+        
+        if (isDebugMode()) {
+          console.log('Auth: Attempting registration for:', data.email);
+        }
+        
+        try {
+          // Try to register with backend
+          const response = await trpcClient.auth.register.mutate(data);
+          
+          if (response.success && response.user) {
+            if (isDebugMode()) {
+              console.log('Auth: Registration successful for user:', response.user.name);
+            }
+            // Ensure user has correct role type
+            const user: User = {
+              id: response.user.id,
+              email: response.user.email,
+              name: response.user.name,
+              rank: response.user.rank || 'Рядовой',
+              role: response.user.role as UserRole,
+              avatar: response.user.avatar || '',
+              unit: response.user.unit,
+              phone: response.user.phone || '',
+            };
+            set({ 
+              user, 
+              currentUser: user, 
+              isAuthenticated: true, 
+              isLoading: false, 
+              error: null 
+            });
+          } else {
+            if (isDebugMode()) {
+              console.log('Auth: Registration failed');
+            }
+            set({ error: 'Ошибка при регистрации', isLoading: false });
+          }
+        } catch (error) {
+          if (isDebugMode()) {
+            console.error('Auth: Registration error:', error);
+          }
+          set({ error: 'Ошибка при регистрации', isLoading: false });
         }
       },
       logout: async () => {
