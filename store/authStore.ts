@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { User } from '@/types';
+import { User, UserRole } from '@/types';
 import { isDebugMode } from '@/utils/config';
 import { trpcClient } from '@/lib/trpc';
 
@@ -44,9 +44,14 @@ export const useAuthStore = create<AuthState>()(
             if (isDebugMode()) {
               console.log('Auth: Login successful for user:', response.user.name);
             }
+            // Ensure user has correct role type
+            const user = {
+              ...response.user,
+              role: response.user.role as UserRole
+            };
             set({ 
-              user: response.user, 
-              currentUser: response.user, 
+              user, 
+              currentUser: user, 
               isAuthenticated: true, 
               isLoading: false, 
               error: null 

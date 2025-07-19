@@ -29,7 +29,7 @@ import {
   addReportCommentProcedure,
   approveReportProcedure,
   getReportsForApprovalProcedure,
-} from "./routes/reports/route";
+} from "../../../backend/trpc/routes/reports/route";
 
 // Tasks
 import {
@@ -39,7 +39,7 @@ import {
   updateTaskProcedure,
   deleteTaskProcedure,
   getTaskStatsProcedure,
-} from "./routes/tasks/route";
+} from "../../../backend/trpc/routes/tasks/route";
 
 // Chat
 import {
@@ -51,7 +51,7 @@ import {
   createChatProcedure,
   deleteChatProcedure,
   getUnreadCountProcedure as getChatUnreadCountProcedure,
-} from "./routes/chat/route";
+} from "../../../backend/trpc/routes/chat/route";
 
 // Calendar
 import {
