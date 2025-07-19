@@ -191,7 +191,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         });
         
         recording = new Audio.Recording();
-        const recordingOptions = {
+        const recordingOptions: Audio.RecordingOptions = {
           android: {
             extension: '.m4a',
             outputFormat: Audio.AndroidOutputFormat.MPEG_4,
