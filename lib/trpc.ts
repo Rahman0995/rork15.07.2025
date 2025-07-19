@@ -484,7 +484,7 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
 
 // Create tRPC React client for use in React components
 export const createTRPCReactClient = () => {
-  return trpc.createClient({
+  return createTRPCProxyClient<AppRouter>({
     links: [
       // Disable logger to prevent console spam
       httpBatchLink({
