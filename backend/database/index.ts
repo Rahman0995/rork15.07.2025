@@ -1,20 +1,25 @@
-import mysql from 'mysql2/promise';
+import Database from 'better-sqlite3';
 import { config } from '../config';
+import path from 'path';
 
-let connection: mysql.Connection;
+let db: Database.Database;
 
 export const initializeDatabase = async (): Promise<boolean> => {
   try {
-    console.log('🔧 Initializing MySQL database...');
+    console.log('🔧 Initializing SQLite database...');
     
-    // Create MySQL connection
-    connection = await mysql.createConnection(config.database.url);
+    // Create SQLite database
+    const dbPath = path.join(process.cwd(), 'database.sqlite');
+    db = new Database(dbPath);
+    
+    // Enable foreign keys
+    db.pragma('foreign_keys = ON');
     
     // Create tables if they don't exist
-    await createTables();
+    createTables();
     
     // Insert default data
-    await insertDefaultData();
+    insertDefaultData();
     
     console.log('✅ Database initialized successfully');
     return true;
@@ -28,8 +33,8 @@ export const closeDatabase = async (): Promise<void> => {
   try {
     console.log('🔄 Closing database connections...');
     
-    if (connection) {
-      await connection.end();
+    if (db) {
+      db.close();
     }
     
     console.log('✅ Database connections closed successfully');
@@ -38,227 +43,236 @@ export const closeDatabase = async (): Promise<void> => {
   }
 };
 
-const createTables = async () => {
-  // Create tables using raw SQL since we don't have migrations set up
-  const createTablesSQL = `
-    CREATE TABLE IF NOT EXISTS users (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      rank VARCHAR(100) NOT NULL,
-      role VARCHAR(100) NOT NULL,
+const createTables = () => {
+  // Create tables using SQLite syntax
+  const tables = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      rank TEXT NOT NULL,
+      role TEXT NOT NULL,
       avatar TEXT NOT NULL,
-      unit VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL UNIQUE,
-      phone VARCHAR(50) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS reports (
-      id VARCHAR(255) PRIMARY KEY,
-      title VARCHAR(500) NOT NULL,
+      unit TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      phone TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS reports (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
       content TEXT NOT NULL,
-      author_id VARCHAR(255) NOT NULL,
-      status VARCHAR(50) NOT NULL DEFAULT 'draft',
-      type VARCHAR(50) DEFAULT 'text',
-      unit VARCHAR(255),
-      priority VARCHAR(50) DEFAULT 'medium',
+      author_id TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      type TEXT DEFAULT 'text',
+      unit TEXT,
+      priority TEXT DEFAULT 'medium',
       due_date DATETIME,
-      current_approver VARCHAR(255),
-      current_revision INT DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      current_approver TEXT,
+      current_revision INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (author_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS tasks (
-      id VARCHAR(255) PRIMARY KEY,
-      title VARCHAR(500) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS tasks (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
       description TEXT NOT NULL,
-      assigned_to VARCHAR(255) NOT NULL,
-      created_by VARCHAR(255) NOT NULL,
+      assigned_to TEXT NOT NULL,
+      created_by TEXT NOT NULL,
       due_date DATETIME NOT NULL,
-      status VARCHAR(50) NOT NULL DEFAULT 'pending',
-      priority VARCHAR(50) NOT NULL DEFAULT 'medium',
+      status TEXT NOT NULL DEFAULT 'pending',
+      priority TEXT NOT NULL DEFAULT 'medium',
       completed_at DATETIME,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (assigned_to) REFERENCES users(id),
       FOREIGN KEY (created_by) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS chats (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255),
-      is_group BOOLEAN NOT NULL DEFAULT FALSE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_participants (
-      id VARCHAR(255) PRIMARY KEY,
-      chat_id VARCHAR(255) NOT NULL,
-      user_id VARCHAR(255) NOT NULL,
-      joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS chats (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      is_group INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS chat_participants (
+      id TEXT PRIMARY KEY,
+      chat_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (chat_id) REFERENCES chats(id),
       FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_messages (
-      id VARCHAR(255) PRIMARY KEY,
-      chat_id VARCHAR(255) NOT NULL,
-      sender_id VARCHAR(255) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS chat_messages (
+      id TEXT PRIMARY KEY,
+      chat_id TEXT NOT NULL,
+      sender_id TEXT NOT NULL,
       text TEXT,
-      type VARCHAR(50) NOT NULL DEFAULT 'text',
-      read BOOLEAN NOT NULL DEFAULT FALSE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      type TEXT NOT NULL DEFAULT 'text',
+      read INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (chat_id) REFERENCES chats(id),
       FOREIGN KEY (sender_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS calendar_events (
-      id VARCHAR(255) PRIMARY KEY,
-      title VARCHAR(500) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS calendar_events (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
       description TEXT NOT NULL,
-      type VARCHAR(100) NOT NULL,
-      status VARCHAR(50) NOT NULL DEFAULT 'scheduled',
+      type TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'scheduled',
       start_date DATETIME NOT NULL,
       end_date DATETIME NOT NULL,
-      location VARCHAR(500),
-      organizer VARCHAR(255) NOT NULL,
-      unit VARCHAR(255) NOT NULL,
-      color VARCHAR(20),
-      is_all_day BOOLEAN NOT NULL DEFAULT FALSE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      location TEXT,
+      organizer TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      color TEXT,
+      is_all_day INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (organizer) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS event_participants (
-      id VARCHAR(255) PRIMARY KEY,
-      event_id VARCHAR(255) NOT NULL,
-      user_id VARCHAR(255) NOT NULL,
-      status VARCHAR(50) DEFAULT 'invited',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS event_participants (
+      id TEXT PRIMARY KEY,
+      event_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      status TEXT DEFAULT 'invited',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (event_id) REFERENCES calendar_events(id),
       FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS attachments (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(500) NOT NULL,
-      type VARCHAR(100) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS attachments (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
       url TEXT NOT NULL,
-      size BIGINT,
-      duration INT,
-      entity_type VARCHAR(100) NOT NULL,
-      entity_id VARCHAR(255) NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS report_comments (
-      id VARCHAR(255) PRIMARY KEY,
-      report_id VARCHAR(255) NOT NULL,
-      author_id VARCHAR(255) NOT NULL,
+      size INTEGER,
+      duration INTEGER,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS report_comments (
+      id TEXT PRIMARY KEY,
+      report_id TEXT NOT NULL,
+      author_id TEXT NOT NULL,
       content TEXT NOT NULL,
-      is_revision BOOLEAN NOT NULL DEFAULT FALSE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      is_revision INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (report_id) REFERENCES reports(id),
       FOREIGN KEY (author_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS report_approvals (
-      id VARCHAR(255) PRIMARY KEY,
-      report_id VARCHAR(255) NOT NULL,
-      approver_id VARCHAR(255) NOT NULL,
-      status VARCHAR(50) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS report_approvals (
+      id TEXT PRIMARY KEY,
+      report_id TEXT NOT NULL,
+      approver_id TEXT NOT NULL,
+      status TEXT NOT NULL,
       comment TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (report_id) REFERENCES reports(id),
       FOREIGN KEY (approver_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS report_revisions (
-      id VARCHAR(255) PRIMARY KEY,
-      report_id VARCHAR(255) NOT NULL,
-      version INT NOT NULL,
-      title VARCHAR(500) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS report_revisions (
+      id TEXT PRIMARY KEY,
+      report_id TEXT NOT NULL,
+      version INTEGER NOT NULL,
+      title TEXT NOT NULL,
       content TEXT NOT NULL,
-      created_by VARCHAR(255) NOT NULL,
-      author_id VARCHAR(255) NOT NULL,
+      created_by TEXT NOT NULL,
+      author_id TEXT NOT NULL,
       changes TEXT,
       comment TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (report_id) REFERENCES reports(id),
       FOREIGN KEY (created_by) REFERENCES users(id),
       FOREIGN KEY (author_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS notifications (
-      id VARCHAR(255) PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL,
-      title VARCHAR(500) NOT NULL,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
       message TEXT NOT NULL,
-      type VARCHAR(100) NOT NULL,
-      read BOOLEAN NOT NULL DEFAULT FALSE,
+      type TEXT NOT NULL,
+      read INTEGER NOT NULL DEFAULT 0,
       data TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS user_activity_log (
-      id VARCHAR(255) PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL,
-      action VARCHAR(255) NOT NULL,
-      entity_type VARCHAR(100) NOT NULL,
-      entity_id VARCHAR(255),
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS user_activity_log (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      action TEXT NOT NULL,
+      entity_type TEXT NOT NULL,
+      entity_id TEXT,
       details TEXT,
-      ip_address VARCHAR(45),
+      ip_address TEXT,
       user_agent TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS user_sessions (
-      id VARCHAR(255) PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL,
-      token VARCHAR(500) NOT NULL UNIQUE,
+    )`,
+    
+    `CREATE TABLE IF NOT EXISTS user_sessions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      token TEXT NOT NULL UNIQUE,
       device_info TEXT,
-      ip_address VARCHAR(45),
-      is_active BOOLEAN NOT NULL DEFAULT TRUE,
-      last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      expires_at TIMESTAMP NOT NULL,
+      ip_address TEXT,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      last_activity DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      expires_at DATETIME NOT NULL,
       FOREIGN KEY (user_id) REFERENCES users(id)
-    );
+    )`
+  ];
 
-    CREATE INDEX IF NOT EXISTS idx_reports_author_id ON reports(author_id);
-    CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
-    CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to ON tasks(assigned_to);
-    CREATE INDEX IF NOT EXISTS idx_tasks_created_by ON tasks(created_by);
-    CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
-    CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_id ON chat_messages(chat_id);
-    CREATE INDEX IF NOT EXISTS idx_chat_participants_chat_id ON chat_participants(chat_id);
-    CREATE INDEX IF NOT EXISTS idx_chat_participants_user_id ON chat_participants(user_id);
-    CREATE INDEX IF NOT EXISTS idx_calendar_events_organizer ON calendar_events(organizer);
-    CREATE INDEX IF NOT EXISTS idx_event_participants_event_id ON event_participants(event_id);
-    CREATE INDEX IF NOT EXISTS idx_event_participants_user_id ON event_participants(user_id);
-    CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
-    CREATE INDEX IF NOT EXISTS idx_user_activity_log_user_id ON user_activity_log(user_id);
-    CREATE INDEX IF NOT EXISTS idx_user_activity_log_created_at ON user_activity_log(created_at);
-    CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
-    CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token);
-  `;
+  const indexes = [
+    'CREATE INDEX IF NOT EXISTS idx_reports_author_id ON reports(author_id)',
+    'CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status)',
+    'CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to ON tasks(assigned_to)',
+    'CREATE INDEX IF NOT EXISTS idx_tasks_created_by ON tasks(created_by)',
+    'CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_messages_chat_id ON chat_messages(chat_id)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_participants_chat_id ON chat_participants(chat_id)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_participants_user_id ON chat_participants(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_calendar_events_organizer ON calendar_events(organizer)',
+    'CREATE INDEX IF NOT EXISTS idx_event_participants_event_id ON event_participants(event_id)',
+    'CREATE INDEX IF NOT EXISTS idx_event_participants_user_id ON event_participants(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_user_activity_log_user_id ON user_activity_log(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_user_activity_log_created_at ON user_activity_log(created_at)',
+    'CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token)'
+  ];
 
-  await connection.execute(createTablesSQL);
+  // Execute table creation
+  for (const table of tables) {
+    db.exec(table);
+  }
+
+  // Execute index creation
+  for (const index of indexes) {
+    db.exec(index);
+  }
 };
 
-const insertDefaultData = async () => {
+const insertDefaultData = () => {
   // Check if users already exist
-  const [rows] = await connection.execute('SELECT COUNT(*) as count FROM users');
-  const existingUsers = rows as { count: number }[];
+  const result = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   
-  if (existingUsers[0].count === 0) {
+  if (result.count === 0) {
     console.log('📝 Inserting default data...');
     
     const defaultUsers = [
@@ -304,11 +318,9 @@ const insertDefaultData = async () => {
       }
     ];
 
+    const insertUser = db.prepare('INSERT INTO users (id, name, rank, role, avatar, unit, email, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
     for (const user of defaultUsers) {
-      await connection.execute(
-        'INSERT INTO users (id, name, rank, role, avatar, unit, email, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [user.id, user.name, user.rank, user.role, user.avatar, user.unit, user.email, user.phone]
-      );
+      insertUser.run(user.id, user.name, user.rank, user.role, user.avatar, user.unit, user.email, user.phone);
     }
 
     // Insert sample tasks
@@ -319,7 +331,7 @@ const insertDefaultData = async () => {
         description: 'Провести плановую проверку всего оборудования в секторе А.',
         assignedTo: 'user-2',
         createdBy: 'user-1',
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'pending',
         priority: 'high'
       },
@@ -329,7 +341,7 @@ const insertDefaultData = async () => {
         description: 'Обновить техническую документацию по новым стандартам.',
         assignedTo: 'user-3',
         createdBy: 'user-1',
-        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'in_progress',
         priority: 'medium'
       },
@@ -339,17 +351,15 @@ const insertDefaultData = async () => {
         description: 'Выполнить вечернее патрулирование периметра объекта.',
         assignedTo: 'user-4',
         createdBy: 'user-2',
-        dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+        dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
         status: 'pending',
         priority: 'high'
       }
     ];
 
+    const insertTask = db.prepare('INSERT INTO tasks (id, title, description, assigned_to, created_by, due_date, status, priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
     for (const task of sampleTasks) {
-      await connection.execute(
-        'INSERT INTO tasks (id, title, description, assigned_to, created_by, due_date, status, priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [task.id, task.title, task.description, task.assignedTo, task.createdBy, task.dueDate, task.status, task.priority]
-      );
+      insertTask.run(task.id, task.title, task.description, task.assignedTo, task.createdBy, task.dueDate, task.status, task.priority);
     }
 
     // Insert sample reports
@@ -389,11 +399,9 @@ const insertDefaultData = async () => {
       }
     ];
 
+    const insertReport = db.prepare('INSERT INTO reports (id, title, content, author_id, status, type, unit, priority, current_revision) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
     for (const report of sampleReports) {
-      await connection.execute(
-        'INSERT INTO reports (id, title, content, author_id, status, type, unit, priority, current_revision) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [report.id, report.title, report.content, report.authorId, report.status, report.type, report.unit, report.priority, report.currentRevision]
-      );
+      insertReport.run(report.id, report.title, report.content, report.authorId, report.status, report.type, report.unit, report.priority, report.currentRevision);
     }
 
     console.log('✅ Default data inserted successfully');
@@ -401,10 +409,10 @@ const insertDefaultData = async () => {
 };
 
 export const getConnection = () => {
-  if (!connection) {
+  if (!db) {
     throw new Error('Database not initialized. Call initializeDatabase() first.');
   }
-  return connection;
+  return db;
 };
 
 export const logUserActivity = async (
@@ -419,18 +427,19 @@ export const logUserActivity = async (
   try {
     const conn = getConnection();
     
-    await conn.execute(
-      'INSERT INTO user_activity_log (id, user_id, action, entity_type, entity_id, details, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        userId,
-        action,
-        entityType,
-        entityId,
-        details ? JSON.stringify(details) : null,
-        ipAddress,
-        userAgent,
-      ]
+    const insertActivity = conn.prepare(
+      'INSERT INTO user_activity_log (id, user_id, action, entity_type, entity_id, details, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    );
+    
+    insertActivity.run(
+      `activity-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      userId,
+      action,
+      entityType,
+      entityId,
+      details ? JSON.stringify(details) : null,
+      ipAddress,
+      userAgent
     );
   } catch (error) {
     console.error('Failed to log user activity:', error);

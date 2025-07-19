@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { getConnection } from '../../../database/index';
+import { getConnection } from '../../../database';
 import { User } from '../../../database/schema';
 import { config } from '../../../config';
 
@@ -40,8 +40,8 @@ export const getUsersProcedure = publicProcedure
         }
       }
       
-      const [rows] = await connection.execute(query, params);
-      const users = rows as User[];
+      const stmt = connection.prepare(query);
+      const users = stmt.all(...params) as User[];
       
       // Get total count
       let countQuery = 'SELECT COUNT(*) as total FROM users WHERE 1=1';
@@ -57,8 +57,9 @@ export const getUsersProcedure = publicProcedure
         countParams.push(input.role);
       }
       
-      const [countRows] = await connection.execute(countQuery, countParams);
-      const total = (countRows as any[])[0].total;
+      const countStmt = connection.prepare(countQuery);
+      const countResult = countStmt.get(...countParams) as { total: number };
+      const total = countResult.total;
       
       return {
         users,
@@ -127,17 +128,14 @@ export const getUserByIdProcedure = publicProcedure
   .query(async ({ input }: { input: any }) => {
     try {
       const connection = getConnection();
-      const [rows] = await connection.execute(
-        'SELECT * FROM users WHERE id = ?',
-        [input.id]
-      );
+      const stmt = connection.prepare('SELECT * FROM users WHERE id = ?');
+      const user = stmt.get(input.id) as User;
       
-      const users = rows as User[];
-      if (users.length === 0) {
+      if (!user) {
         throw new Error('User not found');
       }
       
-      return users[0];
+      return user;
     } catch (error) {
       console.error('Error fetching user by ID:', error);
       
@@ -166,12 +164,8 @@ export const getUsersByUnitProcedure = publicProcedure
   .query(async ({ input }: { input: any }) => {
     try {
       const connection = getConnection();
-      const [rows] = await connection.execute(
-        'SELECT * FROM users WHERE unit = ? ORDER BY created_at DESC',
-        [input.unit]
-      );
-      
-      return rows as User[];
+      const stmt = connection.prepare('SELECT * FROM users WHERE unit = ? ORDER BY created_at DESC');
+      return stmt.all(input.unit) as User[];
     } catch (error) {
       console.error('Error fetching users by unit:', error);
       
@@ -253,20 +247,18 @@ export const updateUserProcedure = publicProcedure
       
       const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
       
-      await connection.execute(query, updateValues);
+      const updateStmt = connection.prepare(query);
+      updateStmt.run(...updateValues);
       
       // Fetch and return updated user
-      const [rows] = await connection.execute(
-        'SELECT * FROM users WHERE id = ?',
-        [input.id]
-      );
+      const selectStmt = connection.prepare('SELECT * FROM users WHERE id = ?');
+      const user = selectStmt.get(input.id) as User;
       
-      const users = rows as User[];
-      if (users.length === 0) {
+      if (!user) {
         throw new Error('User not found after update');
       }
       
-      return users[0];
+      return user;
     } catch (error) {
       console.error('Error updating user:', error);
       
@@ -295,16 +287,14 @@ export const getCurrentUserProcedure = publicProcedure
       // In a real app, get user ID from JWT token in ctx
       // For now, return the first user as current user
       const connection = getConnection();
-      const [rows] = await connection.execute(
-        'SELECT * FROM users ORDER BY created_at ASC LIMIT 1'
-      );
+      const stmt = connection.prepare('SELECT * FROM users ORDER BY created_at ASC LIMIT 1');
+      const user = stmt.get() as User;
       
-      const users = rows as User[];
-      if (users.length === 0) {
+      if (!user) {
         throw new Error('No users found');
       }
       
-      return users[0];
+      return user;
     } catch (error) {
       console.error('Error fetching current user:', error);
       

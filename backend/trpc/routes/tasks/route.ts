@@ -78,8 +78,9 @@ export const getTasksProcedure = publicProcedure
       
       query += ' ORDER BY created_at DESC';
       
-      const [rows] = await connection.execute(query, params);
-      const tasks = (rows as any[]).map(row => ({
+      const stmt = connection.prepare(query);
+      const rows = stmt.all(...params) as any[];
+      const tasks = rows.map(row => ({
         id: row.id,
         title: row.title,
         description: row.description,
