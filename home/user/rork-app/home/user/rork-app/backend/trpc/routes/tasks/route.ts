@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { Task, TaskStatus } from '../../../types';
-import { mockTasks } from '../../../constants/mockData';
 
 type TasksInput = {
   assignedTo?: string;
@@ -48,7 +47,7 @@ export const getTasksProcedure = publicProcedure
     status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }).optional())
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: TasksInput }) => {
     try {
       console.log('Fetching tasks with filters:', input);
       
@@ -80,7 +79,7 @@ export const getTasksProcedure = publicProcedure
         },
       ];
       
-      return mockTasks.filter((t) => {
+      return mockTasks.filter((t: Task) => {
         if (input?.assignedTo && t.assignedTo !== input.assignedTo) return false;
         if (input?.createdBy && t.createdBy !== input.createdBy) return false;
         if (input?.status && t.status !== input.status) return false;
@@ -97,7 +96,7 @@ export const getTaskByIdProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input: TaskByIdInput }) => {
     try {
       console.log('Fetching task by ID:', input.id);
       
@@ -131,7 +130,7 @@ export const createTaskProcedure = publicProcedure
     dueDate: z.string(),
     priority: z.enum(['low', 'medium', 'high']).optional(),
   }))
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: CreateTaskInput }) => {
     try {
       console.log('Creating task:', input);
       
@@ -166,7 +165,7 @@ export const updateTaskProcedure = publicProcedure
     priority: z.enum(['low', 'medium', 'high']).optional(),
     dueDate: z.string().optional(),
   }))
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: UpdateTaskInput }) => {
     try {
       console.log('Updating task:', input);
       
@@ -198,7 +197,7 @@ export const deleteTaskProcedure = publicProcedure
   .input(z.object({
     id: z.string(),
   }))
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: DeleteTaskInput }) => {
     try {
       console.log('Deleting task:', input.id);
       
@@ -227,7 +226,7 @@ export const getTaskStatsProcedure = publicProcedure
     assignedTo: z.string().optional(),
     createdBy: z.string().optional(),
   }).optional())
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: TaskStatsInput }) => {
     try {
       console.log('Fetching task stats:', input);
       
