@@ -214,8 +214,16 @@ export const useCalendarStore = create<CalendarStore>((set, get) => ({
     const events = get().getEventsByDate(date);
     const tasks = get().getTasksByDate(date);
     return [...events, ...tasks].sort((a, b) => {
-      const aDate = 'startDate' in a && a.startDate ? new Date(a.startDate) : new Date(a.dueDate);
-      const bDate = 'startDate' in b && b.startDate ? new Date(b.startDate) : new Date(b.dueDate);
+      const aDate = 'startDate' in a && a.startDate 
+        ? new Date(a.startDate) 
+        : 'dueDate' in a 
+          ? new Date(a.dueDate) 
+          : new Date();
+      const bDate = 'startDate' in b && b.startDate 
+        ? new Date(b.startDate) 
+        : 'dueDate' in b 
+          ? new Date(b.dueDate) 
+          : new Date();
       return aDate.getTime() - bDate.getTime();
     });
   },
