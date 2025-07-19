@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { CalendarEvent, CalendarTask, EventType, EventStatus } from '@/types';
-import { mockUsers } from '@/constants/mockData';
 
 interface CalendarStore {
   events: CalendarEvent[];
@@ -47,90 +46,9 @@ interface CalendarStore {
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-const mockEvents: CalendarEvent[] = [
-  {
-    id: '1',
-    title: 'Утренняя физическая подготовка',
-    description: 'Ежедневная утренняя зарядка и физические упражнения',
-    type: 'training',
-    status: 'scheduled',
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    location: 'Спортивная площадка',
-    organizer: mockUsers[0].id,
-    participants: [mockUsers[1].id, mockUsers[2].id],
-    isAllDay: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    unit: '1-я рота',
-    color: '#2E5A88'
-  },
-  {
-    id: '2',
-    title: 'Тактические учения',
-    description: 'Полевые тактические учения с боевой стрельбой',
-    type: 'exercise',
-    status: 'scheduled',
-    startDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    endDate: new Date(Date.now() + 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(),
-    location: 'Полигон №3',
-    organizer: mockUsers[0].id,
-    participants: mockUsers.map(u => u.id),
-    isAllDay: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    unit: 'Батальон',
-    color: '#6B8E23'
-  },
-  {
-    id: '3',
-    title: 'Инспекция готовности',
-    description: 'Проверка готовности личного состава и техники',
-    type: 'inspection',
-    status: 'scheduled',
-    startDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(),
-    location: 'Казарма',
-    organizer: mockUsers[0].id,
-    participants: [mockUsers[1].id, mockUsers[2].id, mockUsers[3].id],
-    isAllDay: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    unit: '1-я рота',
-    color: '#F9A825'
-  }
-];
-
-const mockTasks: CalendarTask[] = [
-  {
-    id: '1',
-    title: 'Подготовка отчета о готовности',
-    description: 'Составить еженедельный отчет о готовности подразделения',
-    assignedTo: mockUsers[1].id,
-    createdBy: mockUsers[0].id,
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'pending',
-    priority: 'high',
-    createdAt: new Date().toISOString(),
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    isAllDay: true
-  },
-  {
-    id: '2',
-    title: 'Проверка оборудования',
-    description: 'Провести техническое обслуживание оборудования связи',
-    assignedTo: mockUsers[2].id,
-    createdBy: mockUsers[0].id,
-    dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    status: 'in_progress',
-    priority: 'medium',
-    createdAt: new Date().toISOString(),
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    isAllDay: false
-  }
-];
+// Empty arrays for production - will be populated from backend
+const mockEvents: CalendarEvent[] = [];
+const mockTasks: CalendarTask[] = [];
 
 export const useCalendarStore = create<CalendarStore>((set, get) => ({
   events: mockEvents,
