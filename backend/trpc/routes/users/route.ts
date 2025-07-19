@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { getConnection } from '../../database';
-import { User } from '../../database/schema';
-import { config } from '../../config';
+import { getConnection } from '../../../database/index';
+import { User } from '../../../database/schema';
+import { config } from '../../../config';
 
 export const getUsersProcedure = publicProcedure
   .input(z.object({

@@ -237,14 +237,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 
 export default function RootLayout() {
   const [trpcClient] = useState(() => {
-    console.log('Attempting to create tRPC client...');
-    console.log('createTRPCReactClient type:', typeof createTRPCReactClient);
-    
-    if (typeof createTRPCReactClient !== 'function') {
-      console.error('createTRPCReactClient is not a function!', createTRPCReactClient);
-      throw new Error('createTRPCReactClient is not a function');
-    }
-    
+    console.log('Creating tRPC React client...');
     return createTRPCReactClient();
   });
   
