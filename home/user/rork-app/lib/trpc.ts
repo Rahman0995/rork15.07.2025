@@ -1,6 +1,6 @@
 import { createTRPCReact } from "@trpc/react-query";
-import { httpLink } from "@trpc/client";
-import type { AppRouter } from "../backend/trpc/app-router";
+import { httpLink, createTRPCProxyClient } from "@trpc/client";
+import type { AppRouter } from "../../../backend/trpc/app-router";
 import superjson from "superjson";
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -16,7 +16,8 @@ const getBaseUrl = () => {
   return "http://localhost:3000";
 };
 
-export const trpcClient = trpc.createClient({
+// Create vanilla tRPC client for use outside React components
+export const trpcClient = createTRPCProxyClient<AppRouter>({
   links: [
     httpLink({
       url: `${getBaseUrl()}/api/trpc`,
@@ -45,3 +46,36 @@ export const trpcClient = trpc.createClient({
     }),
   ],
 });
+
+// Create tRPC React client for use in React components
+export const createTRPCReactClient = () => {
+  return trpc.createClient({
+    links: [
+      httpLink({
+        url: `${getBaseUrl()}/api/trpc`,
+        transformer: superjson,
+        fetch: (url, options) => {
+          console.log('tRPC request to:', url);
+          // Handle network errors gracefully
+          return fetch(url, options).catch((error) => {
+            console.warn('tRPC fetch failed:', error);
+            // Return a mock response for development
+            return new Response(JSON.stringify({ 
+              error: 'Backend not available',
+              message: error.message,
+              url: url
+            }), {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          });
+        },
+        headers: () => {
+          return {
+            'Content-Type': 'application/json',
+          };
+        },
+      }),
+    ],
+  });
+};

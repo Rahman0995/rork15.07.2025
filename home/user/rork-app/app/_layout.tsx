@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { colors } from "@/constants/colors";
-import { trpc, trpcClient } from "@/lib/trpc";
+import { trpc, createTRPCReactClient } from "@/lib/trpc";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
