@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { Task, TaskStatus } from '@/types';
+import { getConnection } from '../../../database/index';
 
 type TasksInput = {
   assignedTo?: string;
@@ -49,52 +50,48 @@ export const getTasksProcedure = publicProcedure
   }).optional())
   .query(async ({ input }: { input?: TasksInput | undefined }) => {
     try {
-      // Mock data for development
       console.log('Fetching tasks with filters:', input);
-      const mockTasks: Task[] = [
-        {
-          id: 'task-1',
-          title: 'Проверка оборудования',
-          description: 'Провести плановую проверку всего оборудования.',
-          assignedTo: 'user-2',
-          createdBy: 'user-1',
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'pending',
-          priority: 'high',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'task-2',
-          title: 'Обновление документации',
-          description: 'Обновить техническую документацию.',
-          assignedTo: 'user-3',
-          createdBy: 'user-1',
-          dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'in_progress',
-          priority: 'medium',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      const connection = getConnection();
       
-      let tasks = [...mockTasks];
+      let query = 'SELECT * FROM tasks WHERE 1=1';
+      const params: any[] = [];
       
       if (input?.assignedTo) {
-        tasks = tasks.filter((t) => t.assignedTo === input.assignedTo);
+        query += ' AND assigned_to = ?';
+        params.push(input.assignedTo);
       }
       
       if (input?.createdBy) {
-        tasks = tasks.filter((t) => t.createdBy === input.createdBy);
+        query += ' AND created_by = ?';
+        params.push(input.createdBy);
       }
       
       if (input?.status) {
-        tasks = tasks.filter((t) => t.status === input.status);
+        query += ' AND status = ?';
+        params.push(input.status);
       }
       
       if (input?.priority) {
-        tasks = tasks.filter((t) => t.priority === input.priority);
+        query += ' AND priority = ?';
+        params.push(input.priority);
       }
+      
+      query += ' ORDER BY created_at DESC';
+      
+      const [rows] = await connection.execute(query, params);
+      const tasks = (rows as any[]).map(row => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        assignedTo: row.assigned_to,
+        createdBy: row.created_by,
+        dueDate: row.due_date,
+        status: row.status,
+        priority: row.priority,
+        completedAt: row.completed_at,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      }));
       
       return tasks;
     } catch (error) {

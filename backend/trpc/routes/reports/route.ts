@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { Report, ReportStatus, ReportType } from '@/types';
+import { getConnection } from '../../../database/index';
 
 type ReportsInput = {
   status?: ReportStatus;
@@ -60,56 +61,48 @@ export const getReportsProcedure = publicProcedure
   .query(async ({ input }: { input?: ReportsInput | undefined }) => {
     try {
       console.log('Fetching reports with filters:', input);
-      const mockReports: Report[] = [
-        {
-          id: 'report-1',
-          title: 'Отчет о проведении учений',
-          content: 'Проведены плановые учения по тактической подготовке.',
-          authorId: 'user-1',
-          status: 'pending',
-          type: 'text',
-          unit: '1-й батальон',
-          priority: 'high',
-          currentRevision: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          approvals: [],
-          comments: [],
-          revisions: [],
-          approvers: ['user-2'],
-        },
-        {
-          id: 'report-2',
-          title: 'Отчет о техническом обслуживании',
-          content: 'Выполнено плановое техническое обслуживание оборудования.',
-          authorId: 'user-2',
-          status: 'approved',
-          type: 'text' as ReportType,
-          unit: 'Техническая служба',
-          priority: 'medium',
-          currentRevision: 1,
-          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-          updatedAt: new Date().toISOString(),
-          approvals: [],
-          comments: [],
-          revisions: [],
-          approvers: ['user-1'],
-        },
-      ];
+      const connection = getConnection();
       
-      let reports = [...mockReports];
+      let query = 'SELECT * FROM reports WHERE 1=1';
+      const params: any[] = [];
       
       if (input?.status) {
-        reports = reports.filter((r) => r.status === input.status);
+        query += ' AND status = ?';
+        params.push(input.status);
       }
       
       if (input?.unit) {
-        reports = reports.filter((r) => r.unit === input.unit);
+        query += ' AND unit = ?';
+        params.push(input.unit);
       }
       
       if (input?.authorId) {
-        reports = reports.filter((r) => r.authorId === input.authorId);
+        query += ' AND author_id = ?';
+        params.push(input.authorId);
       }
+      
+      query += ' ORDER BY created_at DESC';
+      
+      const [rows] = await connection.execute(query, params);
+      const reports = (rows as any[]).map(row => ({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        authorId: row.author_id,
+        status: row.status,
+        type: row.type,
+        unit: row.unit,
+        priority: row.priority,
+        dueDate: row.due_date,
+        currentApprover: row.current_approver,
+        currentRevision: row.current_revision,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        approvals: [],
+        comments: [],
+        revisions: [],
+        approvers: [],
+      }));
       
       return reports;
     } catch (error) {
