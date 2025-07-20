@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { Task, TaskStatus, TaskPriority } from '../../../../types';
-import { getConnection } from '../../../database/index';
+import { database } from '../../../../lib/supabase';
 
 type TasksInput = {
   assignedTo?: string;
@@ -51,50 +50,36 @@ export const getTasksProcedure = publicProcedure
   .query(async ({ input }: { input?: TasksInput | undefined }) => {
     try {
       console.log('Fetching tasks with filters:', input);
-      const connection = getConnection();
       
-      let query = 'SELECT * FROM tasks WHERE 1=1';
-      const params: any[] = [];
+      let query = database.tasks.getAll();
       
       if (input?.assignedTo) {
-        query += ' AND assigned_to = ?';
-        params.push(input.assignedTo);
+        query = database.tasks.getByAssignee(input.assignedTo);
       }
       
+      const { data: tasks, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching tasks:', error);
+        return [];
+      }
+      
+      // Apply additional filters
+      let filteredTasks = tasks || [];
+      
       if (input?.createdBy) {
-        query += ' AND created_by = ?';
-        params.push(input.createdBy);
+        filteredTasks = filteredTasks.filter(task => task.created_by === input.createdBy);
       }
       
       if (input?.status) {
-        query += ' AND status = ?';
-        params.push(input.status);
+        filteredTasks = filteredTasks.filter(task => task.status === input.status);
       }
       
       if (input?.priority) {
-        query += ' AND priority = ?';
-        params.push(input.priority);
+        filteredTasks = filteredTasks.filter(task => task.priority === input.priority);
       }
       
-      query += ' ORDER BY created_at DESC';
-      
-      const stmt = connection.prepare(query);
-      const rows = stmt.all(...params) as any[];
-      const tasks = rows.map(row => ({
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        assignedTo: row.assigned_to,
-        createdBy: row.created_by,
-        dueDate: row.due_date,
-        status: row.status,
-        priority: row.priority,
-        completedAt: row.completed_at,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      }));
-      
-      return tasks;
+      return filteredTasks;
     } catch (error) {
       console.error('Error fetching tasks:', error);
       return [];
@@ -109,21 +94,17 @@ export const getTaskByIdProcedure = publicProcedure
     try {
       console.log('Fetching task by ID:', input.id);
       
-      // Mock task data
-      const mockTask: Task = {
-        id: input.id,
-        title: 'Mock Task',
-        description: 'This is a mock task for development.',
-        assignedTo: 'user-2',
-        createdBy: 'user-1',
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'pending',
-        priority: 'medium',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const { data: task, error } = await database.tasks.getById(input.id);
       
-      return mockTask;
+      if (error) {
+        throw new Error(error.message || 'Task not found');
+      }
+      
+      if (!task) {
+        throw new Error('Task not found');
+      }
+      
+      return task;
     } catch (error) {
       console.error('Error fetching task by ID:', error);
       throw new Error('Task not found');
@@ -143,22 +124,21 @@ export const createTaskProcedure = publicProcedure
     try {
       console.log('Creating task:', input);
       
-      const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      const newTask: Task = {
-        id: taskId,
+      const { data: task, error } = await database.tasks.create({
         title: input.title,
         description: input.description,
-        assignedTo: input.assignedTo,
-        createdBy: input.createdBy,
-        dueDate: input.dueDate,
+        assigned_to: input.assignedTo,
+        created_by: input.createdBy,
+        due_date: input.dueDate,
+        priority: input.priority || 'medium',
         status: 'pending',
-        priority: (input.priority as TaskPriority) || 'medium',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      });
       
-      return { success: true, task: newTask };
+      if (error) {
+        throw new Error(error.message || 'Failed to create task');
+      }
+      
+      return { success: true, task };
     } catch (error) {
       console.error('Error creating task:', error);
       throw new Error('Failed to create task');
@@ -182,20 +162,20 @@ export const updateTaskProcedure = publicProcedure
         throw new Error('No fields to update');
       }
       
-      const updatedTask: Task = {
-        id: input.id,
-        title: input.title || 'Mock Task',
-        description: input.description || 'Mock description',
-        assignedTo: 'user-2',
-        createdBy: 'user-1',
-        dueDate: input.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: (input.status as TaskStatus) || 'pending',
-        priority: (input.priority as TaskPriority) || 'medium',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const updates: any = {};
+      if (input.title) updates.title = input.title;
+      if (input.description) updates.description = input.description;
+      if (input.status) updates.status = input.status;
+      if (input.priority) updates.priority = input.priority;
+      if (input.dueDate) updates.due_date = input.dueDate;
       
-      return { success: true, task: updatedTask };
+      const { data: task, error } = await database.tasks.update(input.id, updates);
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to update task');
+      }
+      
+      return { success: true, task };
     } catch (error) {
       console.error('Error updating task:', error);
       throw new Error('Failed to update task');
@@ -210,20 +190,13 @@ export const deleteTaskProcedure = publicProcedure
     try {
       console.log('Deleting task:', input.id);
       
-      const deletedTask: Task = {
-        id: input.id,
-        title: 'Deleted Mock Task',
-        description: 'This task was deleted',
-        assignedTo: 'user-2',
-        createdBy: 'user-1',
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'pending',
-        priority: 'medium',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      const { error } = await database.tasks.delete(input.id);
       
-      return { success: true, deletedTask };
+      if (error) {
+        throw new Error(error.message || 'Failed to delete task');
+      }
+      
+      return { success: true };
     } catch (error) {
       console.error('Error deleting task:', error);
       throw new Error('Failed to delete task');

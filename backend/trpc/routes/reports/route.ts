@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { Report, ReportStatus, ReportType } from '@/types';
-import { getConnection } from '../../../database/index';
+import { database } from '../../../../lib/supabase';
 
 type ReportsInput = {
   status?: ReportStatus;
@@ -54,57 +53,35 @@ type ReportsForApprovalInput = {
 
 export const getReportsProcedure = publicProcedure
   .input(z.object({
-    status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
+    status: z.enum(['draft', 'submitted', 'approved', 'rejected']).optional(),
     unit: z.string().optional(),
     authorId: z.string().optional(),
   }).optional())
   .query(async ({ input }: { input?: ReportsInput | undefined }) => {
     try {
       console.log('Fetching reports with filters:', input);
-      const connection = getConnection();
       
-      let query = 'SELECT * FROM reports WHERE 1=1';
-      const params: any[] = [];
-      
-      if (input?.status) {
-        query += ' AND status = ?';
-        params.push(input.status);
-      }
-      
-      if (input?.unit) {
-        query += ' AND unit = ?';
-        params.push(input.unit);
-      }
+      let query = database.reports.getAll();
       
       if (input?.authorId) {
-        query += ' AND author_id = ?';
-        params.push(input.authorId);
+        query = database.reports.getByAuthor(input.authorId);
       }
       
-      query += ' ORDER BY created_at DESC';
+      const { data: reports, error } = await query;
       
-      const [rows] = await connection.execute(query, params);
-      const reports = (rows as any[]).map(row => ({
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        authorId: row.author_id,
-        status: row.status,
-        type: row.type,
-        unit: row.unit,
-        priority: row.priority,
-        dueDate: row.due_date,
-        currentApprover: row.current_approver,
-        currentRevision: row.current_revision,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        approvals: [],
-        comments: [],
-        revisions: [],
-        approvers: [],
-      }));
+      if (error) {
+        console.error('Error fetching reports:', error);
+        return [];
+      }
       
-      return reports;
+      // Apply additional filters
+      let filteredReports = reports || [];
+      
+      if (input?.status) {
+        filteredReports = filteredReports.filter(report => report.status === input.status);
+      }
+      
+      return filteredReports;
     } catch (error) {
       console.error('Error fetching reports:', error);
       return [];
@@ -119,25 +96,17 @@ export const getReportByIdProcedure = publicProcedure
     try {
       console.log('Fetching report by ID:', input.id);
       
-      const mockReport: Report = {
-        id: input.id,
-        title: 'Mock Report',
-        content: 'This is a mock report for development.',
-        authorId: 'user-1',
-        status: 'draft',
-        type: 'text',
-        unit: 'Mock Unit',
-        priority: 'medium',
-        currentRevision: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        approvals: [],
-        comments: [],
-        revisions: [],
-        approvers: ['user-2'],
-      };
+      const { data: report, error } = await database.reports.getById(input.id);
       
-      return mockReport;
+      if (error) {
+        throw new Error(error.message || 'Report not found');
+      }
+      
+      if (!report) {
+        throw new Error('Report not found');
+      }
+      
+      return report;
     } catch (error) {
       console.error('Error fetching report by ID:', error);
       throw new Error('Report not found');
@@ -149,35 +118,25 @@ export const createReportProcedure = publicProcedure
     title: z.string(),
     content: z.string(),
     authorId: z.string(),
-    unit: z.string().optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-    type: z.enum(['text', 'file', 'video']).optional(),
+    type: z.enum(['general', 'incident', 'training', 'equipment', 'personnel']).optional(),
   }))
   .mutation(async ({ input }: { input: CreateReportInput }) => {
     try {
       console.log('Creating report:', input);
       
-      const reportId = `report-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      const newReport: Report = {
-        id: reportId,
+      const { data: report, error } = await database.reports.create({
         title: input.title,
         content: input.content,
-        authorId: input.authorId,
+        created_by: input.authorId,
+        type: input.type || 'general',
         status: 'draft',
-        type: (input.type || 'text') as ReportType,
-        unit: input.unit || 'Default Unit',
-        priority: input.priority || 'medium',
-        currentRevision: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        approvals: [],
-        comments: [],
-        revisions: [],
-        approvers: [],
-      };
+      });
       
-      return { success: true, report: newReport };
+      if (error) {
+        throw new Error(error.message || 'Failed to create report');
+      }
+      
+      return { success: true, report };
     } catch (error) {
       console.error('Error creating report:', error);
       throw new Error('Failed to create report');
@@ -189,36 +148,28 @@ export const updateReportProcedure = publicProcedure
     id: z.string(),
     title: z.string().optional(),
     content: z.string().optional(),
-    status: z.enum(['draft', 'pending', 'approved', 'rejected', 'needs_revision']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
+    status: z.enum(['draft', 'submitted', 'approved', 'rejected']).optional(),
   }))
   .mutation(async ({ input }: { input: UpdateReportInput }) => {
     try {
       console.log('Updating report:', input);
       
-      if (!input.title && !input.content && !input.status && !input.priority) {
+      if (!input.title && !input.content && !input.status) {
         throw new Error('No fields to update');
       }
       
-      const updatedReport: Report = {
-        id: input.id,
-        title: input.title || 'Mock Report',
-        content: input.content || 'Mock content',
-        authorId: 'user-1',
-        status: input.status || 'draft',
-        type: 'text',
-        unit: 'Mock Unit',
-        priority: input.priority || 'medium',
-        currentRevision: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        approvals: [],
-        comments: [],
-        revisions: [],
-        approvers: [],
-      };
+      const updates: any = {};
+      if (input.title) updates.title = input.title;
+      if (input.content) updates.content = input.content;
+      if (input.status) updates.status = input.status;
       
-      return { success: true, report: updatedReport };
+      const { data: report, error } = await database.reports.update(input.id, updates);
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to update report');
+      }
+      
+      return { success: true, report };
     } catch (error) {
       console.error('Error updating report:', error);
       throw new Error('Failed to update report');
@@ -233,25 +184,13 @@ export const deleteReportProcedure = publicProcedure
     try {
       console.log('Deleting report:', input.id);
       
-      const deletedReport: Report = {
-        id: input.id,
-        title: 'Deleted Mock Report',
-        content: 'This report was deleted',
-        authorId: 'user-1',
-        status: 'draft',
-        type: 'text',
-        unit: 'Mock Unit',
-        priority: 'medium',
-        currentRevision: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        approvals: [],
-        comments: [],
-        revisions: [],
-        approvers: [],
-      };
+      const { error } = await database.reports.delete(input.id);
       
-      return { success: true, deletedReport };
+      if (error) {
+        throw new Error(error.message || 'Failed to delete report');
+      }
+      
+      return { success: true };
     } catch (error) {
       console.error('Error deleting report:', error);
       throw new Error('Failed to delete report');
