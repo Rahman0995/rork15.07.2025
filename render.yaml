@@ -18,11 +18,4 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         value: "*"
-
-databases:
-  - name: military-app-db
-    databaseName: military_app
-    user: admin
-    plan: free
-    region: oregon
-    
+   
