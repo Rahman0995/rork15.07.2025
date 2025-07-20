@@ -1,5 +1,5 @@
 [build]
-  command = "npx expo export:web"
+  command = "npm run build:web"
   publish = "dist"
 
 [build.environment]
