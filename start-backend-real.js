@@ -1,22 +1,19 @@
 #!/usr/bin/env node
 
-// Simple script to start the backend server with real database
 const { spawn } = require('child_process');
 const path = require('path');
 
-console.log('🚀 Starting backend server with real database...');
+console.log('🚀 Starting real backend server...');
 
-// Set environment variables for real database connection
+// Set environment variables
 const env = {
   ...process.env,
   NODE_ENV: 'development',
-  // Add your database connection details here
-  DB_HOST: process.env.DB_HOST || 'localhost',
-  DB_USER: process.env.DB_USER || 'root', 
-  DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_NAME: process.env.DB_NAME || 'military_app',
-  DB_PORT: process.env.DB_PORT || '3306',
-  PORT: process.env.PORT || '3000'
+  USE_SQLITE: 'true',
+  DATABASE_URL: 'sqlite:///tmp/database.sqlite',
+  API_PORT: '3000',
+  API_HOST: '0.0.0.0',
+  PORT: '3000'
 };
 
 // Start the backend server
@@ -27,11 +24,37 @@ const backend = spawn('bun', ['run', 'backend/index.ts'], {
 });
 
 backend.on('close', (code) => {
-  console.log(`Backend server exited with code ${code}`);
+  console.log(`🔄 Backend process exited with code ${code}`);
+  if (code !== 0) {
+    console.log('🔄 Falling back to simple backend...');
+    
+    // Fallback to simple backend
+    const simpleBackend = spawn('node', [path.join(__dirname, 'start-backend-simple.js')], {
+      stdio: 'inherit',
+      env
+    });
+    
+    simpleBackend.on('error', (err) => {
+      console.error('❌ Failed to start simple backend:', err);
+      process.exit(1);
+    });
+  }
 });
 
 backend.on('error', (error) => {
-  console.error('Failed to start backend server:', error);
+  console.error('❌ Failed to start backend:', error);
+  console.log('🔄 Falling back to simple backend...');
+  
+  // Fallback to simple backend
+  const simpleBackend = spawn('node', [path.join(__dirname, 'start-backend-simple.js')], {
+    stdio: 'inherit',
+    env
+  });
+  
+  simpleBackend.on('error', (err) => {
+    console.error('❌ Failed to start simple backend:', err);
+    process.exit(1);
+  });
 });
 
 // Handle process termination
