@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-netinfo/lib/commonjs';
+import NetInfo from '@react-native-community/netinfo';
 
 interface OfflineAction {
   id: string;
