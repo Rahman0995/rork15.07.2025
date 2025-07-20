@@ -20,7 +20,7 @@ export const migrations: Migration[] = [
         last_name VARCHAR(100) NOT NULL,
         \`rank\` VARCHAR(50),
         unit VARCHAR(100),
-        role ENUM('admin', 'officer', 'soldier') DEFAULT 'soldier',
+        \`role\` ENUM('admin', 'officer', 'soldier') DEFAULT 'soldier',
         avatar_url TEXT,
         phone VARCHAR(20),
         is_active BOOLEAN DEFAULT true,
@@ -28,7 +28,7 @@ export const migrations: Migration[] = [
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_email (email),
-        INDEX idx_role (role),
+        INDEX idx_role (\`role\`),
         INDEX idx_unit (unit)
       )`,
       
