@@ -1,3 +1,4 @@
+# Exported from Render on 2025-07-20T02:50:53Z
 services:
 - type: web
   name: SEVER-AHMAT
@@ -8,9 +9,7 @@ services:
   buildCommand: bun install
   startCommand: node expo-router/entry
   autoDeployTrigger: commit
-version: "1"
-
-        
+version: "1"        
   - type: web
     name: military-app-backend
     env: docker
