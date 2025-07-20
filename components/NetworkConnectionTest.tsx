@@ -1,206 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import { Wifi, WifiOff, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react-native';
-import { trpcClient } from '@/lib/trpc';
-import { diagnoseNetwork, NetworkDiagnostics } from '@/utils/networkDiagnostics';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '@/constants/theme';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { Wifi, WifiOff, RefreshCw } from 'lucide-react-native';
 
-interface NetworkConnectionTestProps {
-  onConnectionChange?: (isConnected: boolean) => void;
-}
-
-export const NetworkConnectionTest: React.FC<NetworkConnectionTestProps> = ({ 
-  onConnectionChange 
-}) => {
-  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+export function NetworkConnectionTest() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const [isConnected, setIsConnected] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<NetworkDiagnostics | null>(null);
-  const [lastError, setLastError] = useState<string | null>(null);
 
-  // Test tRPC connection
-  const testTRPCConnection = async () => {
+  const testConnection = async () => {
     setIsLoading(true);
-    setLastError(null);
-    
     try {
-      console.log('Testing tRPC connection...');
-      const result = await trpcClient.example.hi.query({ name: 'NetworkTest' });
-      console.log('tRPC test result:', result);
-      
-      const connected = !!result;
-      setIsConnected(connected);
-      onConnectionChange?.(connected);
-      
-      // Check if the response indicates mock data
-      if (result && typeof result === 'object' && 'message' in result) {
-        const message = (result as any).message;
-        if (typeof message === 'string' && (message.includes('mock') || message.includes('Mock'))) {
-          setLastError('Using mock data - server unavailable');
-        }
-      }
-    } catch (error: any) {
-      console.error('tRPC connection test failed:', error);
+      // Simple connectivity test
+      const response = await fetch('https://httpbin.org/status/200', {
+        method: 'GET',
+        timeout: 5000,
+      });
+      setIsConnected(response.ok);
+    } catch (error) {
       setIsConnected(false);
-      setLastError(error.message || 'Connection failed');
-      onConnectionChange?.(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Run network diagnostics
-  const runDiagnostics = async () => {
-    setIsLoading(true);
-    try {
-      const result = await diagnoseNetwork();
-      setDiagnostics(result);
-      setIsConnected(result.isConnected);
-      onConnectionChange?.(result.isConnected);
-      
-      if (!result.isConnected && result.error) {
-        setLastError(result.error);
-      }
-    } catch (error: any) {
-      console.error('Network diagnostics failed:', error);
-      setLastError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Auto-test on mount
   useEffect(() => {
-    testTRPCConnection();
+    testConnection();
   }, []);
-
-  const showDiagnostics = () => {
-    if (diagnostics) {
-      Alert.alert(
-        'Network Diagnostics',
-        `URL: ${diagnostics.apiUrl}\nLatency: ${diagnostics.latency || 'N/A'}ms\nError: ${diagnostics.error || 'None'}`,
-        [
-          { text: 'OK' },
-          { text: 'Copy to Console', onPress: () => console.log('Diagnostics:', diagnostics) }
-        ]
-      );
-    }
-  };
-
-  const getStatusColor = () => {
-    if (isLoading) return '#6B7280';
-    if (isConnected === null) return '#6B7280';
-    return isConnected ? '#10B981' : '#EF4444';
-  };
-
-  const getStatusText = () => {
-    if (isLoading) return 'Testing...';
-    if (isConnected === null) return 'Unknown';
-    if (isConnected && lastError?.includes('mock')) return 'Mock Mode';
-    return isConnected ? 'Connected' : 'Disconnected';
-  };
-
-  const getStatusIcon = () => {
-    const color = getStatusColor();
-    const size = 16;
-    
-    if (isLoading) return <RefreshCw size={size} color={color} />;
-    if (isConnected === null) return <Wifi size={size} color={color} />;
-    if (isConnected) return <CheckCircle size={size} color={color} />;
-    return <AlertCircle size={size} color={color} />;
-  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.statusRow}>
-        {getStatusIcon()}
-        <Text style={[styles.statusText, { color: getStatusColor() }]}>
-          {getStatusText()}
-        </Text>
-      </View>
-      
-      {lastError ? (
-        <Text style={styles.errorText} numberOfLines={2}>
-          {lastError}
-        </Text>
-      ) : null}
-      
-      <View style={styles.actions}>
-        <Pressable 
-          onPress={testTRPCConnection}
-          style={[styles.button, styles.testButton]}
+      <View style={styles.header}>
+        <View style={styles.titleContainer}>
+          {isConnected ? (
+            <Wifi size={16} color={colors.success} />
+          ) : (
+            <WifiOff size={16} color={colors.error} />
+          )}
+          <Text style={styles.title}>Диагностика сети</Text>
+        </View>
+        <TouchableOpacity 
+          onPress={testConnection} 
+          style={styles.refreshButton}
           disabled={isLoading}
         >
-          <Text style={styles.buttonText}>Test tRPC</Text>
-        </Pressable>
-        
-        <Pressable 
-          onPress={runDiagnostics}
-          style={[styles.button, styles.diagButton]}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>Diagnose</Text>
-        </Pressable>
-        
-        {diagnostics ? (
-          <Pressable 
-            onPress={showDiagnostics}
-            style={[styles.button, styles.infoButton]}
-          >
-            <Text style={styles.buttonText}>Info</Text>
-          </Pressable>
-        ) : null}
+          <RefreshCw 
+            size={14} 
+            color={colors.primary} 
+            style={isLoading ? { transform: [{ rotate: '180deg' }] } : {}}
+          />
+        </TouchableOpacity>
       </View>
+      
+      <ConnectionStatus
+        isConnected={isConnected}
+        serverStatus={isConnected ? 'connected' : 'error'}
+        showDetails={true}
+      />
     </View>
   );
-};
+}
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#F9FAFB',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    margin: 8,
+    borderColor: colors.borderLight,
   },
-  statusRow: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 8,
-  },
-  errorText: {
-    fontSize: 12,
-    color: '#EF4444',
-    marginBottom: 8,
-    fontStyle: 'italic',
-  },
-  actions: {
-    flexDirection: 'row',
     gap: 8,
   },
-  button: {
-    flex: 1,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  refreshButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.backgroundSecondary,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  testButton: {
-    backgroundColor: '#3B82F6',
-  },
-  diagButton: {
-    backgroundColor: '#8B5CF6',
-  },
-  infoButton: {
-    backgroundColor: '#6B7280',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '500',
   },
 });

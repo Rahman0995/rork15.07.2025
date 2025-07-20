@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/store/authStore';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Modal, 
+  TouchableOpacity, 
+  ScrollView, 
+  Alert,
+  ActivityIndicator 
+} from 'react-native';
+import { useTheme } from '@/constants/theme';
 import { useTasksStore } from '@/store/tasksStore';
 import { useReportsStore } from '@/store/reportsStore';
-import { useTheme } from '@/constants/theme';
-import { Button } from '@/components/Button';
-import { Plus, FileText, CheckSquare, Users, Calendar } from 'lucide-react-native';
-import { Task, Report } from '@/types';
+import { useAuthStore } from '@/store/authStore';
+import { 
+  Database, 
+  Download, 
+  Upload, 
+  Trash2, 
+  RefreshCw, 
+  X,
+  FileText,
+  CheckSquare,
+  Users
+} from 'lucide-react-native';
 
 interface DataManagerProps {
   visible: boolean;
@@ -15,307 +31,273 @@ interface DataManagerProps {
 }
 
 export function DataManager({ visible, onClose }: DataManagerProps) {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const { addTask } = useTasksStore();
-  const { addReport } = useReportsStore();
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const { tasks, fetchTasks, clearTasks } = useTasksStore();
+  const { reports, fetchReports, clearReports } = useReportsStore();
+  const { user } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'task' | 'report'>('task');
-  const [taskTitle, setTaskTitle] = useState('');
-  const [taskDescription, setTaskDescription] = useState('');
-  const [reportTitle, setReportTitle] = useState('');
-  const [reportContent, setReportContent] = useState('');
-
-  if (!visible) return null;
-
-  const handleCreateTask = () => {
-    if (!taskTitle.trim() || !user) {
-      Alert.alert('Ошибка', 'Заполните название задачи');
-      return;
+  const handleRefreshData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        fetchTasks(),
+        fetchReports(),
+      ]);
+      Alert.alert('Успешно', 'Данные обновлены');
+    } catch (error) {
+      Alert.alert('Ошибка', 'Не удалось обновить данные');
+    } finally {
+      setIsLoading(false);
     }
-
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: taskTitle.trim(),
-      description: taskDescription.trim(),
-      assignedTo: user.id,
-      createdBy: user.id,
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
-      status: 'pending',
-      priority: 'medium',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    addTask(newTask);
-    setTaskTitle('');
-    setTaskDescription('');
-    Alert.alert('Успешно', 'Задача создана', [
-      { text: 'OK', onPress: onClose }
-    ]);
   };
 
-  const handleCreateReport = () => {
-    if (!reportTitle.trim() || !reportContent.trim() || !user) {
-      Alert.alert('Ошибка', 'Заполните все поля отчета');
-      return;
-    }
-
-    const newReport: Report = {
-      id: Date.now().toString(),
-      title: reportTitle.trim(),
-      content: reportContent.trim(),
-      authorId: user.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: 'pending',
-      type: 'text',
-      attachments: [],
-      unit: user.unit || undefined,
-      priority: 'medium',
-      approvers: [],
-      currentApprover: undefined,
-      approvals: [],
-      comments: [],
-      revisions: [],
-      currentRevision: 1,
-    };
-
-    addReport(newReport);
-    setReportTitle('');
-    setReportContent('');
-    Alert.alert('Успешно', 'Отчет создан', [
-      { text: 'OK', onPress: onClose }
-    ]);
+  const handleClearData = () => {
+    Alert.alert(
+      'Очистить данные',
+      'Вы уверены, что хотите очистить все локальные данные? Это действие нельзя отменить.',
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Очистить',
+          style: 'destructive',
+          onPress: () => {
+            clearTasks();
+            clearReports();
+            Alert.alert('Успешно', 'Локальные данные очищены');
+          },
+        },
+      ]
+    );
   };
 
-  const quickActions = [
-    {
-      title: 'Создать задачу',
-      icon: CheckSquare,
-      color: colors.primary,
-      onPress: () => router.push('/task/create')
-    },
-    {
-      title: 'Создать отчет',
-      icon: FileText,
-      color: colors.secondary,
-      onPress: () => router.push('/report/create')
-    },
-    {
-      title: 'Календарь',
-      icon: Calendar,
-      color: colors.success,
-      onPress: () => router.push('/(tabs)/calendar')
-    },
-    {
-      title: 'Персонал',
-      icon: Users,
-      color: colors.warning,
-      onPress: () => router.push('/personnel')
-    }
-  ];
+  const handleExportData = () => {
+    const data = {
+      tasks,
+      reports,
+      exportDate: new Date().toISOString(),
+      user: user?.id,
+    };
+    
+    // In a real app, you would implement actual export functionality
+    Alert.alert(
+      'Экспорт данных',
+      `Готово к экспорту:\n• Задач: ${tasks.length}\n• Отчетов: ${reports.length}\n\nВ реальном приложении данные будут сохранены в файл.`
+    );
+  };
+
+  const DataCard = ({ 
+    title, 
+    count, 
+    icon: Icon, 
+    color 
+  }: { 
+    title: string; 
+    count: number; 
+    icon: any; 
+    color: string; 
+  }) => (
+    <View style={[styles.dataCard, { borderLeftColor: color }]}>
+      <View style={styles.dataCardHeader}>
+        <View style={[styles.dataCardIcon, { backgroundColor: color + '20' }]}>
+          <Icon size={18} color={color} />
+        </View>
+        <Text style={styles.dataCardTitle}>{title}</Text>
+      </View>
+      <Text style={styles.dataCardCount}>{count}</Text>
+    </View>
+  );
 
   return (
-    <View style={styles.overlay}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Добавить данные</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeText}>✕</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.quickActionsContainer}>
-          <Text style={styles.sectionTitle}>Быстрые действия</Text>
-          <View style={styles.quickActions}>
-            {quickActions.map((action, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.quickActionButton, { borderColor: action.color + '30' }]}
-                onPress={() => {
-                  onClose();
-                  action.onPress();
-                }}
-              >
-                <View style={[styles.quickActionIcon, { backgroundColor: action.color + '20' }]}>
-                  <action.icon size={20} color={action.color} />
-                </View>
-                <Text style={styles.quickActionText}>{action.title}</Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.headerLeft}>
+            <View style={styles.headerIcon}>
+              <Database size={20} color={colors.primary} />
+            </View>
+            <Text style={styles.headerTitle}>Управление данными</Text>
           </View>
-        </View>
-
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'task' && styles.activeTab]}
-            onPress={() => setActiveTab('task')}
-          >
-            <CheckSquare size={16} color={activeTab === 'task' ? colors.primary : colors.textSecondary} />
-            <Text style={[styles.tabText, activeTab === 'task' && styles.activeTabText]}>
-              Задача
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'report' && styles.activeTab]}
-            onPress={() => setActiveTab('report')}
-          >
-            <FileText size={16} color={activeTab === 'report' ? colors.primary : colors.textSecondary} />
-            <Text style={[styles.tabText, activeTab === 'report' && styles.activeTabText]}>
-              Отчет
-            </Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <X size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {activeTab === 'task' ? (
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Название задачи *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={taskTitle}
-                  onChangeText={setTaskTitle}
-                  placeholder="Введите название задачи"
-                  placeholderTextColor={colors.textTertiary}
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Описание</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={taskDescription}
-                  onChangeText={setTaskDescription}
-                  placeholder="Введите описание задачи"
-                  placeholderTextColor={colors.textTertiary}
-                  multiline
-                  numberOfLines={4}
-                />
-              </View>
-
-              <Button
-                title="Создать задачу"
-                onPress={handleCreateTask}
-                style={styles.createButton}
-                disabled={!taskTitle.trim()}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Статистика данных</Text>
+            <View style={styles.dataCards}>
+              <DataCard
+                title="Задачи"
+                count={tasks.length}
+                icon={CheckSquare}
+                color={colors.primary}
+              />
+              <DataCard
+                title="Отчеты"
+                count={reports.length}
+                icon={FileText}
+                color={colors.secondary}
               />
             </View>
-          ) : (
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Название отчета *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={reportTitle}
-                  onChangeText={setReportTitle}
-                  placeholder="Введите название отчета"
-                  placeholderTextColor={colors.textTertiary}
-                />
-              </View>
-              
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Содержание отчета *</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={reportContent}
-                  onChangeText={setReportContent}
-                  placeholder="Введите содержание отчета"
-                  placeholderTextColor={colors.textTertiary}
-                  multiline
-                  numberOfLines={6}
-                />
-              </View>
+          </View>
 
-              <Button
-                title="Создать отчет"
-                onPress={handleCreateReport}
-                style={styles.createButton}
-                disabled={!reportTitle.trim() || !reportContent.trim()}
-              />
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Действия</Text>
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: colors.primarySoft }]}
+                onPress={handleRefreshData}
+                disabled={isLoading}
+              >
+                <View style={styles.actionIcon}>
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <RefreshCw size={18} color={colors.primary} />
+                  )}
+                </View>
+                <View style={styles.actionContent}>
+                  <Text style={[styles.actionTitle, { color: colors.primary }]}>
+                    Обновить данные
+                  </Text>
+                  <Text style={styles.actionDescription}>
+                    Синхронизировать с сервером
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: colors.successSoft }]}
+                onPress={handleExportData}
+              >
+                <View style={styles.actionIcon}>
+                  <Download size={18} color={colors.success} />
+                </View>
+                <View style={styles.actionContent}>
+                  <Text style={[styles.actionTitle, { color: colors.success }]}>
+                    Экспорт данных
+                  </Text>
+                  <Text style={styles.actionDescription}>
+                    Сохранить данные в файл
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: colors.errorSoft }]}
+                onPress={handleClearData}
+              >
+                <View style={styles.actionIcon}>
+                  <Trash2 size={18} color={colors.error} />
+                </View>
+                <View style={styles.actionContent}>
+                  <Text style={[styles.actionTitle, { color: colors.error }]}>
+                    Очистить данные
+                  </Text>
+                  <Text style={styles.actionDescription}>
+                    Удалить все локальные данные
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Информация</Text>
+            <View style={styles.infoCard}>
+              <Text style={styles.infoText}>
+                Данные хранятся локально на устройстве и синхронизируются с сервером при наличии подключения к интернету.
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       </View>
-    </View>
+    </Modal>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-    zIndex: 1000,
-  },
   container: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '80%',
-    paddingBottom: 40,
+    flex: 1,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
+    backgroundColor: colors.card,
   },
-  title: {
-    fontSize: 20,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primarySoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: colors.backgroundSecondary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeText: {
-    fontSize: 16,
-    color: colors.textSecondary,
+  content: {
+    flex: 1,
   },
-  quickActionsContainer: {
+  section: {
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  quickActions: {
+  dataCards: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
   },
-  quickActionButton: {
+  dataCard: {
     flex: 1,
-    minWidth: '45%',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 4,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  dataCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    backgroundColor: colors.backgroundSecondary,
+    marginBottom: 12,
   },
-  quickActionIcon: {
+  dataCardIcon: {
     width: 32,
     height: 32,
     borderRadius: 8,
@@ -323,70 +305,61 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
   },
-  quickActionText: {
+  dataCardTitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.text,
-    flex: 1,
   },
-  tabs: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingTop: 20,
+  dataCardCount: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
   },
-  tab: {
-    flex: 1,
+  actions: {
+    gap: 12,
+  },
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    padding: 16,
     borderRadius: 12,
-    backgroundColor: colors.backgroundSecondary,
-    marginHorizontal: 4,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  activeTab: {
-    backgroundColor: colors.primarySoft,
+  actionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.textSecondary,
-    marginLeft: 6,
-  },
-  activeTabText: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  content: {
+  actionContent: {
     flex: 1,
   },
-  form: {
-    padding: 20,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
+  actionTitle: {
+    fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
-    marginBottom: 8,
+    marginBottom: 2,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+  actionDescription: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  infoCard: {
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
-    color: colors.text,
-    backgroundColor: colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  createButton: {
-    marginTop: 20,
+  infoText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
 });

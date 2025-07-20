@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/utils/supabase';
 import { useTheme } from '@/constants/theme';
 
 export const SupabaseStatus: React.FC = () => {

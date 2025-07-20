@@ -1,497 +1,418 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity, Platform, ActionSheetIOS, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Switch,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '@/store/authStore';
+import { useTheme } from '@/constants/theme';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { useTheme } from '@/constants/theme';
-import { ThemeSelector } from '@/components/ThemeSelector';
-import { ThemeDemo } from '@/components/ThemeDemo';
-import { trpc } from '@/lib/trpc';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Shield, 
-  Settings, 
-  Bell, 
-  HelpCircle, 
+import {
+  User,
+  Settings,
+  Bell,
+  Shield,
+  HelpCircle,
   LogOut,
   ChevronRight,
-  Server,
-  Camera,
-  Image as ImageIcon,
   Edit3,
-  MessageSquare
+  Camera,
+  Moon,
+  Sun,
 } from 'lucide-react-native';
-
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, logout, updateUser } = useAuthStore();
-  const { colors } = useTheme();
+  const { user, logout } = useAuthStore();
+  const { colors, isDark, toggleTheme } = useTheme();
   const styles = createStyles(colors);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  
-  const updateUserMutation = trpc.users.update.useMutation();
-  const uploadFileMutation = trpc.media.upload.useMutation();
-  
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
   const handleLogout = () => {
     Alert.alert(
-      'Выход из системы',
-      'Вы уверены, что хотите выйти?',
+      'Выход',
+      'Вы уверены, что хотите выйти из аккаунта?',
       [
-        {
-          text: 'Отмена',
-          style: 'cancel',
-        },
+        { text: 'Отмена', style: 'cancel' },
         {
           text: 'Выйти',
-          onPress: () => logout(),
           style: 'destructive',
+          onPress: () => {
+            logout();
+            router.replace('/login');
+          },
         },
       ]
     );
   };
-  
-  const requestPermissions = async () => {
-    if (Platform.OS !== 'web') {
-      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      const { status: libraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      if (cameraStatus !== 'granted' || libraryStatus !== 'granted') {
-        Alert.alert(
-          'Разрешения необходимы',
-          'Для загрузки фотографий необходимо разрешение на доступ к камере и галерее.',
-          [{ text: 'OK' }]
-        );
-        return false;
-      }
-    }
-    return true;
-  };
-  
-  const uploadPhoto = async (uri: string) => {
-    try {
-      setIsUploadingPhoto(true);
-      
-      // In a real app, you would upload the image to your server/cloud storage
-      // For now, we'll simulate the upload and use the URI directly
-      const result = await uploadFileMutation.mutateAsync({
-        name: `avatar_${user?.id}_${Date.now()}.jpg`,
-        type: 'image',
-        size: 1024000, // Mock size
-        uploadedBy: user?.id || '',
-        mimeType: 'image/jpeg',
-        data: uri,
-      });
-      
-      // Update user avatar
-      if (user) {
-        const updatedUser = await updateUserMutation.mutateAsync({
-          id: user.id,
-          avatar: uri, // In production, use result.url
-        });
-        
-        // Update local store
-        updateUser({ ...user, avatar: uri });
-        
-        Alert.alert('Успешно', 'Фотография профиля обновлена!');
-      }
-    } catch (error) {
-      console.error('Error uploading photo:', error);
-      Alert.alert('Ошибка', 'Не удалось загрузить фотографию. Попробуйте еще раз.');
-    } finally {
-      setIsUploadingPhoto(false);
-    }
-  };
-  
-  const pickImageFromLibrary = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
-    
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-        base64: false,
-      });
-      
-      if (!result.canceled && result.assets[0]) {
-        await uploadPhoto(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      Alert.alert('Ошибка', 'Не удалось выбрать изображение.');
-    }
-  };
-  
-  const takePhoto = async () => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) return;
-    
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaType.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-        base64: false,
-      });
-      
-      if (!result.canceled && result.assets[0]) {
-        await uploadPhoto(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error taking photo:', error);
-      Alert.alert('Ошибка', 'Не удалось сделать фотографию.');
-    }
-  };
-  
 
-  
-  const showPhotoOptions = () => {
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Отмена', 'Сделать фото', 'Выбрать из галереи'],
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) {
-            takePhoto();
-          } else if (buttonIndex === 2) {
-            pickImageFromLibrary();
-          }
-        }
-      );
-    } else {
-      Alert.alert(
-        'Изменить фото профиля',
-        'Выберите способ загрузки фотографии',
-        [
-          { text: 'Отмена', style: 'cancel' },
-          { text: 'Сделать фото', onPress: takePhoto },
-          { text: 'Выбрать из галереи', onPress: pickImageFromLibrary },
-        ]
-      );
-    }
-  };
-  
-  const renderMenuItem = (icon: React.ReactNode, title: string, onPress: () => void) => (
-    <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={onPress}>
-      <View style={styles.menuItemLeft}>
-        {icon}
-        <Text style={[styles.menuItemText, { color: colors.text }]}>{title}</Text>
+  const ProfileSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionContent}>
+        {children}
       </View>
-      <ChevronRight size={20} color={colors.textSecondary} />
+    </View>
+  );
+
+  const ProfileItem = ({
+    icon: Icon,
+    title,
+    subtitle,
+    onPress,
+    showChevron = true,
+    rightComponent,
+  }: {
+    icon: any;
+    title: string;
+    subtitle?: string;
+    onPress?: () => void;
+    showChevron?: boolean;
+    rightComponent?: React.ReactNode;
+  }) => (
+    <TouchableOpacity
+      style={styles.profileItem}
+      onPress={onPress}
+      disabled={!onPress}
+      activeOpacity={onPress ? 0.7 : 1}
+    >
+      <View style={styles.profileItemLeft}>
+        <View style={styles.profileItemIcon}>
+          <Icon size={18} color={colors.primary} />
+        </View>
+        <View style={styles.profileItemContent}>
+          <Text style={styles.profileItemTitle}>{title}</Text>
+          {subtitle && (
+            <Text style={styles.profileItemSubtitle}>{subtitle}</Text>
+          )}
+        </View>
+      </View>
+      <View style={styles.profileItemRight}>
+        {rightComponent}
+        {showChevron && onPress && (
+          <ChevronRight size={16} color={colors.textTertiary} />
+        )}
+      </View>
     </TouchableOpacity>
   );
-  
-  if (!user) return null;
-  
-  return (
-    <ScrollView 
-      style={[styles.container, { backgroundColor: colors.background }]} 
-      contentContainerStyle={styles.contentContainer}
 
-    >
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Avatar 
-            uri={user.avatar} 
-            name={user.name} 
-            size={120} 
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.authContainer}>
+          <Text style={styles.authText}>Требуется авторизация</Text>
+          <Button
+            title="Войти"
+            onPress={() => router.push('/login')}
+            style={styles.authButton}
           />
-          <TouchableOpacity 
-            style={[styles.editPhotoButton, { backgroundColor: colors.primary }]}
-            onPress={showPhotoOptions}
-            disabled={isUploadingPhoto}
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Profile Header */}
+        <View style={styles.header}>
+          <View style={styles.avatarContainer}>
+            <Avatar
+              size={80}
+              name={user.name}
+              imageUrl={user.avatar}
+              style={styles.avatar}
+            />
+            <TouchableOpacity
+              style={styles.cameraButton}
+              onPress={() => router.push('/settings/photos')}
+            >
+              <Camera size={16} color={colors.card} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{user.name}</Text>
+            <Text style={styles.userRank}>{user.rank}</Text>
+            <Text style={styles.userUnit}>{user.unit}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push('/settings/profile-edit')}
           >
-            {isUploadingPhoto ? (
-              <ActivityIndicator size="small" color={colors.white} />
-            ) : (
-              <Edit3 size={16} color={colors.white} />
-            )}
+            <Edit3 size={16} color={colors.primary} />
+            <Text style={styles.editButtonText}>Редактировать</Text>
           </TouchableOpacity>
         </View>
-        <Text style={[styles.name, { color: colors.text }]}>{user.name}</Text>
-        <Text style={[styles.rank, { color: colors.primary }]}>{user.rank}</Text>
-        <Text style={[styles.unit, { color: colors.textSecondary }]}>{user.unit}</Text>
-        
-        <TouchableOpacity 
-          style={[styles.editProfileButton, { backgroundColor: colors.primary + '10', borderColor: colors.primary }]}
-          onPress={() => router.push('/settings/profile-edit')}
-        >
-          <Edit3 size={16} color={colors.primary} />
-          <Text style={[styles.editProfileText, { color: colors.primary }]}>Редактировать профиль</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIconContainer, { backgroundColor: colors.primary + '10' }]}>
-            <User size={20} color={colors.primary} />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Должность</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
-              {user.role === 'battalion_commander' ? 'Командир батальона' :
-               user.role === 'company_commander' ? 'Командир роты' :
-               user.role === 'officer' ? 'Офицер' :
-               user.role === 'soldier' ? 'Военнослужащий' : 'Администратор'}
-            </Text>
-          </View>
+
+        {/* Account Section */}
+        <ProfileSection title="Аккаунт">
+          <ProfileItem
+            icon={User}
+            title="Личная информация"
+            subtitle="Управление профилем и данными"
+            onPress={() => router.push('/settings/account')}
+          />
+          <ProfileItem
+            icon={Shield}
+            title="Приватность и безопасность"
+            subtitle="Настройки конфиденциальности"
+            onPress={() => router.push('/settings/privacy')}
+          />
+        </ProfileSection>
+
+        {/* Preferences Section */}
+        <ProfileSection title="Настройки">
+          <ProfileItem
+            icon={Bell}
+            title="Уведомления"
+            subtitle="Управление уведомлениями"
+            onPress={() => router.push('/settings/notifications')}
+          />
+          <ProfileItem
+            icon={isDark ? Sun : Moon}
+            title="Тема оформления"
+            subtitle={isDark ? 'Темная тема' : 'Светлая тема'}
+            onPress={toggleTheme}
+            showChevron={false}
+            rightComponent={
+              <Switch
+                value={isDark}
+                onValueChange={toggleTheme}
+                trackColor={{ false: colors.inactive, true: colors.primary }}
+                thumbColor={colors.card}
+              />
+            }
+          />
+        </ProfileSection>
+
+        {/* Support Section */}
+        <ProfileSection title="Поддержка">
+          <ProfileItem
+            icon={HelpCircle}
+            title="Помощь и поддержка"
+            subtitle="FAQ, контакты поддержки"
+            onPress={() => router.push('/settings/help')}
+          />
+        </ProfileSection>
+
+        {/* Logout Section */}
+        <View style={styles.logoutSection}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <LogOut size={18} color={colors.error} />
+            <Text style={styles.logoutText}>Выйти из аккаунта</Text>
+          </TouchableOpacity>
         </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIconContainer, { backgroundColor: colors.primary + '10' }]}>
-            <Mail size={20} color={colors.primary} />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Email</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>{user.email}</Text>
-          </View>
+
+        {/* App Info */}
+        <View style={styles.appInfo}>
+          <Text style={styles.appInfoText}>Версия приложения: 1.0.7</Text>
+          <Text style={styles.appInfoText}>© 2024 Military Unit Management</Text>
         </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIconContainer, { backgroundColor: colors.primary + '10' }]}>
-            <Phone size={20} color={colors.primary} />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Телефон</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>{user.phone}</Text>
-          </View>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIconContainer, { backgroundColor: colors.primary + '10' }]}>
-            <Shield size={20} color={colors.primary} />
-          </View>
-          <View style={styles.infoContent}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Уровень доступа</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>
-              {user.role === 'battalion_commander' ? 'Высокий' :
-               user.role === 'company_commander' ? 'Средний' :
-               user.role === 'officer' ? 'Базовый' :
-               user.role === 'soldier' ? 'Ограниченный' : 'Полный'}
-            </Text>
-          </View>
-        </View>
-      </View>
-      
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>Настройки</Text>
-      
-      <View style={[styles.themeCard, { backgroundColor: colors.card }]}>
-        <ThemeSelector />
-      </View>
-      
-      <ThemeDemo />
-      
-      <View style={[styles.menuCard, { backgroundColor: colors.card }]}>
-        {renderMenuItem(
-          <Settings size={20} color={colors.primary} />,
-          'Настройки аккаунта',
-          () => router.push('/settings/account')
-        )}
-        
-        {renderMenuItem(
-          <Bell size={20} color={colors.primary} />,
-          'Настройки уведомлений',
-          () => router.push('/settings/notifications')
-        )}
-        
-        {renderMenuItem(
-          <Server size={20} color={colors.primary} />,
-          'Тест подключения',
-          () => router.push('/settings/backend-test')
-        )}
-        
-        {renderMenuItem(
-          <Server size={20} color={colors.primary} />,
-          'Тест Supabase',
-          () => router.push('/settings/supabase-test')
-        )}
-        
-        {renderMenuItem(
-          <MessageSquare size={20} color={colors.primary} />,
-          'Тест SMS',
-          () => router.push('/settings/sms-test')
-        )}
-        
-        {renderMenuItem(
-          <ImageIcon size={20} color={colors.primary} />,
-          'Мои фотографии',
-          () => router.push('/settings/photos')
-        )}
-        
-        {renderMenuItem(
-          <HelpCircle size={20} color={colors.primary} />,
-          'Помощь и поддержка',
-          () => router.push('/settings/help')
-        )}
-      </View>
-      
-      <Button
-        title="Выйти из системы"
-        onPress={handleLogout}
-        variant="outline"
-        style={[styles.logoutButton, { borderColor: colors.error }]}
-        textStyle={{ color: colors.error }}
-      />
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContainer: {
+    flex: 1,
   },
   contentContainer: {
-    padding: 16,
-    paddingBottom: 120,
+    paddingBottom: 100,
   },
-  header: {
+  authContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 24,
-    paddingHorizontal: 16,
+    padding: 24,
+  },
+  authText: {
+    fontSize: 18,
+    color: colors.text,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  authButton: {
+    minWidth: 120,
+  },
+
+  // Header Styles
+  header: {
+    backgroundColor: colors.card,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 8,
-  },
-  editPhotoButton: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 4,
-    borderWidth: 3,
-    borderColor: colors.background,
-  },
-  editProfileButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-    marginTop: 16,
-    gap: 8,
-  },
-  editProfileText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 16,
-    letterSpacing: -0.3,
-  },
-  rank: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  unit: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  infoCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  infoItem: {
-    flexDirection: 'row',
     marginBottom: 16,
   },
-  infoIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  avatar: {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+    borderWidth: 3,
+    borderColor: colors.card,
   },
-  infoContent: {
-    flex: 1,
-    justifyContent: 'center',
+  userInfo: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  infoLabel: {
-    fontSize: 12,
+  userName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  userRank: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
     marginBottom: 2,
   },
-  infoValue: {
-    fontSize: 16,
+  userUnit: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.primarySoft,
+    gap: 6,
+  },
+  editButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+
+  // Section Styles
+  section: {
+    marginTop: 24,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 16,
-    letterSpacing: -0.2,
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
-  themeCard: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+  sectionContent: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
-  menuCard: {
-    borderRadius: 16,
-    marginBottom: 24,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  menuItem: {
+
+  // Profile Item Styles
+  profileItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
-  menuItemLeft: {
+  profileItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  menuItemText: {
+  profileItemIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.primarySoft,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  profileItemContent: {
+    flex: 1,
+  },
+  profileItemTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 12,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  profileItemSubtitle: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  profileItemRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  // Logout Section
+  logoutSection: {
+    marginTop: 32,
+    paddingHorizontal: 20,
   },
   logoutButton: {
-    marginTop: 8,
-    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    backgroundColor: colors.errorSoft,
+    gap: 8,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.error,
+  },
+
+  // App Info
+  appInfo: {
+    marginTop: 32,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  appInfoText: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginBottom: 4,
   },
 });
