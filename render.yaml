@@ -1,16 +1,4 @@
-# Exported from Render on 2025-07-20T02:50:53Z
 services:
-- type: web
-  name: SEVER-AHMAT
-  runtime: node
-  repo: https://github.com/Rahman0995/rork15.07.2025
-  plan: free
-  region: oregon
-  buildCommand: bun install
-  startCommand: node expo-router/entry
-  autoDeployTrigger: commit
-version: "1"  
-
   - type: web
     name: military-app-backend
     env: docker
