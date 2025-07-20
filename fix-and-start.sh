@@ -1,21 +1,20 @@
 #!/bin/bash
 
-echo "🔧 Military Management System - Fix and Start"
-echo "=============================================="
+echo "🔧 Исправляем проблемы и запускаем приложение..."
 
-# Make scripts executable
-chmod +x run-backend.sh
-chmod +x diagnose-network.js
-chmod +x test-backend-connection.js
+# Очищаем кэши
+echo "🧹 Очищаем кэши..."
+rm -rf node_modules/.cache 2>/dev/null
+rm -rf .expo 2>/dev/null  
+rm -rf .metro 2>/dev/null
+rm -rf /tmp/metro-* 2>/dev/null
 
-# Run network diagnostics
-echo "🔍 Running network diagnostics..."
-node diagnose-network.js
+# Устанавливаем переменные окружения для решения проблемы ENOSPC
+export WATCHMAN_DISABLE_WATCH=1
+export EXPO_NO_DOTENV=1
+export EXPO_NO_CACHE=1
 
-echo ""
-echo "🚀 Starting backend server..."
-echo "Press Ctrl+C to stop"
-echo ""
+echo "📱 Запускаем Expo с исправлениями..."
 
-# Start the backend
-./run-backend.sh
+# Запускаем expo с минимальным наблюдением файлов
+npx expo start --tunnel --port 8081 --clear
