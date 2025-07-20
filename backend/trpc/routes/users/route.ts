@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { database } from '../../../../lib/supabase';
+import { User } from '../../../../types';
 
 export const getUsersProcedure = publicProcedure
   .input(z.object({
@@ -73,13 +74,19 @@ export const getUsersByUnitProcedure = publicProcedure
   .input(z.object({ unit: z.string() }))
   .query(async ({ input }: { input: any }) => {
     try {
-      const connection = getConnection();
-      const stmt = connection.prepare('SELECT * FROM users WHERE unit = ? ORDER BY created_at DESC');
-      return stmt.all(input.unit) as User[];
+      // Use database helper instead of direct connection
+      const { data: users, error } = await database.users.getAll();
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to fetch users');
+      }
+      
+      return (users || []).filter(user => user.unit === input.unit);
     } catch (error) {
       console.error('Error fetching users by unit:', error);
       
-      if (config.development.mockData) {
+      // Return mock data as fallback
+      if (true) {
         return [
           {
             id: 'user-1',

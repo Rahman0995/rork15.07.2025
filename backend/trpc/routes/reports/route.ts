@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { database } from '../../../../lib/supabase';
+import { Report, ReportStatus } from '../../../../types';
 
 type ReportsInput = {
-  status?: ReportStatus;
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected';
   unit?: string;
   authorId?: string;
 };
@@ -25,7 +26,7 @@ type UpdateReportInput = {
   id: string;
   title?: string;
   content?: string;
-  status?: ReportStatus;
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected';
   priority?: 'low' | 'medium' | 'high';
 };
 
@@ -118,7 +119,7 @@ export const createReportProcedure = publicProcedure
     title: z.string(),
     content: z.string(),
     authorId: z.string(),
-    type: z.enum(['general', 'incident', 'training', 'equipment', 'personnel']).optional(),
+    type: z.enum(['text', 'file', 'video']).optional(),
   }))
   .mutation(async ({ input }: { input: CreateReportInput }) => {
     try {
@@ -269,7 +270,7 @@ export const getReportsForApprovalProcedure = publicProcedure
           title: 'Отчет на согласование',
           content: 'Отчет ожидает согласования.',
           authorId: 'user-2',
-          status: 'pending',
+          status: 'draft',
           type: 'text',
           unit: '1-я рота',
           priority: 'medium',

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { database } from '../../../../lib/supabase';
+import { Task } from '../../../../types';
 
 type TasksInput = {
   assignedTo?: string;
@@ -253,7 +254,7 @@ export const getTaskStatsProcedure = publicProcedure
         byPriority: {
           high: mockTasks.filter((t) => t.priority === 'high').length,
           medium: mockTasks.filter((t) => t.priority === 'medium').length,
-          low: mockTasks.filter((t: Task) => t.priority === 'low').length,
+          low: mockTasks.filter((t) => t.priority === 'low').length,
         },
       };
     } catch (error) {

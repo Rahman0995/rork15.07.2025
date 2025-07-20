@@ -15,7 +15,7 @@ export const loginProcedure = publicProcedure
         throw new Error(error.message || 'Invalid credentials');
       }
       
-      if (!data.user) {
+      if (!data?.user) {
         throw new Error('Authentication failed');
       }
       
@@ -30,7 +30,7 @@ export const loginProcedure = publicProcedure
         success: true,
         user: userProfile?.data || {
           id: data.user.id,
-          email: data.user.email,
+          email: data.user.email || '',
           first_name: data.user.user_metadata?.first_name || '',
           last_name: data.user.user_metadata?.last_name || '',
           role: 'soldier',
@@ -123,7 +123,7 @@ export const registerProcedure = publicProcedure
         throw new Error(error.message);
       }
       
-      if (!data.user) {
+      if (!data?.user) {
         throw new Error('Registration failed');
       }
       
