@@ -62,12 +62,19 @@ const getApiConfig = () => {
     enableMockData: config?.backendConfig?.enableMockData || true, // Always enable for fallback
     fallbackUrls: config?.backendConfig?.fallbackUrls || [
       'http://localhost:3000',
+      'http://localhost:3001',
       'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
       'http://10.0.2.2:3000', // Android emulator
+      'http://10.0.2.2:3001', // Android emulator
       `http://${getLocalIP()}:3000`,
+      `http://${getLocalIP()}:3001`,
       'http://192.168.1.100:3000',
+      'http://192.168.1.100:3001',
       'http://192.168.0.100:3000',
-      'http://10.0.0.100:3000'
+      'http://192.168.0.100:3001',
+      'http://10.0.0.100:3000',
+      'http://10.0.0.100:3001'
     ]
   };
   
