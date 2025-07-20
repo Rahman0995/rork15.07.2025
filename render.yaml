@@ -1,9 +1,8 @@
 services:
   - type: web
     name: military-app-backend
-    env: node
-    buildCommand: cd backend && bun install && bun run build
-    startCommand: cd backend && bun run start
+    env: docker
+    dockerfilePath: ./Dockerfile.backend
     plan: free
     region: oregon
     envVars:
@@ -15,8 +14,10 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         value: "*"
-      - key: DATABASE_PATH
-        value: "./data/database.sqlite"
+      - key: DATABASE_URL
+        value: "sqlite:///app/data/database.sqlite"
+      - key: USE_SQLITE
+        value: "true"
     
   - type: web
     name: military-app-frontend
