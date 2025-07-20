@@ -9,7 +9,13 @@ console.log('🚀 Building for Netlify deployment...');
 try {
   // Set environment variables for production build
   process.env.NODE_ENV = 'production';
-  process.env.EXPO_PUBLIC_API_URL = 'https://your-backend-url.com/api'; // Update this with your actual backend URL
+  process.env.EXPO_PUBLIC_API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+  
+  // Copy netlify-specific config
+  if (fs.existsSync('app.config.netlify.js')) {
+    fs.copyFileSync('app.config.netlify.js', 'app.config.js');
+    console.log('📋 Using Netlify-specific configuration');
+  }
   
   console.log('📦 Installing dependencies...');
   execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
