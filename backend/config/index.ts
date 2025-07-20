@@ -48,6 +48,37 @@ export const config = {
 };
 
 export const validateConfig = () => {
-  // Add validation logic here if needed
+  const requiredEnvVars = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+  ];
+
+  if (process.env.NODE_ENV === 'production') {
+    requiredEnvVars.push('CORS_ORIGIN');
+    
+    // Проверяем что JWT_SECRET не дефолтный
+    if (process.env.JWT_SECRET === 'your-super-secret-jwt-key' || 
+        process.env.JWT_SECRET === 'your-super-secret-jwt-key-change-this-in-production') {
+      throw new Error('JWT_SECRET must be changed in production!');
+    }
+    
+    // Проверяем минимальную длину JWT_SECRET
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+      throw new Error('JWT_SECRET must be at least 32 characters long in production!');
+    }
+  }
+
+  for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+      throw new Error(`Missing required environment variable: ${envVar}`);
+    }
+  }
+
   return true;
+};
+
+// Генерация безопасного JWT секрета
+export const generateJWTSecret = () => {
+  const crypto = require('crypto');
+  return crypto.randomBytes(64).toString('hex');
 };

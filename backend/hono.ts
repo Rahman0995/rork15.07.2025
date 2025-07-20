@@ -7,6 +7,11 @@ import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 import { config, validateConfig } from "./config";
 import { initializeDatabase, closeDatabase } from "./database";
+import { 
+  rateLimitMiddleware, 
+  securityHeadersMiddleware, 
+  requestValidationMiddleware 
+} from "./middleware/security";
 
 // Валидация конфигурации при запуске
 try {
@@ -20,7 +25,16 @@ try {
 // app will be mounted at /api
 const app = new Hono();
 
-// Middleware
+// Security middleware (применяется первым)
+app.use("*", securityHeadersMiddleware());
+app.use("*", requestValidationMiddleware());
+
+// Rate limiting (только в production)
+if (process.env.NODE_ENV === 'production') {
+  app.use("*", rateLimitMiddleware());
+}
+
+// Logging middleware
 app.use("*", logger());
 app.use("*", prettyJSON());
 
