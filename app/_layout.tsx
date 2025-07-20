@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
+import { SupabaseAuthProvider } from '@/store/supabaseAuthStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,8 +18,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="auto" />
-        <Stack>
+        <SupabaseAuthProvider>
+          <StatusBar style="auto" />
+          <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="register" options={{ headerShown: false }} />
@@ -45,6 +47,7 @@ export default function RootLayout() {
           <Stack.Screen name="settings/profile-edit" options={{ title: 'Edit Profile' }} />
           <Stack.Screen name="+not-found" />
         </Stack>
+        </SupabaseAuthProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

@@ -1,93 +1,59 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Animated, Dimensions, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/store/authStore';
-import { useTasksStore } from '@/store/tasksStore';
-import { useReportsStore } from '@/store/reportsStore';
-import { useNotificationsStore } from '@/store/notificationsStore';
-import { trpc } from '@/lib/trpc';
+import { useSupabaseAuth } from '@/store/supabaseAuthStore';
+import { useTasks, useReports, useUserTasks, useUserReports } from '@/lib/supabaseHooks';
 import { TaskCard } from '@/components/TaskCard';
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
-import { DataManager } from '@/components/DataManager';
-import { QuickAddCard } from '@/components/QuickAddCard';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
-import { ConnectionStatus } from '@/components/ConnectionStatus';
-import { NotificationBadge } from '@/components/NotificationBadge';
-import { NetworkConnectionTest } from '@/components/NetworkConnectionTest';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Platform } from 'react-native';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
-import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock } from 'lucide-react-native';
-import { Task, Report } from '@/types';
+import { FileText, CheckSquare, Plus, ArrowRight, TrendingUp, Shield, Clock, User } from 'lucide-react-native';
 
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { user, isAuthenticated, isInitialized } = useAuthStore();
-  const { tasks, fetchTasks, isLoading: tasksLoading } = useTasksStore();
-  const { reports, fetchReports, isLoading: reportsLoading } = useReportsStore();
-  const { notifications, fetchNotifications } = useNotificationsStore();
+  const { user, isAuthenticated, initialized, loading } = useSupabaseAuth();
   const { colors, isDark } = useTheme();
   const styles = createStyles(colors);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [isDataManagerVisible, setIsDataManagerVisible] = useState(false);
-  const [quickAddType, setQuickAddType] = useState<'task' | 'report' | null>(null);
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
+
+  // Fetch data using Supabase hooks
+  const { data: allTasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
+  const { data: allReports, isLoading: reportsLoading, refetch: refetchReports } = useReports();
+  const { data: userTasks, refetch: refetchUserTasks } = useUserTasks(user?.id || '');
+  const { data: userReports, refetch: refetchUserReports } = useUserReports(user?.id || '');
   
   // Debug logging
   if (__DEV__) {
     console.log('Home render:', {
-      isInitialized,
+      initialized,
       isAuthenticated,
       hasUser: !!user,
-      userName: user?.name,
-      tasksCount: tasks?.length || 0,
-      reportsCount: reports?.length || 0,
+      userEmail: user?.email,
+      tasksCount: allTasks?.length || 0,
+      reportsCount: allReports?.length || 0,
+      userTasksCount: userTasks?.length || 0,
+      userReportsCount: userReports?.length || 0,
       tasksLoading,
-      reportsLoading
+      reportsLoading,
+      loading
     });
   }
-
-  
-  // Test tRPC connection (enabled for mobile with proper error handling)
-  const { data: backendTest, isLoading: backendLoading, error: backendError } = trpc.example.hi.useQuery(
-    { name: user?.name || 'Anonymous' },
-    { 
-      enabled: !!user, // Enable when user is available
-      retry: 1, // Only retry once
-      staleTime: 60000, // Cache for 1 minute
-      refetchOnWindowFocus: false,
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-
-    }
-  );
-  
-  // Log backend connection status
-  useEffect(() => {
-    if (__DEV__) {
-      if (backendError) {
-        console.warn('Backend connection failed:', backendError);
-      } else if (backendTest) {
-        console.log('Backend connected successfully:', backendTest);
-      }
-    }
-  }, [backendTest, backendError]);
   
   useEffect(() => {
     if (isAuthenticated && user) {
-      if (__DEV__) console.log('Home: User authenticated, fetching data...');
-      fetchTasks();
-      fetchReports();
-      fetchNotifications(user.id);
+      if (__DEV__) console.log('Home: User authenticated, data will be fetched automatically by React Query');
       
       // Animate content appearance
       Animated.parallel([
@@ -105,42 +71,45 @@ export default function HomeScreen() {
     }
   }, [isAuthenticated, user]);
   
-  const userTasks = useMemo(() => {
-    if (!user || !tasks || !Array.isArray(tasks)) return [];
-    return tasks.filter(task => task.assignedTo === user.id)
-      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+  const displayTasks = useMemo(() => {
+    if (!userTasks || !Array.isArray(userTasks)) return [];
+    return userTasks
+      .sort((a, b) => new Date(a.due_date || '').getTime() - new Date(b.due_date || '').getTime())
       .slice(0, 3);
-  }, [tasks, user]);
+  }, [userTasks]);
   
   const recentReports = useMemo(() => {
-    if (!reports) return [];
-    return reports
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    if (!userReports || !Array.isArray(userReports)) return [];
+    return userReports
+      .sort((a, b) => new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime())
       .slice(0, 3);
-  }, [reports]);
+  }, [userReports]);
   
-  const handleRefresh = () => {
-    fetchTasks();
-    fetchReports();
-    if (user) {
-      fetchNotifications(user.id);
+  const handleRefresh = async () => {
+    try {
+      await Promise.all([
+        refetchTasks(),
+        refetchReports(),
+        refetchUserTasks(),
+        refetchUserReports()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      Alert.alert('Ошибка', 'Не удалось обновить данные');
     }
   };
   
-  const unreadNotifications = notifications.filter(n => n.userId === user?.id && !n.read);
-  
 
-  
-  const navigateToTask = (task: Task) => {
+  const navigateToTask = (task: any) => {
     router.push(`/task/${task.id}`);
   };
   
-  const navigateToReport = (report: Report) => {
+  const navigateToReport = (report: any) => {
     router.push(`/report/${report.id}`);
   };
 
   // Show loading only if not initialized
-  if (!isInitialized) {
+  if (!initialized || loading) {
     return (
       <View style={styles.authContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -153,7 +122,11 @@ export default function HomeScreen() {
   if (!isAuthenticated || !user) {
     return (
       <View style={styles.authContainer}>
-        <Text style={styles.authText}>Требуется авторизация</Text>
+        <View style={styles.authIconContainer}>
+          <User size={48} color={colors.primary} />
+        </View>
+        <Text style={styles.authTitle}>Добро пожаловать</Text>
+        <Text style={styles.authText}>Войдите в систему для доступа к функциям приложения</Text>
         <Button 
           title="Войти" 
           onPress={() => router.push('/login')} 
@@ -177,11 +150,7 @@ export default function HomeScreen() {
           />
         }
         showsVerticalScrollIndicator={false}
-
       >
-        {/* Network Diagnostics (Development Only) */}
-        {__DEV__ && <NetworkConnectionTest />}
-        
         {/* Supabase Status (Development Only) */}
         {__DEV__ && (
           <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
@@ -198,18 +167,18 @@ export default function HomeScreen() {
               </View>
               <View style={styles.userDetails}>
                 <Text style={styles.greeting}>Добро пожаловать</Text>
-                <Text style={styles.name}>{user.rank} {user.name}</Text>
+                <Text style={styles.name}>{user.user_metadata?.full_name || user.email}</Text>
+                {user.user_metadata?.rank && (
+                  <Text style={styles.rank}>{user.user_metadata.rank}</Text>
+                )}
               </View>
             </View>
             
             <View style={styles.headerRight}>
               <StatusIndicator 
                 isOnline={true}
-                serverStatus={backendError ? 'error' : (backendTest ? 'connected' : 'disconnected')}
+                serverStatus="connected"
               />
-              {Platform.OS !== 'web' && backendError && (
-                <Text style={styles.mockModeText}>Mock режим</Text>
-              )}
             </View>
 
           </View>
@@ -235,7 +204,7 @@ export default function HomeScreen() {
             <CheckSquare size={20} color={colors.primary} />
           </View>
           <View style={styles.statContent}>
-            <Text style={styles.statNumber}>{userTasks.length}</Text>
+            <Text style={styles.statNumber}>{displayTasks.length}</Text>
             <Text style={styles.statLabel}>Активных задач</Text>
           </View>
           <View style={styles.statTrend}>
@@ -248,7 +217,7 @@ export default function HomeScreen() {
             <FileText size={20} color={colors.secondary} />
           </View>
           <View style={styles.statContent}>
-            <Text style={styles.statNumber}>{reports?.length || 0}</Text>
+            <Text style={styles.statNumber}>{recentReports?.length || 0}</Text>
             <Text style={styles.statLabel}>Отчетов</Text>
           </View>
           <View style={styles.statTrend}>
@@ -288,9 +257,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         
-        {userTasks.length > 0 ? (
+        {displayTasks.length > 0 ? (
           <View style={styles.cardsContainer}>
-            {userTasks.map(task => (
+            {displayTasks.map(task => (
               <TaskCard key={task.id} task={task} onPress={navigateToTask} />
             ))}
           </View>
@@ -342,13 +311,7 @@ export default function HomeScreen() {
       </ScrollView>
       
       {/* Floating Action Button */}
-      <FloatingActionButton onPress={() => setIsDataManagerVisible(true)} />
-      
-      {/* Data Manager Modal */}
-      <DataManager 
-        visible={isDataManagerVisible} 
-        onClose={() => setIsDataManagerVisible(false)} 
-      />
+      <FloatingActionButton onPress={() => setIsMenuVisible(true)} />
       
       {/* Floating Menu */}
       <FloatingMenu 
@@ -374,14 +337,33 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
+    backgroundColor: colors.background,
   },
-  authText: {
-    fontSize: 18,
+  authIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primarySoft,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 24,
+  },
+  authTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 8,
     textAlign: 'center',
   },
+  authText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 32,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
   authButton: {
-    minWidth: 120,
+    minWidth: 160,
   },
   
   // Header Styles
@@ -427,6 +409,13 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: -0.3,
+    color: colors.text,
+  },
+  rank: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.primary,
+    marginTop: 2,
   },
   headerRight: {
     flexDirection: 'row',
