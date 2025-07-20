@@ -1,0 +1,26 @@
+{
+  "name": "military-unit-management-app",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "bun backend/index.ts",
+    "backend:start": "bun backend/index.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.16.0",
+    "@hono/trpc-server": "^0.4.0",
+    "@trpc/server": "^11.4.3",
+    "@types/uuid": "^10.0.0",
+    "hono": "^4.8.5",
+    "mysql2": "^3.14.2",
+    "superjson": "^2.2.2",
+    "ts-node": "^10.9.2",
+    "zod": "^4.0.5",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/react": "~19.0.10",
+    "typescript": "~5.8.3"
+  },
+  "private": true
+}
