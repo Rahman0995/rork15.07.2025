@@ -158,6 +158,59 @@ export const trpcClient = createTRPCProxyClient<AppRouter>({
             });
           }
 
+          // Mock auth endpoints
+          if (url.includes('auth.register')) {
+            // Parse the input to get user data from the request
+            let userData = {
+              email: 'user@example.com',
+              name: 'Mock User',
+              rank: 'Рядовой',
+              unit: 'Mock Unit',
+              phone: '',
+              role: 'soldier'
+            };
+            
+            try {
+              const urlObj = new URL(url);
+              const inputParam = urlObj.searchParams.get('input');
+              if (inputParam) {
+                const parsedInput = JSON.parse(decodeURIComponent(inputParam));
+                if (parsedInput.json) {
+                  userData = { ...userData, ...parsedInput.json };
+                }
+              }
+            } catch (e) {
+              // Use default userData if parsing fails
+            }
+            
+            const mockResponse = {
+              result: {
+                data: {
+                  json: {
+                    success: true,
+                    user: {
+                      id: Math.random().toString(36).substr(2, 9),
+                      email: userData.email,
+                      name: userData.name,
+                      rank: userData.rank,
+                      role: userData.role,
+                      avatar: '',
+                      unit: userData.unit,
+                      phone: userData.phone || '',
+                    },
+                    token: 'mock-jwt-token',
+                    refreshToken: 'mock-refresh-token',
+                  }
+                }
+              }
+            };
+            
+            return new Response(JSON.stringify(mockResponse), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
           // Mock responses for tasks
           if (url.includes('tasks.getAll')) {
             return new Response(JSON.stringify({
@@ -349,6 +402,59 @@ export function createTRPCReactClient() {
                     headers: { 'Content-Type': 'application/json' }
                   });
                 }
+                
+                return new Response(JSON.stringify(mockResponse), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+
+              // Mock auth endpoints
+              if (url.includes('auth.register')) {
+                // Parse the input to get user data from the request
+                let userData = {
+                  email: 'user@example.com',
+                  name: 'Mock User',
+                  rank: 'Рядовой',
+                  unit: 'Mock Unit',
+                  phone: '',
+                  role: 'soldier'
+                };
+                
+                try {
+                  const urlObj = new URL(url);
+                  const inputParam = urlObj.searchParams.get('input');
+                  if (inputParam) {
+                    const parsedInput = JSON.parse(decodeURIComponent(inputParam));
+                    if (parsedInput.json) {
+                      userData = { ...userData, ...parsedInput.json };
+                    }
+                  }
+                } catch (e) {
+                  // Use default userData if parsing fails
+                }
+                
+                const mockResponse = {
+                  result: {
+                    data: {
+                      json: {
+                        success: true,
+                        user: {
+                          id: Math.random().toString(36).substr(2, 9),
+                          email: userData.email,
+                          name: userData.name,
+                          rank: userData.rank,
+                          role: userData.role,
+                          avatar: '',
+                          unit: userData.unit,
+                          phone: userData.phone || '',
+                        },
+                        token: 'mock-jwt-token',
+                        refreshToken: 'mock-refresh-token',
+                      }
+                    }
+                  }
+                };
                 
                 return new Response(JSON.stringify(mockResponse), {
                   status: 200,
