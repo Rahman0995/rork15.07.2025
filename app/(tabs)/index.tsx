@@ -207,9 +207,9 @@ export default function HomeScreen() {
                 isOnline={true}
                 serverStatus={backendError ? 'error' : (backendTest ? 'connected' : 'disconnected')}
               />
-              {Platform.OS !== 'web' && backendError ? (
+              {Platform.OS !== 'web' && backendError && (
                 <Text style={styles.mockModeText}>Mock режим</Text>
-              ) : null}
+              )}
             </View>
 
           </View>
