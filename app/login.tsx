@@ -66,7 +66,7 @@ export default function LoginScreen() {
         setError('');
         const result = await signIn(email, password);
         if (result.error) {
-          setError(result.error.message || 'Ошибка входа');
+          setError(result.error?.message || 'Ошибка входа');
         }
       }
     } catch (error: any) {
