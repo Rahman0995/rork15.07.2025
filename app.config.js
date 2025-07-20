@@ -7,11 +7,11 @@ const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 const YOUR_IP_ADDRESS = process.env.LOCAL_IP || '192.168.1.100'; // Default to common local IP
 
 // Production domain configuration
-const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'your-production-domain.com';
+const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://qcdqofdmflhgsabyopfe.supabase.co';
 
 const getApiUrl = () => {
 if (IS_DEV) {
-  return `http://${YOUR_IP_ADDRESS}:3000/api`;
+  return `http://${sb_secret_PFfzT8jXeyzf3WTGs3JfLQ_3ooTE0MX}:3000/api`;
 }
 // Production API URL - ОБЯЗАТЕЛЬНО ОБНОВИТЕ!
 // Railway: return 'https://your-app.railway.app/api';
