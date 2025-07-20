@@ -9,7 +9,8 @@ services:
   buildCommand: bun install
   startCommand: node expo-router/entry
   autoDeployTrigger: commit
-version: "1"        
+version: "1"  
+
   - type: web
     name: military-app-backend
     env: docker
