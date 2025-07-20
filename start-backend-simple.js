@@ -67,6 +67,69 @@ const server = http.createServer((req, res) => {
       return;
     }
     
+    // Auth login endpoint
+    if (path.includes('auth.login')) {
+      const mockResponse = [{
+        result: {
+          data: {
+            success: true,
+            user: {
+              id: '1',
+              email: 'admin@example.com',
+              name: 'Администратор',
+              rank: 'Полковник',
+              role: 'admin',
+              avatar: '',
+              unit: 'Штаб',
+              phone: '+7 (999) 123-45-67'
+            },
+            token: 'mock-jwt-token',
+            refreshToken: 'mock-refresh-token'
+          }
+        }
+      }];
+      res.end(JSON.stringify(mockResponse));
+      return;
+    }
+    
+    // Auth register endpoint
+    if (path.includes('auth.register')) {
+      const mockResponse = [{
+        result: {
+          data: {
+            success: true,
+            user: {
+              id: Math.random().toString(36).substr(2, 9),
+              email: 'new@example.com',
+              name: 'Новый пользователь',
+              rank: 'Рядовой',
+              role: 'soldier',
+              avatar: '',
+              unit: 'Подразделение',
+              phone: ''
+            },
+            token: 'mock-jwt-token',
+            refreshToken: 'mock-refresh-token'
+          }
+        }
+      }];
+      res.end(JSON.stringify(mockResponse));
+      return;
+    }
+    
+    // Auth verify endpoint
+    if (path.includes('auth.verify')) {
+      const mockResponse = [{
+        result: {
+          data: {
+            success: true
+          }
+        }
+      }];
+      res.end(JSON.stringify(mockResponse));
+      return;
+    }
+    
     if (path.includes('tasks.getAll')) {
       const mockResponse = [{
         result: {

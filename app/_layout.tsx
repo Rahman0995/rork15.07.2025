@@ -12,6 +12,7 @@ import { useTheme } from "@/constants/theme";
 import { Platform, View, Text, TouchableOpacity } from "react-native";
 import { BlurView } from "expo-blur";
 import { trpc, createTRPCReactClient } from "@/lib/trpc";
+import { SupabaseAuthProvider } from "@/store/supabaseAuthStore";
 
 // Debug: Check if imports are working
 console.log('tRPC imports:', { trpc: typeof trpc, createTRPCReactClient: typeof createTRPCReactClient });
@@ -264,7 +265,9 @@ function RootLayoutWrapper() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
-        <RootLayoutNav />
+        <SupabaseAuthProvider>
+          <RootLayoutNav />
+        </SupabaseAuthProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

@@ -117,11 +117,11 @@ export const NetworkConnectionTest: React.FC<NetworkConnectionTestProps> = ({
         </Text>
       </View>
       
-      {lastError && (
+      {lastError ? (
         <Text style={styles.errorText} numberOfLines={2}>
           {lastError}
         </Text>
-      )}
+      ) : null}
       
       <View style={styles.actions}>
         <Pressable 
@@ -140,14 +140,14 @@ export const NetworkConnectionTest: React.FC<NetworkConnectionTestProps> = ({
           <Text style={styles.buttonText}>Diagnose</Text>
         </Pressable>
         
-        {diagnostics && (
+        {diagnostics ? (
           <Pressable 
             onPress={showDiagnostics}
             style={[styles.button, styles.infoButton]}
           >
             <Text style={styles.buttonText}>Info</Text>
           </Pressable>
-        )}
+        ) : null}
       </View>
     </View>
   );
