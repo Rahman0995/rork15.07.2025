@@ -1,22 +1,18 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../../../../../../../../backend/trpc/create-context';
-import { Task, TaskStatus } from '../../../../../../../../../types';
+import { publicProcedure } from '../../create-context';
+import { Task, TaskStatus, TaskPriority } from '../../../types';
 
-
+// Input schemas
+const getTasksInputSchema = z.object({
+  assignedTo: z.string().optional(),
+  createdBy: z.string().optional(),
+  status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+}).optional();
 
 export const getTasksProcedure = publicProcedure
-  .input(z.object({
-    assignedTo: z.string().optional(),
-    createdBy: z.string().optional(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-  }).optional())
-  .query(async ({ input }: { input?: z.infer<typeof z.object({
-    assignedTo: z.string().optional(),
-    createdBy: z.string().optional(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-  }).optional()> }) => {
+  .input(getTasksInputSchema)
+  .query(async ({ input }) => {
     try {
       console.log('Fetching tasks with filters:', input);
       
@@ -61,13 +57,13 @@ export const getTasksProcedure = publicProcedure
     }
   });
 
+const getTaskByIdInputSchema = z.object({
+  id: z.string(),
+});
+
 export const getTaskByIdProcedure = publicProcedure
-  .input(z.object({
-    id: z.string(),
-  }))
-  .query(async ({ input }: { input: z.infer<typeof z.object({
-    id: z.string(),
-  })> }) => {
+  .input(getTaskByIdInputSchema)
+  .query(async ({ input }) => {
     try {
       console.log('Fetching task by ID:', input.id);
       
@@ -92,23 +88,18 @@ export const getTaskByIdProcedure = publicProcedure
     }
   });
 
+const createTaskInputSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  assignedTo: z.string(),
+  createdBy: z.string(),
+  dueDate: z.string(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+});
+
 export const createTaskProcedure = publicProcedure
-  .input(z.object({
-    title: z.string(),
-    description: z.string(),
-    assignedTo: z.string(),
-    createdBy: z.string(),
-    dueDate: z.string(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-  }))
-  .mutation(async ({ input }: { input: z.infer<typeof z.object({
-    title: z.string(),
-    description: z.string(),
-    assignedTo: z.string(),
-    createdBy: z.string(),
-    dueDate: z.string(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-  })> }) => {
+  .input(createTaskInputSchema)
+  .mutation(async ({ input }) => {
     try {
       console.log('Creating task:', input);
       
@@ -134,23 +125,18 @@ export const createTaskProcedure = publicProcedure
     }
   });
 
+const updateTaskInputSchema = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  dueDate: z.string().optional(),
+});
+
 export const updateTaskProcedure = publicProcedure
-  .input(z.object({
-    id: z.string(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-    dueDate: z.string().optional(),
-  }))
-  .mutation(async ({ input }: { input: z.infer<typeof z.object({
-    id: z.string(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-    dueDate: z.string().optional(),
-  })> }) => {
+  .input(updateTaskInputSchema)
+  .mutation(async ({ input }) => {
     try {
       console.log('Updating task:', input);
       
@@ -166,7 +152,7 @@ export const updateTaskProcedure = publicProcedure
         createdBy: 'user-1',
         dueDate: input.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         status: (input.status as TaskStatus) || 'pending',
-        priority: (input.priority as 'low' | 'medium' | 'high') || 'medium',
+        priority: (input.priority as TaskPriority) || 'medium',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -178,13 +164,13 @@ export const updateTaskProcedure = publicProcedure
     }
   });
 
+const deleteTaskInputSchema = z.object({
+  id: z.string(),
+});
+
 export const deleteTaskProcedure = publicProcedure
-  .input(z.object({
-    id: z.string(),
-  }))
-  .mutation(async ({ input }: { input: z.infer<typeof z.object({
-    id: z.string(),
-  })> }) => {
+  .input(deleteTaskInputSchema)
+  .mutation(async ({ input }) => {
     try {
       console.log('Deleting task:', input.id);
       
@@ -208,15 +194,14 @@ export const deleteTaskProcedure = publicProcedure
     }
   });
 
+const getTaskStatsInputSchema = z.object({
+  assignedTo: z.string().optional(),
+  createdBy: z.string().optional(),
+}).optional();
+
 export const getTaskStatsProcedure = publicProcedure
-  .input(z.object({
-    assignedTo: z.string().optional(),
-    createdBy: z.string().optional(),
-  }).optional())
-  .query(async ({ input }: { input?: z.infer<typeof z.object({
-    assignedTo: z.string().optional(),
-    createdBy: z.string().optional(),
-  }).optional()> }) => {
+  .input(getTaskStatsInputSchema)
+  .query(async ({ input }) => {
     try {
       console.log('Fetching task stats:', input);
       
