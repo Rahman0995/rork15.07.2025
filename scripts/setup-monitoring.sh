@@ -1,12 +1,113 @@
 #!/bin/bash
 
-# Monitoring setup script
+# Скрипт для настройки мониторинга сервера
 
 set -e
 
-echo "📊 Setting up monitoring and logging..."
+# Цвета для вывода
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Создаем директории
+echo -e "${GREEN}📊 Настройка мониторинга сервера${NC}"
+
+# Создаем директорию для логов
+sudo mkdir -p /var/log/rork-app
+sudo chown $USER:$USER /var/log/rork-app
+
+# Создаем скрипт для проверки здоровья сервера
+cat > /tmp/health-check.sh << 'EOF'
+#!/bin/bash
+
+# Скрипт проверки здоровья сервера
+LOG_FILE="/var/log/rork-app/health-check.log"
+API_URL="${EXPO_PUBLIC_RORK_API_BASE_URL:-http://localhost:3000}"
+
+# Функция логирования
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+}
+
+# Проверка API
+check_api() {
+    if curl -s -f "$API_URL/api/health" > /dev/null; then
+        log "✅ API доступен"
+        return 0
+    else
+        log "❌ API недоступен"
+        return 1
+    fi
+}
+
+# Проверка базы данных
+check_database() {
+    if curl -s -f "$API_URL/api/health" | grep -q "database.*connected"; then
+        log "✅ База данных подключена"
+        return 0
+    else
+        log "❌ Проблемы с базой данных"
+        return 1
+    fi
+}
+
+# Проверка использования диска
+check_disk_usage() {
+    DISK_USAGE=$(df / | awk 'NR==2 {print $5}' | sed 's/%//')
+    if [ "$DISK_USAGE" -lt 80 ]; then
+        log "✅ Использование диска: ${DISK_USAGE}%"
+        return 0
+    else
+        log "⚠️  Высокое использование диска: ${DISK_USAGE}%"
+        return 1
+    fi
+}
+
+# Проверка использования памяти
+check_memory_usage() {
+    MEMORY_USAGE=$(free | awk 'NR==2{printf "%.0f", $3*100/$2}')
+    if [ "$MEMORY_USAGE" -lt 80 ]; then
+        log "✅ Использование памяти: ${MEMORY_USAGE}%"
+        return 0
+    else
+        log "⚠️  Высокое использование памяти: ${MEMORY_USAGE}%"
+        return 1
+    fi
+}
+
+# Основная проверка
+main() {
+    log "🔄 Начало проверки здоровья"
+    
+    ERRORS=0
+    
+    check_api || ((ERRORS++))
+    check_database || ((ERRORS++))
+    check_disk_usage || ((ERRORS++))
+    check_memory_usage || ((ERRORS++))
+    
+    if [ $ERRORS -eq 0 ]; then
+        log "✅ Все проверки пройдены успешно"
+    else
+        log "❌ Обнаружено $ERRORS проблем"
+        
+        # Отправляем уведомление (настройте под ваши нужды)
+        # curl -X POST "https://api.telegram.org/bot<TOKEN>/sendMessage" \
+        #      -d "chat_id=<CHAT_ID>" \
+        #      -d "text=⚠️ Проблемы с сервером: $ERRORS ошибок"
+    fi
+    
+    log "🏁 Проверка завершена"
+}
+
+main
+EOF
+
+# Перемещаем скрипт и делаем исполняемым
+sudo mv /tmp/health-check.sh /usr/local/bin/health-check.sh
+sudo chmod +x /usr/local/bin/health-check.sh
+
+# Создаем директории для мониторинга
 mkdir -p monitoring/prometheus
 mkdir -p monitoring/grafana
 mkdir -p logs

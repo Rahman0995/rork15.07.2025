@@ -1,22 +1,51 @@
 #!/bin/bash
 
-# Production deployment script
+# Скрипт для деплоя в production
 
 set -e
 
-echo "🚀 Starting production deployment..."
+# Цвета для вывода
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Проверяем наличие необходимых файлов
-if [ ! -f ".env.production" ]; then
-    echo "❌ .env.production file not found!"
-    echo "Please create .env.production with your production configuration"
+echo -e "${GREEN}🚀 Деплой Military Management System в Production${NC}"
+echo ""
+
+# Проверяем, что мы в правильной директории
+if [ ! -f "package.json" ] || [ ! -f "docker-compose.production.yml" ]; then
+    echo -e "${RED}❌ Ошибка: Запустите скрипт из корневой директории проекта${NC}"
     exit 1
 fi
 
-if [ ! -f "ssl/cert.pem" ] || [ ! -f "ssl/key.pem" ]; then
-    echo "❌ SSL certificates not found!"
-    echo "Please run: ./scripts/generate-ssl.sh your-domain.com your-email@domain.com"
+# Функция для проверки команд
+check_command() {
+    if ! command -v $1 &> /dev/null; then
+        echo -e "${RED}❌ $1 не установлен. Установите его и повторите попытку.${NC}"
+        exit 1
+    fi
+}
+
+# Проверяем необходимые команды
+echo -e "${YELLOW}🔍 Проверка зависимостей...${NC}"
+check_command docker
+check_command docker-compose
+check_command curl
+
+# Проверяем наличие .env.production
+if [ ! -f ".env.production" ]; then
+    echo -e "${RED}❌ Файл .env.production не найден${NC}"
+    echo "Создайте файл .env.production с production настройками"
     exit 1
+fi
+
+# SSL сертификаты не обязательны на начальном этапе
+if [ ! -f "ssl/cert.pem" ] || [ ! -f "ssl/key.pem" ]; then
+    echo -e "${YELLOW}⚠️  SSL сертификаты не найдены${NC}"
+    echo "Запустите ./scripts/setup-ssl.sh your-domain.com для настройки SSL"
+    echo "Продолжаем без SSL..."
 fi
 
 # Загружаем переменные окружения
