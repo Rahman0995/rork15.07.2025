@@ -1,65 +1,40 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
-import { useSupabaseAuth } from '@/store/supabaseAuthStore';
-import { useUsers, useCreateUser } from '@/lib/supabaseHooks';
 import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 
 export const SupabaseTest: React.FC = () => {
-  const { user, session, loading, signIn, signUp, signOut, isAuthenticated } = useSupabaseAuth();
-  const { data: users, isLoading: usersLoading, error: usersError } = useUsers();
-  const createUserMutation = useCreateUser();
   
-  const [email, setEmail] = useState('test@example.com');
-  const [password, setPassword] = useState('testpassword123');
-  const [firstName, setFirstName] = useState('Тест');
-  const [lastName, setLastName] = useState('Пользователь');
+  const [status, setStatus] = useState('Проверка...');
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = async () => {
-    try {
-      const { error } = await signUp(email, password, {
-        first_name: firstName,
-        last_name: lastName,
-        role: 'soldier',
-      });
-      
-      if (error) {
-        Alert.alert('Ошибка регистрации', error.message);
-      } else {
-        Alert.alert('Успех', 'Пользователь зарегистрирован! Проверьте email для подтверждения.');
-      }
-    } catch (error: any) {
-      Alert.alert('Ошибка', error.message);
-    }
-  };
+  React.useEffect(() => {
+    checkConfiguration();
+  }, []);
 
-  const handleSignIn = async () => {
-    try {
-      const { error } = await signIn(email, password);
-      
-      if (error) {
-        Alert.alert('Ошибка входа', error.message);
-      } else {
-        Alert.alert('Успех', 'Вход выполнен успешно!');
-      }
-    } catch (error: any) {
-      Alert.alert('Ошибка', error.message);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      Alert.alert('Успех', 'Выход выполнен успешно!');
-    } catch (error: any) {
-      Alert.alert('Ошибка', error.message);
-    }
+  const checkConfiguration = () => {
+    const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+    const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+    
+    const configured = url && key && 
+      url !== 'https://your-project-ref.supabase.co' && 
+      key !== 'your-anon-key-here';
+    
+    setIsConfigured(!!configured);
+    setStatus(configured ? '✅ Настроен' : '❌ Не настроен');
   };
 
   const testConnection = async () => {
+    if (!supabase) {
+      Alert.alert('Ошибка', 'Supabase не настроен');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const { data, error } = await supabase.from('users').select('count').single();
+      const { data, error } = await supabase.auth.getSession();
       
       if (error) {
         Alert.alert('Ошибка подключения', error.message);
@@ -67,26 +42,9 @@ export const SupabaseTest: React.FC = () => {
         Alert.alert('Успех', 'Подключение к Supabase работает!');
       }
     } catch (error: any) {
-      Alert.alert('Ошибка', error.message);
-    }
-  };
-
-  const createTestUser = async () => {
-    try {
-      const userData = {
-        email: `test-${Date.now()}@example.com`,
-        password_hash: '$2b$10$example.hash.for.demo.purposes.only',
-        first_name: 'Тестовый',
-        last_name: 'Пользователь',
-        rank: 'Рядовой',
-        role: 'soldier',
-        unit: 'Тестовое подразделение',
-      };
-
-      await createUserMutation.mutateAsync(userData);
-      Alert.alert('Успех', 'Тестовый пользователь создан!');
-    } catch (error: any) {
-      Alert.alert('Ошибка', error.message);
+      Alert.alert('Ошибка', error.message || 'Неизвестная ошибка');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,121 +52,52 @@ export const SupabaseTest: React.FC = () => {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Тест Supabase</Text>
       
-      {/* Статус подключения */}
+      {/* Статус конфигурации */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Статус подключения</Text>
+        <Text style={styles.sectionTitle}>Конфигурация</Text>
         <Text style={styles.status}>
-          Аутентифицирован: {isAuthenticated ? '✅ Да' : '❌ Нет'}
+          URL: {process.env.EXPO_PUBLIC_SUPABASE_URL || 'НЕ НАСТРОЕН'}
         </Text>
         <Text style={styles.status}>
-          Загрузка: {loading ? '⏳ Да' : '✅ Нет'}
+          Key: {process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ? 'НАСТРОЕН' : 'НЕ НАСТРОЕН'}
         </Text>
-        {user && (
-          <Text style={styles.status}>
-            Пользователь: {user.email}
-          </Text>
-        )}
-        <Button title="Тест подключения" onPress={testConnection} />
+        <Text style={styles.status}>
+          Статус: {status}
+        </Text>
+        <Text style={styles.status}>
+          Клиент: {supabase ? '✅ Создан' : '❌ Не создан'}
+        </Text>
       </View>
 
-      {/* Форма аутентификации */}
+      {/* Тест подключения */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Аутентификация</Text>
-        
-        <Input
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        
-        <Input
-          label="Пароль"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        
-        <Input
-          label="Имя"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        
-        <Input
-          label="Фамилия"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        
-        <View style={styles.buttonRow}>
-          <Button 
-            title="Регистрация" 
-            onPress={handleSignUp}
-            disabled={loading}
-            style={styles.button}
-          />
-          <Button 
-            title="Вход" 
-            onPress={handleSignIn}
-            disabled={loading}
-            style={styles.button}
-          />
-        </View>
-        
-        {isAuthenticated && (
-          <Button 
-            title="Выход" 
-            onPress={handleSignOut}
-            disabled={loading}
-            variant="outline"
-          />
-        )}
-      </View>
-
-      {/* Тест данных */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Тест данных</Text>
-        
+        <Text style={styles.sectionTitle}>Тест подключения</Text>
         <Button 
-          title="Создать тестового пользователя" 
-          onPress={createTestUser}
-          disabled={createUserMutation.isPending}
+          title={loading ? "Тестирование..." : "Тест подключения"} 
+          onPress={testConnection}
+          disabled={loading || !isConfigured}
         />
-        
-        <Text style={styles.status}>
-          Загрузка пользователей: {usersLoading ? '⏳ Да' : '✅ Нет'}
-        </Text>
-        
-        {usersError && (
+        {!isConfigured && (
           <Text style={styles.error}>
-            Ошибка: {usersError.message}
-          </Text>
-        )}
-        
-        {users && (
-          <Text style={styles.status}>
-            Найдено пользователей: {users.length}
+            Настройте Supabase в .env файле для тестирования
           </Text>
         )}
       </View>
 
-      {/* Список пользователей */}
-      {users && users.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Пользователи</Text>
-          {users.slice(0, 5).map((user: any) => (
-            <View key={user.id} style={styles.userItem}>
-              <Text style={styles.userName}>
-                {user.first_name} {user.last_name}
-              </Text>
-              <Text style={styles.userEmail}>{user.email}</Text>
-              <Text style={styles.userRole}>{user.role} - {user.rank}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+      {/* Инструкции по настройке */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Настройка Supabase</Text>
+        <Text style={styles.instructions}>
+          1. Создайте проект на supabase.com{'\n'}
+          2. Скопируйте URL и anon key из Settings → API{'\n'}
+          3. Добавьте их в .env файл:{'\n'}
+          {'\n'}
+          EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co{'\n'}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key{'\n'}
+          {'\n'}
+          4. Перезапустите приложение
+        </Text>
+      </View>
     </ScrollView>
   );
 };
@@ -278,5 +167,10 @@ const styles = StyleSheet.create({
   userRole: {
     fontSize: 12,
     color: '#999',
+  },
+  instructions: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
 });

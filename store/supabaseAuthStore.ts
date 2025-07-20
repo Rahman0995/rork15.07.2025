@@ -29,10 +29,24 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
   useEffect(() => {
     let mounted = true;
 
+    // Проверяем, настроен ли Supabase
+    if (!supabase) {
+      console.warn('Supabase не настроен, используется mock режим');
+      if (mounted) {
+        setAuthState({
+          user: null,
+          session: null,
+          loading: false,
+          initialized: true,
+        });
+      }
+      return;
+    }
+
     // Получаем текущую сессию
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase!.auth.getSession();
         
         if (mounted) {
           if (error) {
@@ -67,18 +81,23 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
         console.log('Изменение состояния аутентификации:', event, session?.user?.email);
         
         if (mounted) {
-          setAuthState({
+          setAuthState(prev => ({
+            ...prev,
             user: session?.user ?? null,
             session: session,
             loading: false,
             initialized: true,
-          });
+          }));
 
           // Сохраняем токен в AsyncStorage для использования в API запросах
-          if (session?.access_token) {
-            await AsyncStorage.setItem('supabase_token', session.access_token);
-          } else {
-            await AsyncStorage.removeItem('supabase_token');
+          try {
+            if (session?.access_token) {
+              await AsyncStorage.setItem('supabase_token', session.access_token);
+            } else {
+              await AsyncStorage.removeItem('supabase_token');
+            }
+          } catch (error) {
+            console.error('Ошибка сохранения токена:', error);
           }
         }
       }
@@ -91,6 +110,10 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      return { error: { message: 'Supabase не настроен' } };
+    }
+    
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
       const { data, error } = await auth.signIn(email, password);
@@ -110,6 +133,10 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
   };
 
   const signUp = async (email: string, password: string, userData?: any) => {
+    if (!supabase) {
+      return { error: { message: 'Supabase не настроен' } };
+    }
+    
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
       const { data, error } = await auth.signUp(email, password, userData);
@@ -131,14 +158,20 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
   const signOut = async () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
-      const { error } = await auth.signOut();
       
-      if (error) {
-        console.error('Ошибка выхода:', error);
+      if (supabase) {
+        const { error } = await auth.signOut();
+        if (error) {
+          console.error('Ошибка выхода:', error);
+        }
       }
 
       // Очищаем локальное хранилище
-      await AsyncStorage.removeItem('supabase_token');
+      try {
+        await AsyncStorage.removeItem('supabase_token');
+      } catch (error) {
+        console.error('Ошибка очистки токена:', error);
+      }
       
     } catch (error) {
       console.error('Ошибка выхода:', error);
@@ -148,6 +181,10 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
   };
 
   const updateProfile = async (updates: any) => {
+    if (!supabase) {
+      return { error: { message: 'Supabase не настроен' } };
+    }
+    
     try {
       const { data, error } = await supabase.auth.updateUser(updates);
       
@@ -178,9 +215,14 @@ export const useSupabaseToken = () => {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!supabase) {
+      setToken(null);
+      return;
+    }
+
     const getToken = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase!.auth.getSession();
         setToken(session?.access_token || null);
       } catch (error) {
         console.error('Ошибка получения токена:', error);

@@ -4,21 +4,32 @@ import { Database } from '@/types/supabase';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Supabase URL или Anon Key не настроены. Проверьте переменные окружения.');
+// Проверяем наличие конфигурации Supabase
+const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && 
+  supabaseUrl !== 'https://your-project-ref.supabase.co' && 
+  supabaseAnonKey !== 'your-anon-key-here';
+
+if (!isSupabaseConfigured) {
+  console.warn('⚠️ Supabase не настроен. Используется mock режим.');
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+// Создаем клиент только если Supabase настроен
+export const supabase = isSupabaseConfigured 
+  ? createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: false,
+      },
+    })
+  : null;
 
 // Хелперы для работы с аутентификацией
 export const auth = {
   signUp: async (email: string, password: string, userData?: any) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase не настроен' } };
+    }
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -30,6 +41,9 @@ export const auth = {
   },
 
   signIn: async (email: string, password: string) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase не настроен' } };
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -38,16 +52,25 @@ export const auth = {
   },
 
   signOut: async () => {
+    if (!supabase) {
+      return { error: { message: 'Supabase не настроен' } };
+    }
     const { error } = await supabase.auth.signOut();
     return { error };
   },
 
   getCurrentUser: async () => {
+    if (!supabase) {
+      return { user: null, error: { message: 'Supabase не настроен' } };
+    }
     const { data: { user }, error } = await supabase.auth.getUser();
     return { user, error };
   },
 
   onAuthStateChange: (callback: (event: string, session: any) => void) => {
+    if (!supabase) {
+      return { data: { subscription: { unsubscribe: () => {} } } };
+    }
     return supabase.auth.onAuthStateChange(callback);
   },
 };
@@ -56,68 +79,71 @@ export const auth = {
 export const database = {
   // Пользователи
   users: {
-    getAll: () => supabase.from('users').select('*'),
-    getById: (id: string) => supabase.from('users').select('*').eq('id', id).single(),
-    create: (user: any) => supabase.from('users').insert(user).select().single(),
-    update: (id: string, updates: any) => supabase.from('users').update(updates).eq('id', id).select().single(),
-    delete: (id: string) => supabase.from('users').delete().eq('id', id),
+    getAll: () => supabase?.from('users').select('*') || Promise.resolve({ data: [], error: null }),
+    getById: (id: string) => supabase?.from('users').select('*').eq('id', id).single() || Promise.resolve({ data: null, error: null }),
+    create: (user: any) => supabase?.from('users').insert(user).select().single() || Promise.resolve({ data: null, error: null }),
+    update: (id: string, updates: any) => supabase?.from('users').update(updates).eq('id', id).select().single() || Promise.resolve({ data: null, error: null }),
+    delete: (id: string) => supabase?.from('users').delete().eq('id', id) || Promise.resolve({ data: null, error: null }),
   },
 
   // Задачи
   tasks: {
-    getAll: () => supabase.from('tasks').select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)'),
-    getById: (id: string) => supabase.from('tasks').select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').eq('id', id).single(),
-    create: (task: any) => supabase.from('tasks').insert(task).select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').single(),
-    update: (id: string, updates: any) => supabase.from('tasks').update(updates).eq('id', id).select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').single(),
-    delete: (id: string) => supabase.from('tasks').delete().eq('id', id),
-    getByAssignee: (userId: string) => supabase.from('tasks').select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').eq('assigned_to', userId),
+    getAll: () => supabase?.from('tasks').select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)') || Promise.resolve({ data: [], error: null }),
+    getById: (id: string) => supabase?.from('tasks').select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').eq('id', id).single() || Promise.resolve({ data: null, error: null }),
+    create: (task: any) => supabase?.from('tasks').insert(task).select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    update: (id: string, updates: any) => supabase?.from('tasks').update(updates).eq('id', id).select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    delete: (id: string) => supabase?.from('tasks').delete().eq('id', id) || Promise.resolve({ data: null, error: null }),
+    getByAssignee: (userId: string) => supabase?.from('tasks').select('*, assigned_to:users!tasks_assigned_to_fkey(*), created_by:users!tasks_created_by_fkey(*)').eq('assigned_to', userId) || Promise.resolve({ data: [], error: null }),
   },
 
   // Отчеты
   reports: {
-    getAll: () => supabase.from('reports').select('*, created_by:users!reports_created_by_fkey(*)'),
-    getById: (id: string) => supabase.from('reports').select('*, created_by:users!reports_created_by_fkey(*)').eq('id', id).single(),
-    create: (report: any) => supabase.from('reports').insert(report).select('*, created_by:users!reports_created_by_fkey(*)').single(),
-    update: (id: string, updates: any) => supabase.from('reports').update(updates).eq('id', id).select('*, created_by:users!reports_created_by_fkey(*)').single(),
-    delete: (id: string) => supabase.from('reports').delete().eq('id', id),
-    getByAuthor: (userId: string) => supabase.from('reports').select('*, created_by:users!reports_created_by_fkey(*)').eq('created_by', userId),
+    getAll: () => supabase?.from('reports').select('*, created_by:users!reports_created_by_fkey(*)') || Promise.resolve({ data: [], error: null }),
+    getById: (id: string) => supabase?.from('reports').select('*, created_by:users!reports_created_by_fkey(*)').eq('id', id).single() || Promise.resolve({ data: null, error: null }),
+    create: (report: any) => supabase?.from('reports').insert(report).select('*, created_by:users!reports_created_by_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    update: (id: string, updates: any) => supabase?.from('reports').update(updates).eq('id', id).select('*, created_by:users!reports_created_by_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    delete: (id: string) => supabase?.from('reports').delete().eq('id', id) || Promise.resolve({ data: null, error: null }),
+    getByAuthor: (userId: string) => supabase?.from('reports').select('*, created_by:users!reports_created_by_fkey(*)').eq('created_by', userId) || Promise.resolve({ data: [], error: null }),
   },
 
   // Чаты
   chats: {
-    getAll: () => supabase.from('chats').select('*'),
-    getById: (id: string) => supabase.from('chats').select('*').eq('id', id).single(),
-    create: (chat: any) => supabase.from('chats').insert(chat).select().single(),
-    update: (id: string, updates: any) => supabase.from('chats').update(updates).eq('id', id).select().single(),
-    delete: (id: string) => supabase.from('chats').delete().eq('id', id),
+    getAll: () => supabase?.from('chats').select('*') || Promise.resolve({ data: [], error: null }),
+    getById: (id: string) => supabase?.from('chats').select('*').eq('id', id).single() || Promise.resolve({ data: null, error: null }),
+    create: (chat: any) => supabase?.from('chats').insert(chat).select().single() || Promise.resolve({ data: null, error: null }),
+    update: (id: string, updates: any) => supabase?.from('chats').update(updates).eq('id', id).select().single() || Promise.resolve({ data: null, error: null }),
+    delete: (id: string) => supabase?.from('chats').delete().eq('id', id) || Promise.resolve({ data: null, error: null }),
   },
 
   // Сообщения
   messages: {
-    getAll: () => supabase.from('messages').select('*, sender:users!messages_sender_id_fkey(*)'),
-    getByChatId: (chatId: string) => supabase.from('messages').select('*, sender:users!messages_sender_id_fkey(*)').eq('chat_id', chatId).order('created_at', { ascending: true }),
-    create: (message: any) => supabase.from('messages').insert(message).select('*, sender:users!messages_sender_id_fkey(*)').single(),
-    update: (id: string, updates: any) => supabase.from('messages').update(updates).eq('id', id).select('*, sender:users!messages_sender_id_fkey(*)').single(),
-    delete: (id: string) => supabase.from('messages').delete().eq('id', id),
+    getAll: () => supabase?.from('messages').select('*, sender:users!messages_sender_id_fkey(*)') || Promise.resolve({ data: [], error: null }),
+    getByChatId: (chatId: string) => supabase?.from('messages').select('*, sender:users!messages_sender_id_fkey(*)').eq('chat_id', chatId).order('created_at', { ascending: true }) || Promise.resolve({ data: [], error: null }),
+    create: (message: any) => supabase?.from('messages').insert(message).select('*, sender:users!messages_sender_id_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    update: (id: string, updates: any) => supabase?.from('messages').update(updates).eq('id', id).select('*, sender:users!messages_sender_id_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    delete: (id: string) => supabase?.from('messages').delete().eq('id', id) || Promise.resolve({ data: null, error: null }),
   },
 
   // События календаря
   events: {
-    getAll: () => supabase.from('events').select('*, created_by:users!events_created_by_fkey(*)'),
-    getById: (id: string) => supabase.from('events').select('*, created_by:users!events_created_by_fkey(*)').eq('id', id).single(),
-    create: (event: any) => supabase.from('events').insert(event).select('*, created_by:users!events_created_by_fkey(*)').single(),
-    update: (id: string, updates: any) => supabase.from('events').update(updates).eq('id', id).select('*, created_by:users!events_created_by_fkey(*)').single(),
-    delete: (id: string) => supabase.from('events').delete().eq('id', id),
+    getAll: () => supabase?.from('events').select('*, created_by:users!events_created_by_fkey(*)') || Promise.resolve({ data: [], error: null }),
+    getById: (id: string) => supabase?.from('events').select('*, created_by:users!events_created_by_fkey(*)').eq('id', id).single() || Promise.resolve({ data: null, error: null }),
+    create: (event: any) => supabase?.from('events').insert(event).select('*, created_by:users!events_created_by_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    update: (id: string, updates: any) => supabase?.from('events').update(updates).eq('id', id).select('*, created_by:users!events_created_by_fkey(*)').single() || Promise.resolve({ data: null, error: null }),
+    delete: (id: string) => supabase?.from('events').delete().eq('id', id) || Promise.resolve({ data: null, error: null }),
     getByDateRange: (startDate: string, endDate: string) => 
-      supabase.from('events').select('*, created_by:users!events_created_by_fkey(*)')
+      supabase?.from('events').select('*, created_by:users!events_created_by_fkey(*)')
         .gte('start_date', startDate)
-        .lte('end_date', endDate),
+        .lte('end_date', endDate) || Promise.resolve({ data: [], error: null }),
   },
 };
 
 // Хелперы для работы с файлами
 export const storage = {
   uploadFile: async (bucket: string, path: string, file: File | Blob) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase не настроен' } };
+    }
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(path, file);
@@ -125,6 +151,9 @@ export const storage = {
   },
 
   downloadFile: async (bucket: string, path: string) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase не настроен' } };
+    }
     const { data, error } = await supabase.storage
       .from(bucket)
       .download(path);
@@ -132,6 +161,9 @@ export const storage = {
   },
 
   getPublicUrl: (bucket: string, path: string) => {
+    if (!supabase) {
+      return '';
+    }
     const { data } = supabase.storage
       .from(bucket)
       .getPublicUrl(path);
@@ -139,6 +171,9 @@ export const storage = {
   },
 
   deleteFile: async (bucket: string, path: string) => {
+    if (!supabase) {
+      return { data: null, error: { message: 'Supabase не настроен' } };
+    }
     const { data, error } = await supabase.storage
       .from(bucket)
       .remove([path]);
@@ -149,6 +184,9 @@ export const storage = {
 // Хелперы для real-time подписок
 export const realtime = {
   subscribeToTable: (table: string, callback: (payload: any) => void) => {
+    if (!supabase) {
+      return { unsubscribe: () => {} };
+    }
     return supabase
       .channel(`public:${table}`)
       .on('postgres_changes', { event: '*', schema: 'public', table }, callback)
@@ -156,6 +194,9 @@ export const realtime = {
   },
 
   subscribeToMessages: (chatId: string, callback: (payload: any) => void) => {
+    if (!supabase) {
+      return { unsubscribe: () => {} };
+    }
     return supabase
       .channel(`messages:${chatId}`)
       .on('postgres_changes', 
@@ -166,6 +207,9 @@ export const realtime = {
   },
 
   unsubscribe: (subscription: any) => {
+    if (!supabase) {
+      return;
+    }
     return supabase.removeChannel(subscription);
   },
 };
