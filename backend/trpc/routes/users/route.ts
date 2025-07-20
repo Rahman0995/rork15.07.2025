@@ -81,7 +81,7 @@ export const getUsersByUnitProcedure = publicProcedure
         throw new Error(error.message || 'Failed to fetch users');
       }
       
-      return (users || []).filter(user => user.unit === input.unit);
+      return (users || []).filter((user: any) => user.unit === input.unit);
     } catch (error) {
       console.error('Error fetching users by unit:', error);
       

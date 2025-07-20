@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { database } from '../../../../lib/supabase';
-import { Report } from '../../../../types';
+import { Report, ReportStatus } from '../../../../types';
 
-type ReportStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'needs_revision';
+
 
 type ReportsInput = {
   status?: 'draft' | 'submitted' | 'approved' | 'rejected';
@@ -131,7 +131,7 @@ export const createReportProcedure = publicProcedure
         title: input.title,
         content: input.content,
         created_by: input.authorId,
-        type: input.type || 'general',
+        type: input.type || 'text',
         status: 'draft',
       });
       
@@ -268,7 +268,7 @@ export const getReportsForApprovalProcedure = publicProcedure
       
       const mockReports: Report[] = [
         {
-          id: 'report-pending-1',
+          // id: 'report-pending-1',
           title: 'Отчет на согласование',
           content: 'Отчет ожидает согласования.',
           authorId: 'user-2',

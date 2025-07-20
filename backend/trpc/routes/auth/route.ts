@@ -29,10 +29,10 @@ export const loginProcedure = publicProcedure
       return {
         success: true,
         user: userProfile?.data || {
-          id: data.user.id,
-          email: data.user.email || '',
-          first_name: data.user.user_metadata?.first_name || '',
-          last_name: data.user.user_metadata?.last_name || '',
+          id: data.user?.id || '',
+          email: data.user?.email || '',
+          first_name: data.user?.user_metadata?.first_name || '',
+          last_name: data.user?.user_metadata?.last_name || '',
           role: 'soldier',
         },
         session: data.session,
@@ -131,7 +131,7 @@ export const registerProcedure = publicProcedure
       const userProfile = await supabase
         ?.from('users')
         .insert({
-          id: data.user.id,
+          id: data.user?.id || '',
           email: input.email,
           first_name: input.firstName,
           last_name: input.lastName,
@@ -147,7 +147,7 @@ export const registerProcedure = publicProcedure
       return {
         success: true,
         user: userProfile?.data || {
-          id: data.user.id,
+          id: data.user?.id || '',
           email: input.email,
           first_name: input.firstName,
           last_name: input.lastName,

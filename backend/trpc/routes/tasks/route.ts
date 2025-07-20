@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
 import { database } from '../../../../lib/supabase';
-import { Task } from '../../../../types';
+import { Task, TaskStatus } from '../../../../types';
 
 type TasksInput = {
   assignedTo?: string;
@@ -213,7 +213,7 @@ export const getTaskStatsProcedure = publicProcedure
     try {
       console.log('Fetching task stats:', input);
       
-      const mockTasks: Task[] = [
+      const mockTasks: any[] = [
         {
           id: 'task-1',
           title: 'Mock Task',
