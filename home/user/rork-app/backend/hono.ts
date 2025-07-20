@@ -3,10 +3,10 @@ import { trpcServer } from "@hono/trpc-server";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
-import { appRouter } from "./trpc/app-router";
-import { createContext } from "./trpc/create-context";
-import { config, validateConfig } from "./config";
-import { initializeDatabase, closeDatabase } from "./utils/database";
+import { appRouter } from "../../../backend/trpc/app-router";
+import { createContext } from "../../../backend/trpc/create-context";
+import { config, validateConfig } from "../../../backend/config";
+import { initializeDatabase, closeDatabase } from "../../../backend/utils/database";
 
 // Валидация конфигурации при запуске
 try {
