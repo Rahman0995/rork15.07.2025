@@ -1,14 +1,16 @@
 #!/bin/bash
 
-echo "🚀 Запуск backend сервера..."
+echo "🚀 Starting backend server..."
 
-# Kill any process using port 3000
-echo "🔍 Проверяем порт 3000..."
-lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "✅ Освободили порт 3000" || echo "✅ Порт 3000 уже свободен"
-
-# Wait a moment
-sleep 1
-
-# Start the simple backend
-echo "🚀 Запускаем простой backend сервер..."
-node start-backend-simple.js
+# Check if bun is available
+if command -v bun &> /dev/null; then
+    echo "📦 Using Bun runtime"
+    cd backend && bun run index.ts
+elif command -v node &> /dev/null; then
+    echo "📦 Using Node.js runtime"
+    node start-backend-node.js
+else
+    echo "❌ Neither Bun nor Node.js found!"
+    echo "Please install Node.js or Bun to run the backend"
+    exit 1
+fi
