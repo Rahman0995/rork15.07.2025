@@ -72,10 +72,9 @@ export default function ProfileScreen() {
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Должность</Text>
             <Text style={styles.infoValue}>
-              {user.role === 'battalion_commander' ? 'Командир батальона' :
-               user.role === 'company_commander' ? 'Командир роты' :
+              {user.role === 'admin' ? 'Администратор' :
                user.role === 'officer' ? 'Офицер' :
-               user.role === 'soldier' ? 'Военнослужащий' : 'Администратор'}
+               'Военнослужащий'}
             </Text>
           </View>
         </View>
@@ -107,10 +106,9 @@ export default function ProfileScreen() {
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Уровень доступа</Text>
             <Text style={styles.infoValue}>
-              {user.role === 'battalion_commander' ? 'Высокий' :
-               user.role === 'company_commander' ? 'Средний' :
+              {user.role === 'admin' ? 'Полный' :
                user.role === 'officer' ? 'Базовый' :
-               user.role === 'soldier' ? 'Ограниченный' : 'Полный'}
+               'Ограниченный'}
             </Text>
           </View>
         </View>

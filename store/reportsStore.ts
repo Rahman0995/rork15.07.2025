@@ -78,8 +78,6 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           content: reportData.content,
           authorId: reportData.authorId,
           type: reportData.type,
-          unit: reportData.unit,
-          priority: reportData.priority,
         });
       } catch (backendError) {
         console.warn('Backend report creation failed, creating locally:', backendError);
@@ -101,14 +99,15 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       
       if ('success' in newReport && newReport.success) {
         // Backend response format
+        const reportData = newReport.report as any;
         transformedReport = {
-          id: newReport.report.id || Date.now().toString(),
-          title: newReport.report.title || reportData.title,
-          content: newReport.report.content || reportData.content,
-          authorId: newReport.report.authorId || reportData.authorId,
-          createdAt: newReport.report.createdAt || new Date().toISOString(),
-          updatedAt: newReport.report.updatedAt || new Date().toISOString(),
-          status: newReport.report.status || 'pending',
+          id: reportData.id || Date.now().toString(),
+          title: reportData.title || reportData.title,
+          content: reportData.content || reportData.content,
+          authorId: reportData.authorId || reportData.authorId,
+          createdAt: reportData.createdAt || new Date().toISOString(),
+          updatedAt: reportData.updatedAt || new Date().toISOString(),
+          status: reportData.status || 'pending',
           approvals: [],
           comments: [],
           revisions: [],
@@ -120,14 +119,15 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         };
       } else {
         // Direct report object
+        const reportObj = newReport as any;
         transformedReport = {
-          id: newReport.id || Date.now().toString(),
-          title: newReport.title || reportData.title,
-          content: newReport.content || reportData.content,
-          authorId: newReport.authorId || reportData.authorId,
-          createdAt: newReport.createdAt || new Date().toISOString(),
-          updatedAt: newReport.updatedAt || new Date().toISOString(),
-          status: newReport.status || 'pending',
+          id: reportObj.id || Date.now().toString(),
+          title: reportObj.title || reportData.title,
+          content: reportObj.content || reportData.content,
+          authorId: reportObj.authorId || reportData.authorId,
+          createdAt: reportObj.createdAt || new Date().toISOString(),
+          updatedAt: reportObj.updatedAt || new Date().toISOString(),
+          status: reportObj.status || 'pending',
           approvals: [],
           comments: [],
           revisions: [],

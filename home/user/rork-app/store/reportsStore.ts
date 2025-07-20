@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Report, ReportStatus, ReportComment, ReportApproval, ReportRevision } from '@/types';
-import { mockReports } from '@/constants/mockData';
+
 import { useNotificationsStore } from './notificationsStore';
 import { useAuthStore } from '@/store/authStore';
 import { trpcClient } from '@/lib/trpc';
@@ -26,6 +26,7 @@ interface ReportsState {
   getReportsByUnit: (unit: string) => Report[];
   getReportsByPriority: (priority: 'low' | 'medium' | 'high') => Report[];
   searchReports: (query: string) => Report[];
+  clearReports: () => void;
   getReportsStats: () => {
     total: number;
     pending: number;
@@ -453,5 +454,9 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       needsRevision: reports.filter(r => r.status === 'needs_revision').length,
       draft: reports.filter(r => r.status === 'draft').length,
     };
+  },
+  
+  clearReports: () => {
+    set({ reports: [] });
   },
 }));
