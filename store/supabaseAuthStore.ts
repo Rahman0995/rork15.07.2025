@@ -46,7 +46,10 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
     // Получаем текущую сессию
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase!.auth.getSession();
+        if (!supabase) {
+          throw new Error('Supabase not configured');
+        }
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (mounted) {
           if (error) {
@@ -76,7 +79,7 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
     getInitialSession();
 
     // Подписываемся на изменения аутентификации
-    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Изменение состояния аутентификации:', event, session?.user?.email);
         
@@ -222,7 +225,7 @@ export const useSupabaseToken = () => {
 
     const getToken = async () => {
       try {
-        const { data: { session } } = await supabase!.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         setToken(session?.access_token || null);
       } catch (error) {
         console.error('Ошибка получения токена:', error);
@@ -232,7 +235,7 @@ export const useSupabaseToken = () => {
 
     getToken();
 
-    const { data: { subscription } } = supabase!.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setToken(session?.access_token || null);
       }
