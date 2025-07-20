@@ -1,24 +1,16 @@
+# Exported from Render on 2025-07-20T02:50:53Z
 services:
-  - type: web
-    name: military-app-web
-    env: node
-    plan: free
-    region: oregon
-    buildCommand: chmod +x render-deploy.sh && ./render-deploy.sh
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: EXPO_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: military-app-backend
-          property: host
-      - key: EXPO_PUBLIC_BASE_URL
-        fromService:
-          type: web
-          name: military-app-backend
-          property: host
+- type: web
+  name: SEVER-AHMAT
+  runtime: node
+  repo: https://github.com/Rahman0995/rork15.07.2025
+  plan: free
+  region: oregon
+  buildCommand: bun install
+  startCommand: node expo-router/entry
+  autoDeployTrigger: commit
+version: "1"
+
         
   - type: web
     name: military-app-backend
@@ -46,3 +38,4 @@ databases:
     user: admin
     plan: free
     region: oregon
+    
