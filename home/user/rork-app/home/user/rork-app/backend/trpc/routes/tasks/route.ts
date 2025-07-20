@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { publicProcedure } from '../../create-context';
-import { Task, TaskStatus, TaskPriority } from '../../../types';
+import { publicProcedure } from '../../../../../backend/trpc/create-context';
+import { Task, TaskStatus, TaskPriority } from '../../../../../types';
 
 // Input schemas
 const getTasksInputSchema = z.object({
@@ -12,7 +12,7 @@ const getTasksInputSchema = z.object({
 
 export const getTasksProcedure = publicProcedure
   .input(getTasksInputSchema)
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: z.infer<typeof getTasksInputSchema> }) => {
     try {
       console.log('Fetching tasks with filters:', input);
       
@@ -44,7 +44,7 @@ export const getTasksProcedure = publicProcedure
         },
       ];
       
-      return mockTasks.filter((t: Task) => {
+      return mockTasks.filter((t) => {
         if (input?.assignedTo && t.assignedTo !== input.assignedTo) return false;
         if (input?.createdBy && t.createdBy !== input.createdBy) return false;
         if (input?.status && t.status !== input.status) return false;
@@ -63,7 +63,7 @@ const getTaskByIdInputSchema = z.object({
 
 export const getTaskByIdProcedure = publicProcedure
   .input(getTaskByIdInputSchema)
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input: z.infer<typeof getTaskByIdInputSchema> }) => {
     try {
       console.log('Fetching task by ID:', input.id);
       
@@ -99,7 +99,7 @@ const createTaskInputSchema = z.object({
 
 export const createTaskProcedure = publicProcedure
   .input(createTaskInputSchema)
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: z.infer<typeof createTaskInputSchema> }) => {
     try {
       console.log('Creating task:', input);
       
@@ -136,7 +136,7 @@ const updateTaskInputSchema = z.object({
 
 export const updateTaskProcedure = publicProcedure
   .input(updateTaskInputSchema)
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: z.infer<typeof updateTaskInputSchema> }) => {
     try {
       console.log('Updating task:', input);
       
@@ -170,7 +170,7 @@ const deleteTaskInputSchema = z.object({
 
 export const deleteTaskProcedure = publicProcedure
   .input(deleteTaskInputSchema)
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }: { input: z.infer<typeof deleteTaskInputSchema> }) => {
     try {
       console.log('Deleting task:', input.id);
       
@@ -201,7 +201,7 @@ const getTaskStatsInputSchema = z.object({
 
 export const getTaskStatsProcedure = publicProcedure
   .input(getTaskStatsInputSchema)
-  .query(async ({ input }) => {
+  .query(async ({ input }: { input?: z.infer<typeof getTaskStatsInputSchema> }) => {
     try {
       console.log('Fetching task stats:', input);
       
@@ -238,15 +238,15 @@ export const getTaskStatsProcedure = publicProcedure
         inProgress: mockTasks.filter((t) => t.status === 'in_progress').length,
         completed: mockTasks.filter((t) => t.status === 'completed').length,
         cancelled: mockTasks.filter((t) => t.status === 'cancelled').length,
-        overdue: mockTasks.filter((t: Task) => 
+        overdue: mockTasks.filter((t) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
           new Date(t.dueDate) < new Date()
         ).length,
         byPriority: {
-          high: mockTasks.filter((t: Task) => t.priority === 'high').length,
-          medium: mockTasks.filter((t: Task) => t.priority === 'medium').length,
-          low: mockTasks.filter((t: Task) => t.priority === 'low').length,
+          high: mockTasks.filter((t) => t.priority === 'high').length,
+          medium: mockTasks.filter((t) => t.priority === 'medium').length,
+          low: mockTasks.filter((t) => t.priority === 'low').length,
         },
       };
     } catch (error) {
