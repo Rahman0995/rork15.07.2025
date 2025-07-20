@@ -2,6 +2,7 @@
 
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 console.log('🚀 Запускаем веб-сервер для Render...');
 
@@ -10,6 +11,21 @@ const distPath = path.join(__dirname, 'dist');
 
 console.log(`📁 Папка с файлами: ${distPath}`);
 console.log(`🌐 Порт: ${port}`);
+
+// Проверяем существование папки dist
+if (!fs.existsSync(distPath)) {
+  console.error('❌ Папка dist не найдена! Проверьте сборку.');
+  process.exit(1);
+}
+
+// Проверяем содержимое папки dist
+const files = fs.readdirSync(distPath);
+console.log('📋 Файлы в dist:', files);
+
+if (files.length === 0) {
+  console.error('❌ Папка dist пуста! Проверьте сборку.');
+  process.exit(1);
+}
 
 // Запускаем serve с правильными параметрами
 const serve = spawn('npx', ['serve', distPath, '-p', port, '-s'], {
