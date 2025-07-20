@@ -1,96 +1,68 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
+console.log('🚀 Simple Netlify Deployment Fix');
+console.log('=================================');
+
 const fs = require('fs');
+const path = require('path');
 
-console.log('🚀 Simple Netlify Deployment Setup');
-console.log('===================================');
-
-try {
-  // Create a simple build script
-  const buildScript = `#!/usr/bin/env node
-const { execSync } = require('child_process');
-const fs = require('fs');
-
-console.log('🚀 Building for Netlify...');
-
-try {
-  // Install dependencies
-  console.log('📦 Installing dependencies...');
-  execSync('npm install --legacy-peer-deps', { stdio: 'inherit' });
-  
-  // Build the app
-  console.log('🔧 Building web app...');
-  execSync('npx expo export -p web', { stdio: 'inherit' });
-  
-  console.log('✅ Build completed successfully!');
-} catch (error) {
-  console.error('❌ Build failed:', error.message);
-  process.exit(1);
-}`;
-
-  fs.writeFileSync('build-simple.js', buildScript);
-  fs.chmodSync('build-simple.js', '755');
-
-  // Update package.json for Netlify
-  const packageJson = {
-    "name": "military-unit-management-app",
-    "version": "1.0.0",
-    "scripts": {
-      "build": "node build-simple.js",
-      "build:netlify": "node build-simple.js",
-      "start": "serve dist -s"
-    },
-    "dependencies": {
-      "@expo/cli": "^0.24.20",
-      "expo": "53.0.20",
-      "react": "19.0.0",
-      "react-dom": "19.0.0",
-      "react-native": "0.79.5",
-      "react-native-web": "^0.20.0",
-      "serve": "^14.2.4"
-    },
-    "devDependencies": {
-      "@babel/core": "^7.25.2",
-      "typescript": "~5.8.3"
-    }
-  };
-
-  fs.writeFileSync('package.netlify.simple.json', JSON.stringify(packageJson, null, 2));
-
-  // Create simple netlify.toml
-  const netlifyConfig = `[build]
-  command = "npm run build:netlify"
+// Create a simple netlify.toml with working configuration
+const netlifyConfig = `[build]
+  command = "npx expo export:web"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--legacy-peer-deps"
+  EXPO_PUBLIC_API_URL = "https://your-backend-url.railway.app/api"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200`;
+  status = 200
 
-  fs.writeFileSync('netlify.simple.toml', netlifyConfig);
+# Environment variables for production
+[context.production.environment]
+  EXPO_PUBLIC_RORK_API_BASE_URL = "https://your-backend-url.railway.app/api"
+  NODE_ENV = "production"
+`;
 
-  console.log('✅ Created simplified Netlify deployment files:');
-  console.log('   - build-simple.js');
-  console.log('   - package.netlify.simple.json');
-  console.log('   - netlify.simple.toml');
-  console.log('');
-  console.log('🎯 DEPLOYMENT STEPS:');
-  console.log('1. Go to https://netlify.com');
-  console.log('2. Sign in with GitHub');
-  console.log('3. Click "New site from Git"');
-  console.log('4. Connect your repository');
-  console.log('5. Set build command: npm run build:netlify');
-  console.log('6. Set publish directory: dist');
-  console.log('7. Deploy!');
-  console.log('');
-  console.log('💡 Or copy the contents of netlify.simple.toml to netlify.toml');
+// Write the fixed netlify.toml
+fs.writeFileSync('netlify.toml', netlifyConfig);
+console.log('✅ Created fixed netlify.toml');
 
-} catch (error) {
-  console.error('❌ Setup failed:', error.message);
-  process.exit(1);
-}
+// Create a simple build script
+const buildScript = `#!/bin/bash
+echo "🔧 Building for Netlify..."
+npx expo export:web
+echo "✅ Build complete!"
+`;
+
+fs.writeFileSync('build-netlify.sh', buildScript);
+fs.chmodSync('build-netlify.sh', '755');
+console.log('✅ Created build-netlify.sh');
+
+console.log('\n🎯 DEPLOYMENT STEPS:');
+console.log('1. First, deploy your backend to Railway:');
+console.log('   • Go to https://railway.app');
+console.log('   • Create new project from GitHub');
+console.log('   • Get your backend URL (e.g., https://your-app.railway.app)');
+
+console.log('\n2. Update netlify.toml with your actual backend URL:');
+console.log('   • Replace "https://your-backend-url.railway.app/api"');
+console.log('   • With your actual Railway URL + "/api"');
+
+console.log('\n3. Deploy to Netlify:');
+console.log('   • Go to https://netlify.com');
+console.log('   • Drag & drop your project folder');
+console.log('   • Or connect to GitHub for auto-deploy');
+
+console.log('\n4. Test your deployment:');
+console.log('   • Frontend will be at: https://your-site.netlify.app');
+console.log('   • Backend should be at: https://your-app.railway.app/api');
+
+console.log('\n💡 QUICK COMMANDS:');
+console.log('   node find-backend-url.js  # Find your backend URL');
+console.log('   ./build-netlify.sh        # Test build locally');
+
+console.log('\n✅ Ready for deployment!');
