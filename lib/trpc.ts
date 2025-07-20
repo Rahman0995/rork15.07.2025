@@ -41,14 +41,14 @@ const getBaseUrl = () => {
 
   // Platform-specific fallbacks with better mobile support
   if (Platform.OS === 'web') {
-    // For web, always use localhost on port 3001
-    console.log('Using web fallback: http://localhost:3001');
-    return "http://localhost:3001";
+    // For web, always use localhost on port 3000
+    console.log('Using web fallback: http://localhost:3000');
+    return "http://localhost:3000";
   } else {
     // For mobile devices, try local IP first, then fallback to mock
     const localIP = getLocalIP();
     console.log(`Mobile device detected - trying local IP: ${localIP}`);
-    return `http://${localIP}:3001`;
+    return `http://${localIP}:3000`;
   }
 };
 
@@ -61,19 +61,12 @@ const getApiConfig = () => {
     enableDebugMode: config?.enableDebugMode || __DEV__,
     enableMockData: config?.backendConfig?.enableMockData || true, // Always enable for fallback
     fallbackUrls: config?.backendConfig?.fallbackUrls || [
-      'http://localhost:3001', // Primary port
-      'http://localhost:3000', // Fallback port
-      'http://127.0.0.1:3001',
+      'http://localhost:3000', // Primary port
       'http://127.0.0.1:3000',
-      'http://10.0.2.2:3001', // Android emulator
       'http://10.0.2.2:3000', // Android emulator
-      `http://${getLocalIP()}:3001`,
       `http://${getLocalIP()}:3000`,
-      'http://192.168.1.100:3001',
       'http://192.168.1.100:3000',
-      'http://192.168.0.100:3001',
       'http://192.168.0.100:3000',
-      'http://10.0.0.100:3001',
       'http://10.0.0.100:3000'
     ]
   };

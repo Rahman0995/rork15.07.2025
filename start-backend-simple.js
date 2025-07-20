@@ -2,6 +2,29 @@
 
 const http = require('http');
 const url = require('url');
+const net = require('net');
+
+// Функция для проверки доступности порта
+function isPortFree(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.listen(port, () => {
+      server.once('close', () => resolve(true));
+      server.close();
+    });
+    server.on('error', () => resolve(false));
+  });
+}
+
+// Функция для поиска свободного порта
+async function findFreePort(startPort = 3000) {
+  for (let port = startPort; port <= startPort + 100; port++) {
+    if (await isPortFree(port)) {
+      return port;
+    }
+  }
+  throw new Error('Не удалось найти свободный порт');
+}
 
 console.log('🚀 Запуск простого бэкенд сервера...');
 
@@ -194,15 +217,25 @@ const server = http.createServer((req, res) => {
   }));
 });
 
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '0.0.0.0';
+async function startServer() {
+  try {
+    const PORT = await findFreePort(3000);
+    const HOST = process.env.HOST || '0.0.0.0';
 
-server.listen(PORT, HOST, () => {
-  console.log(`✅ Простой бэкенд сервер запущен на http://${HOST}:${PORT}`);
-  console.log(`❤️ Health Check: http://${HOST}:${PORT}/api/health`);
-  console.log(`📡 API Base: http://${HOST}:${PORT}/api`);
-  console.log('🔄 Нажмите Ctrl+C для остановки');
-});
+    server.listen(PORT, HOST, () => {
+      console.log(`✅ Простой бэкенд сервер запущен на http://${HOST}:${PORT}`);
+      console.log(`❤️ Health Check: http://${HOST}:${PORT}/api/health`);
+      console.log(`📡 API Base: http://${HOST}:${PORT}/api`);
+      console.log(`🌐 Для мобильного устройства: http://192.168.1.100:${PORT}/api`);
+      console.log('🔄 Нажмите Ctrl+C для остановки');
+    });
+  } catch (error) {
+    console.error('❌ Ошибка запуска сервера:', error.message);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 // Graceful shutdown
 process.on('SIGINT', () => {
