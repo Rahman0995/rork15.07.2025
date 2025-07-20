@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../create-context';
-import { Task, TaskStatus } from '@/types';
+import { Task, TaskStatus, TaskPriority } from '../../../../types';
 import { getConnection } from '../../../database/index';
 
 type TasksInput = {
@@ -153,7 +153,7 @@ export const createTaskProcedure = publicProcedure
         createdBy: input.createdBy,
         dueDate: input.dueDate,
         status: 'pending',
-        priority: input.priority || 'medium',
+        priority: (input.priority as TaskPriority) || 'medium',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -189,8 +189,8 @@ export const updateTaskProcedure = publicProcedure
         assignedTo: 'user-2',
         createdBy: 'user-1',
         dueDate: input.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: input.status || 'pending',
-        priority: input.priority || 'medium',
+        status: (input.status as TaskStatus) || 'pending',
+        priority: (input.priority as TaskPriority) || 'medium',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
