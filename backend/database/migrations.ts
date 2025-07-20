@@ -1,5 +1,8 @@
 import { config } from '../config';
 
+// Import fixed migrations
+export * from './migrations-fixed';
+
 export interface Migration {
   version: string;
   name: string;
