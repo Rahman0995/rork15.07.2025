@@ -4,8 +4,8 @@ services:
     env: node
     plan: free
     region: oregon
-    buildCommand: cp package.minimal.json package.json && npm install && npm install -g @expo/cli serve && rm -rf dist .expo && npx expo export --platform web --output-dir dist
-    startCommand: npx serve dist -p $PORT
+    buildCommand: cp package.minimal.json package.json && npm install && npm install -g @expo/cli serve && rm -rf dist .expo && cp app.config.web.js app.config.js && npx expo export --platform web --output-dir dist
+    startCommand: node start-web-render.js
     envVars:
       - key: NODE_ENV
         value: production
