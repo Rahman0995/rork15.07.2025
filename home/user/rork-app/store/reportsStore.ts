@@ -44,9 +44,9 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   fetchReports: async () => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      set({ reports: mockReports, isLoading: false });
+      // TODO: Replace with actual API call
+      const data = await trpcClient.reports.getAll.query();
+      set({ reports: data, isLoading: false });
     } catch (error) {
       set({ error: 'Ошибка при загрузке отчетов', isLoading: false });
     }
