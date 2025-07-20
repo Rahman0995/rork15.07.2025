@@ -1,16 +1,14 @@
 #!/bin/bash
 
-echo "🚀 Starting Military Management System Backend..."
+echo "🚀 Запуск backend сервера..."
 
-# Set environment variables
-export NODE_ENV=development
-export API_PORT=3000
-export API_HOST=0.0.0.0
+# Kill any process using port 3000
+echo "🔍 Проверяем порт 3000..."
+lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "✅ Освободили порт 3000" || echo "✅ Порт 3000 уже свободен"
 
-# Start the backend server
-echo "📍 Starting backend on http://0.0.0.0:3000"
-echo "🔗 API will be available at http://localhost:3000/api"
-echo "💚 Health check: http://localhost:3000/api/health"
-echo ""
+# Wait a moment
+sleep 1
 
-bun run backend/index.ts
+# Start the simple backend
+echo "🚀 Запускаем простой backend сервер..."
+node start-backend-simple.js
