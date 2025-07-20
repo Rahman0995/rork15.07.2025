@@ -38,14 +38,14 @@ const getDefaultConfig = (): AppConfig => {
   const isDev = __DEV__;
   
   return {
-    apiUrl: isDev ? 'http://localhost:3000/api' : 'https://api.example.com/api',
+    apiUrl: isDev ? 'http://localhost:3000/api' : 'https://your-production-domain.com/api',
     enableDebugMode: isDev,
     enableAnalytics: !isDev,
     backendConfig: {
-      baseUrl: isDev ? 'http://localhost:3000' : 'https://api.example.com',
+      baseUrl: isDev ? 'http://localhost:3000' : 'https://your-production-domain.com',
       trpcEndpoint: '/api/trpc',
-      timeout: 10000,
-      retries: 3,
+      timeout: isDev ? 10000 : 30000, // Увеличенный timeout для production
+      retries: isDev ? 3 : 5, // Больше попыток для production
     }
   };
 };

@@ -6,26 +6,31 @@ const IS_PREVIEW = process.env.EAS_BUILD_PROFILE === 'preview';
 // Или используйте облачный сервис для production
 const YOUR_IP_ADDRESS = process.env.LOCAL_IP || '192.168.1.100'; // Default to common local IP
 
+// Production domain configuration
+const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'your-production-domain.com';
+
 const getApiUrl = () => {
 if (IS_DEV) {
   return `http://${YOUR_IP_ADDRESS}:3000/api`;
 }
-// Для production используйте один из этих вариантов:
+// Production API URL - ОБЯЗАТЕЛЬНО ОБНОВИТЕ!
 // Railway: return 'https://your-app.railway.app/api';
 // Render: return 'https://your-app.render.com/api';
 // Vercel: return 'https://your-app.vercel.app/api';
-return process.env.EXPO_PUBLIC_API_URL || process.env.EXPO_PUBLIC_RORK_API_BASE_URL || 'http://localhost:3000/api';
+// Custom domain: return 'https://your-domain.com/api';
+return process.env.EXPO_PUBLIC_RORK_API_BASE_URL || `https://${PRODUCTION_DOMAIN}/api`;
 };
 
 const getBaseUrl = () => {
 if (IS_DEV) {
   return `http://${YOUR_IP_ADDRESS}:3000`;
 }
-// Для production используйте один из этих вариантов:
+// Production Base URL - ОБЯЗАТЕЛЬНО ОБНОВИТЕ!
 // Railway: return 'https://your-app.railway.app';
 // Render: return 'https://your-app.render.com';
 // Vercel: return 'https://your-app.vercel.app';
-return process.env.EXPO_PUBLIC_BASE_URL || process.env.EXPO_PUBLIC_RORK_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
+// Custom domain: return 'https://your-domain.com';
+return process.env.EXPO_PUBLIC_BASE_URL || `https://${PRODUCTION_DOMAIN}`;
 };
 
 export default {
