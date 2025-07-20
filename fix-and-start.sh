@@ -1,20 +1,29 @@
 #!/bin/bash
 
-echo "🔧 Исправляем проблемы и запускаем приложение..."
+echo "🔧 Fixing file watcher limits and starting development environment..."
 
-# Очищаем кэши
-echo "🧹 Очищаем кэши..."
+# Clean up caches
+echo "🧹 Cleaning caches..."
 rm -rf node_modules/.cache 2>/dev/null
 rm -rf .expo 2>/dev/null  
 rm -rf .metro 2>/dev/null
 rm -rf /tmp/metro-* 2>/dev/null
 
-# Устанавливаем переменные окружения для решения проблемы ENOSPC
+# Set environment variables to solve ENOSPC issue
 export WATCHMAN_DISABLE_WATCH=1
 export EXPO_NO_DOTENV=1
 export EXPO_NO_CACHE=1
 
-echo "📱 Запускаем Expo с исправлениями..."
+# Clean up any existing processes
+echo "🧹 Cleaning up existing processes..."
+pkill -f "expo start" || true
+pkill -f "ts-node" || true
+pkill -f "node.*backend" || true
 
-# Запускаем expo с минимальным наблюдением файлов
-npx expo start --tunnel --port 8081 --clear
+# Wait a moment
+sleep 2
+
+echo "🚀 Starting development environment..."
+
+# Start the development environment
+node start-dev.js
