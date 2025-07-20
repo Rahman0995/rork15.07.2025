@@ -1,20 +1,4 @@
-// Упрощенная конфигурация для веб-сборки
-const IS_DEV = process.env.NODE_ENV === 'development';
-
-const getApiUrl = () => {
-  if (IS_DEV) {
-    return 'http://localhost:3000/api';
-  }
-  return process.env.EXPO_PUBLIC_API_URL || 'https://military-app-backend.render.com/api';
-};
-
-const getBaseUrl = () => {
-  if (IS_DEV) {
-    return 'http://localhost:3000';
-  }
-  return process.env.EXPO_PUBLIC_BASE_URL || 'https://military-app-backend.render.com';
-};
-
+// Упрощенная конфигурация для веб-сборки на Render
 export default {
   expo: {
     name: 'Military Unit Management',
@@ -36,31 +20,24 @@ export default {
     },
     plugins: [
       'expo-font',
-      'expo-web-browser',
-      'expo-localization'
+      'expo-router'
     ],
     extra: {
       // Environment-specific configuration
-      apiUrl: getApiUrl(),
-      enableDebugMode: IS_DEV,
-      enableAnalytics: !IS_DEV,
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://military-app-backend.onrender.com/api',
       // Backend API endpoints configuration
       backendConfig: {
-        baseUrl: getBaseUrl(),
+        baseUrl: process.env.EXPO_PUBLIC_BASE_URL || 'https://military-app-backend.onrender.com',
         trpcEndpoint: '/api/trpc',
         timeout: 30000,
         retries: 3,
         enableMockData: true,
-        enableOfflineMode: true,
-        fallbackUrls: [
-          'http://localhost:3000',
-          'https://military-app-backend.render.com'
-        ]
+        enableOfflineMode: true
       },
-      // Feature flags для веб-версии
+      // Feature flags для веба
       features: {
-        pushNotifications: false, // Отключено для веб
-        backgroundSync: false,    // Отключено для веб
+        pushNotifications: false, // Отключаем для веба
+        backgroundSync: false,    // Отключаем для веба
         offlineStorage: true,
         biometricAuth: false
       }

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "expo export --platform web --output-dir dist",
-    "start": "serve dist -p $PORT"
+    "start": "node start-web-render.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -25,10 +25,12 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-gesture-handler": "~2.24.0",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
+    "react-native-svg": "15.11.2",
     "react-native-web": "^0.20.0",
-    "serve": "^14.2.1",
+    "serve": "^14.2.4",
     "superjson": "^2.2.2",
     "zod": "^4.0.5",
     "zustand": "^5.0.2"
