@@ -1,0 +1,44 @@
+# Dockerfile для деплоя веб-версии на Render
+FROM oven/bun:1 as builder
+WORKDIR /app
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+# Копирование файлов зависимостей
+COPY package.json bun.lock* ./
+
+# Установка зависимостей
+RUN bun install --frozen-lockfile || bun install
+
+# Копирование исходного кода
+COPY . .
+
+# Установка переменных окружения для сборки
+ENV NODE_ENV=production
+ENV EXPO_USE_FAST_RESOLVER=1
+
+# Очистка предыдущих сборок
+RUN rm -rf dist/ build/ .expo/
+
+# Сборка веб-версии
+RUN bunx expo export --platform web --output-dir dist
+
+# Production stage с nginx
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
+
+# Удаление стандартных файлов nginx
+RUN rm -rf ./*
+
+# Копирование собранного приложения
+COPY --from=builder /app/dist .
+
+# Копирование конфигурации nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Открытие порта
+EXPOSE 80
+
+# Запуск nginx
+CMD ["nginx", "-g", "daemon off;"]

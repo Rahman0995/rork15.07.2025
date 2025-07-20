@@ -2,13 +2,19 @@ services:
   - type: web
     name: military-app-web
     env: docker
-    dockerfilePath: ./Dockerfile.web.simple
+    dockerfilePath: ./Dockerfile.web.render
     plan: free
     region: oregon
+    dockerCommand: nginx -g "daemon off;"
     envVars:
       - key: NODE_ENV
         value: production
       - key: EXPO_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: military-app-backend
+          property: host
+      - key: EXPO_PUBLIC_BASE_URL
         fromService:
           type: web
           name: military-app-backend
