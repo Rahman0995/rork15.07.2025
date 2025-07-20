@@ -1,11 +1,11 @@
 services:
   - type: web
     name: military-app-web
-    env: docker
-    dockerfilePath: ./Dockerfile.web.render
+    env: node
     plan: free
     region: oregon
-    dockerCommand: nginx -g "daemon off;"
+    buildCommand: cp package.minimal.json package.json && npm install && npm install -g @expo/cli serve && rm -rf dist .expo && npx expo export --platform web --output-dir dist
+    startCommand: npx serve dist -p $PORT
     envVars:
       - key: NODE_ENV
         value: production

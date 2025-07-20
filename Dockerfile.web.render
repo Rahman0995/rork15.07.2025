@@ -1,15 +1,16 @@
 # Dockerfile для деплоя веб-версии на Render
-FROM oven/bun:1 as builder
+FROM node:18-alpine as builder
 WORKDIR /app
 
 # Установка системных зависимостей
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache python3 make g++
 
 # Копирование файлов зависимостей
-COPY package.json bun.lock* ./
+COPY package.web.json package.json
+COPY package-lock.json* yarn.lock* ./
 
 # Установка зависимостей
-RUN bun install --frozen-lockfile || bun install
+RUN npm ci --only=production || npm install
 
 # Копирование исходного кода
 COPY . .
@@ -22,7 +23,7 @@ ENV EXPO_USE_FAST_RESOLVER=1
 RUN rm -rf dist/ build/ .expo/
 
 # Сборка веб-версии
-RUN bunx expo export --platform web --output-dir dist
+RUN npx expo export --platform web --output-dir dist
 
 # Production stage с nginx
 FROM nginx:alpine
