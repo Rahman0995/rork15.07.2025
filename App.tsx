@@ -1,38 +1,46 @@
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList } from 'react-native';
-import { supabase } from '../utils/supabase';
+import { supabase } from '@/utils/supabase';
+import { Database } from '@/types/supabase';
+
+type Task = Database['public']['Tables']['tasks']['Row'];
 
 export default function App() {
-  const [todos, setTodos] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    const getTodos = async () => {
+    const getTasks = async () => {
       try {
-        const { data: todos, error } = await supabase.from('todos').select();
-
-        if (error) {
-          console.error('Error fetching todos:', error.message);
+        if (!supabase) {
+          console.warn('Supabase not configured');
           return;
         }
 
-        if (todos && todos.length > 0) {
-          setTodos(todos);
+        const { data: tasks, error } = await supabase.from('tasks').select();
+
+        if (error) {
+          console.error('Error fetching tasks:', error.message);
+          return;
+        }
+
+        if (tasks && tasks.length > 0) {
+          setTasks(tasks);
         }
       } catch (error) {
-        console.error('Error fetching todos:', error.message);
+        console.error('Error fetching tasks:', error instanceof Error ? error.message : 'Unknown error');
       }
     };
 
-    getTodos();
+    getTasks();
   }, []);
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Todo List</Text>
+      <Text>Task List</Text>
       <FlatList
-        data={todos}
-        keyExtractor={(item) => item.id.toString()}
+        data={tasks}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => <Text key={item.id}>{item.title}</Text>}
       />
     </View>
