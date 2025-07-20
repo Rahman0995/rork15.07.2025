@@ -11,7 +11,7 @@ const PRODUCTION_DOMAIN = process.env.PRODUCTION_DOMAIN || 'https://qcdqofdmflhg
 
 const getApiUrl = () => {
 if (IS_DEV) {
-  return `http://${sb_secret_PFfzT8jXeyzf3WTGs3JfLQ_3ooTE0MX}:3000/api`;
+  return `http://${YOUR_IP_ADDRESS}:3000/api`;
 }
 // Production API URL - ОБЯЗАТЕЛЬНО ОБНОВИТЕ!
 // Railway: return 'https://your-app.railway.app/api';
