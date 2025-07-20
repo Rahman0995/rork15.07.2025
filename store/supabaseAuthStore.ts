@@ -225,6 +225,10 @@ export const useSupabaseToken = () => {
 
     const getToken = async () => {
       try {
+        if (!supabase) {
+          setToken(null);
+          return;
+        }
         const { data: { session } } = await supabase.auth.getSession();
         setToken(session?.access_token || null);
       } catch (error) {
@@ -234,6 +238,10 @@ export const useSupabaseToken = () => {
     };
 
     getToken();
+
+    if (!supabase) {
+      return;
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
