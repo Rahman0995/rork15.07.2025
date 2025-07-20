@@ -86,6 +86,24 @@ if (config.transformer?.minifierConfig) {
 (config as any).resolver = resolverConfig;
 (config as any).transformer = transformerConfig;
 
+// Optimize watch folders to reduce file watcher usage
 config.watchFolders = [path.resolve(__dirname)];
+
+// Add watcher config to reduce file system load
+(config as any).watcher = {
+  additionalExts: ['ts', 'tsx'],
+  watchman: {
+    defer_states: ['hg.update'],
+  },
+  healthCheck: {
+    enabled: true,
+    filePrefix: '.metro-health-check',
+    timeout: 30000,
+    interval: 30000,
+  },
+};
+
+// Reduce the number of files being watched
+(config as any).maxWorkers = 2;
 
 export default config;
