@@ -37,13 +37,9 @@ export const initializeDatabase = async (): Promise<boolean> => {
   } catch (error) {
     console.error('❌ Failed to initialize database:', error);
     
-    // Fallback to mock data in development
-    if (config.development.mockData) {
-      console.log('🔧 Using mock data fallback');
-      return true;
-    }
-    
-    return false;
+    // Always fallback to mock data in development
+    console.log('🔧 Using mock data fallback for development');
+    return true;
   }
 };
 

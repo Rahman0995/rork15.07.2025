@@ -48,24 +48,27 @@ export const config = {
 };
 
 export const validateConfig = () => {
+  // В режиме разработки не требуем обязательные переменные
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('🔧 Development mode: skipping strict config validation');
+    return true;
+  }
+
   const requiredEnvVars = [
     'DATABASE_URL',
     'JWT_SECRET',
+    'CORS_ORIGIN',
   ];
 
-  if (process.env.NODE_ENV === 'production') {
-    requiredEnvVars.push('CORS_ORIGIN');
-    
-    // Проверяем что JWT_SECRET не дефолтный
-    if (process.env.JWT_SECRET === 'your-super-secret-jwt-key' || 
-        process.env.JWT_SECRET === 'your-super-secret-jwt-key-change-this-in-production') {
-      throw new Error('JWT_SECRET must be changed in production!');
-    }
-    
-    // Проверяем минимальную длину JWT_SECRET
-    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
-      throw new Error('JWT_SECRET must be at least 32 characters long in production!');
-    }
+  // Проверяем что JWT_SECRET не дефолтный
+  if (process.env.JWT_SECRET === 'your-super-secret-jwt-key' || 
+      process.env.JWT_SECRET === 'your-super-secret-jwt-key-change-this-in-production') {
+    throw new Error('JWT_SECRET must be changed in production!');
+  }
+  
+  // Проверяем минимальную длину JWT_SECRET
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET must be at least 32 characters long in production!');
   }
 
   for (const envVar of requiredEnvVars) {

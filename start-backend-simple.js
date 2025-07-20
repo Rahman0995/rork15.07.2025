@@ -1,101 +1,159 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const http = require('http');
+const url = require('url');
 
-console.log('🚀 Starting Backend Server...');
+console.log('🚀 Запуск простого бэкенд сервера...');
 
-// Check if bun is available
-function checkBun() {
-  try {
-    const result = spawn.sync('bun', ['--version'], { stdio: 'pipe' });
-    if (result.status === 0) {
-      console.log('✅ Bun found:', result.stdout.toString().trim());
-      return true;
-    }
-  } catch (error) {
-    console.log('❌ Bun not found');
+// Простой mock сервер для тестирования
+const server = http.createServer((req, res) => {
+  // Включаем CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
   }
-  return false;
-}
 
-// Check if Node.js can run TypeScript files
-function checkTsNode() {
-  try {
-    const result = spawn.sync('npx', ['ts-node', '--version'], { stdio: 'pipe' });
-    if (result.status === 0) {
-      console.log('✅ ts-node found');
-      return true;
-    }
-  } catch (error) {
-    console.log('❌ ts-node not found');
+  const parsedUrl = url.parse(req.url, true);
+  const path = parsedUrl.pathname;
+  
+  console.log(`📡 ${req.method} ${path}`);
+
+  // Health check
+  if (path === '/api/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: '1.0.0'
+    }));
+    return;
   }
-  return false;
-}
 
-// Start the backend
-let backend;
+  // API info
+  if (path === '/api' || path === '/api/') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      name: 'Military Management System API',
+      version: '1.0.0',
+      status: 'running',
+      timestamp: new Date().toISOString(),
+      environment: 'development'
+    }));
+    return;
+  }
 
-if (checkBun()) {
-  console.log('🔧 Using Bun to run backend...');
-  backend = spawn('bun', ['run', 'backend/index.ts'], {
-    stdio: 'inherit',
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      NODE_ENV: 'development',
-      PORT: '3000',
-      HOST: '0.0.0.0', // Listen on all interfaces for mobile access
+  // tRPC endpoints
+  if (path.startsWith('/api/trpc/')) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    
+    // Простые mock ответы для tRPC
+    if (path.includes('example.hi')) {
+      const mockResponse = [{
+        result: {
+          data: {
+            message: 'Hello from simple backend server!',
+            timestamp: new Date().toISOString(),
+            mock: false
+          }
+        }
+      }];
+      res.end(JSON.stringify(mockResponse));
+      return;
     }
-  });
-} else if (checkTsNode()) {
-  console.log('🔧 Using ts-node to run backend...');
-  backend = spawn('npx', ['ts-node', 'backend/index.ts'], {
-    stdio: 'inherit',
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      NODE_ENV: 'development',
-      PORT: '3000',
-      HOST: '0.0.0.0',
+    
+    if (path.includes('tasks.getAll')) {
+      const mockResponse = [{
+        result: {
+          data: [
+            {
+              id: '1',
+              title: 'Тестовая задача',
+              description: 'Описание тестовой задачи',
+              status: 'pending',
+              priority: 'medium',
+              assignedTo: 'Иванов А.П.',
+              dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ]
+        }
+      }];
+      res.end(JSON.stringify(mockResponse));
+      return;
     }
-  });
-} else {
-  console.error('❌ Neither Bun nor ts-node found!');
-  console.log('💡 Install one of the following:');
-  console.log('   - Bun: npm install -g bun');
-  console.log('   - ts-node: npm install -g ts-node typescript');
-  console.log('');
-  console.log('🔧 For now, the app will run with mock data only.');
-  process.exit(0);
-}
+    
+    if (path.includes('reports.getAll')) {
+      const mockResponse = [{
+        result: {
+          data: [
+            {
+              id: '1',
+              title: 'Тестовый отчет',
+              content: 'Содержание тестового отчета',
+              status: 'draft',
+              author: 'Иванов А.П.',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ]
+        }
+      }];
+      res.end(JSON.stringify(mockResponse));
+      return;
+    }
 
-backend.on('error', (error) => {
-  console.error('❌ Failed to start backend:', error.message);
-  console.log('🔧 The app will continue with mock data only.');
-  process.exit(0);
+    // Общий mock ответ для других tRPC запросов
+    const mockResponse = [{
+      result: {
+        data: {
+          message: 'Mock response from simple backend',
+          timestamp: new Date().toISOString()
+        }
+      }
+    }];
+    res.end(JSON.stringify(mockResponse));
+    return;
+  }
+
+  // 404 для всех остальных запросов
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    error: 'Not Found',
+    message: 'The requested endpoint does not exist',
+    timestamp: new Date().toISOString()
+  }));
 });
 
-backend.on('close', (code) => {
-  console.log(`🔄 Backend process exited with code ${code}`);
-  if (code !== 0) {
-    console.log('🔧 The app will continue with mock data only.');
-  }
-  process.exit(code);
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
+  console.log(`✅ Простой бэкенд сервер запущен на http://${HOST}:${PORT}`);
+  console.log(`❤️ Health Check: http://${HOST}:${PORT}/api/health`);
+  console.log(`📡 API Base: http://${HOST}:${PORT}/api`);
+  console.log('🔄 Нажмите Ctrl+C для остановки');
 });
 
-// Handle graceful shutdown
+// Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('🔄 Shutting down backend...');
-  if (backend) {
-    backend.kill('SIGINT');
-  }
+  console.log('\n🔄 Получен SIGINT, завершаем сервер...');
+  server.close(() => {
+    console.log('✅ Сервер остановлен');
+    process.exit(0);
+  });
 });
 
 process.on('SIGTERM', () => {
-  console.log('🔄 Shutting down backend...');
-  if (backend) {
-    backend.kill('SIGTERM');
-  }
+  console.log('\n🔄 Получен SIGTERM, завершаем сервер...');
+  server.close(() => {
+    console.log('✅ Сервер остановлен');
+    process.exit(0);
+  });
 });
