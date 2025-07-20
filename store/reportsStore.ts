@@ -26,6 +26,7 @@ interface ReportsState {
   getReportsByUnit: (unit: string) => Report[];
   getReportsByPriority: (priority: 'low' | 'medium' | 'high') => Report[];
   searchReports: (query: string) => Report[];
+  clearReports: () => void;
   getReportsStats: () => {
     total: number;
     pending: number;
@@ -518,6 +519,10 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
       report.content.toLowerCase().includes(lowercaseQuery) ||
       report.unit?.toLowerCase().includes(lowercaseQuery)
     );
+  },
+  
+  clearReports: () => {
+    set({ reports: [] });
   },
   
   getReportsStats: () => {

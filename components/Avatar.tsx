@@ -11,6 +11,7 @@ interface AvatarProps {
   size?: number;
   showBadge?: boolean;
   online?: boolean;
+  style?: any;
 }
 
 export const Avatar: React.FC<AvatarProps> = ({ 
@@ -19,7 +20,8 @@ export const Avatar: React.FC<AvatarProps> = ({
   user,
   size = 40, 
   showBadge = false,
-  online = false
+  online = false,
+  style
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -34,7 +36,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   };
 
   return (
-    <View style={{ width: size, height: size }}>
+    <View style={[{ width: size, height: size }, style]}>
       {avatarUri ? (
         <Image
           source={{ uri: avatarUri }}

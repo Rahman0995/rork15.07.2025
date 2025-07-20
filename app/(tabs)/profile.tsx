@@ -130,7 +130,7 @@ export default function ProfileScreen() {
             <Avatar
               size={80}
               name={user.name}
-              imageUrl={user.avatar}
+              uri={user.avatar}
               style={styles.avatar}
             />
             <TouchableOpacity

@@ -13,11 +13,16 @@ export function NetworkConnectionTest() {
   const testConnection = async () => {
     setIsLoading(true);
     try {
-      // Simple connectivity test
+      // Simple connectivity test with timeout using AbortController
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch('https://httpbin.org/status/200', {
         method: 'GET',
-        timeout: 5000,
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       setIsConnected(response.ok);
     } catch (error) {
       setIsConnected(false);

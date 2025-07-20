@@ -20,6 +20,7 @@ interface TasksState {
   getOverdueTasks: () => Task[];
   getTasksAssignedBy: (userId: string) => Task[];
   searchTasks: (query: string) => Task[];
+  clearTasks: () => void;
   getTasksStats: () => {
     total: number;
     pending: number;
@@ -252,6 +253,10 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       task.title.toLowerCase().includes(lowercaseQuery) ||
       task.description.toLowerCase().includes(lowercaseQuery)
     );
+  },
+  
+  clearTasks: () => {
+    set({ tasks: [] });
   },
   
   getTasksStats: () => {
