@@ -268,7 +268,7 @@ export const getReportsForApprovalProcedure = publicProcedure
       
       const mockReports: Report[] = [
         {
-          // id: 'report-pending-1',
+          id: 'report-pending-1',
           title: 'Отчет на согласование',
           content: 'Отчет ожидает согласования.',
           authorId: 'user-2',
