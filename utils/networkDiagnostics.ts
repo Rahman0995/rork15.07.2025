@@ -1,125 +1,101 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 
 export interface NetworkDiagnostics {
-  platform: string;
-  baseUrl: string;
-  apiUrl: string;
   isConnected: boolean;
+  apiUrl: string;
   latency?: number;
   error?: string;
   timestamp: string;
+  platform: string;
 }
 
 export const diagnoseNetwork = async (): Promise<NetworkDiagnostics> => {
-  const config = Constants.expoConfig?.extra;
-  const baseUrl = config?.backendConfig?.baseUrl || 'http://localhost:3000';
-  const apiUrl = `${baseUrl}/api/health`;
+  const startTime = Date.now();
+  const timestamp = new Date().toISOString();
+  const platform = Platform.OS;
   
-  const diagnostics: NetworkDiagnostics = {
-    platform: Platform.OS,
-    baseUrl,
-    apiUrl,
-    isConnected: false,
-    timestamp: new Date().toISOString(),
-  };
-
+  // Get API URL from environment or use default
+  const apiUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL || 'http://localhost:3000';
+  const healthUrl = `${apiUrl}/api/health`;
+  
   try {
-    const startTime = Date.now();
+    console.log(`🔍 Diagnosing network connection to: ${healthUrl}`);
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    const response = await fetch(apiUrl, {
+    const response = await fetch(healthUrl, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      signal: controller.signal,
+      // Add timeout for better error handling
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
     
-    clearTimeout(timeoutId);
-    const endTime = Date.now();
+    const latency = Date.now() - startTime;
     
-    diagnostics.latency = endTime - startTime;
-    diagnostics.isConnected = response.ok;
-    
-    if (!response.ok) {
-      diagnostics.error = `HTTP ${response.status}: ${response.statusText}`;
+    if (response.ok) {
+      console.log(`✅ Network diagnosis successful - Latency: ${latency}ms`);
+      return {
+        isConnected: true,
+        apiUrl: healthUrl,
+        latency,
+        timestamp,
+        platform,
+      };
+    } else {
+      const error = `HTTP ${response.status}: ${response.statusText}`;
+      console.log(`❌ Network diagnosis failed - ${error}`);
+      return {
+        isConnected: false,
+        apiUrl: healthUrl,
+        latency,
+        error,
+        timestamp,
+        platform,
+      };
     }
-    
   } catch (error: any) {
-    diagnostics.error = error.message || 'Unknown network error';
+    const latency = Date.now() - startTime;
+    const errorMessage = error.message || 'Unknown network error';
     
-    if (error.name === 'AbortError') {
-      diagnostics.error = 'Request timeout (10s)';
-    } else if (error.message.includes('Network request failed')) {
-      diagnostics.error = 'Network unavailable - check your connection and backend server';
-    }
+    console.log(`❌ Network diagnosis error - ${errorMessage}`);
+    
+    return {
+      isConnected: false,
+      apiUrl: healthUrl,
+      latency,
+      error: errorMessage,
+      timestamp,
+      platform,
+    };
   }
-
-  return diagnostics;
 };
 
-export const testMultipleUrls = async (urls: string[]): Promise<NetworkDiagnostics[]> => {
-  const results: NetworkDiagnostics[] = [];
+export const testConnectivity = async (urls: string[] = []): Promise<string | null> => {
+  const defaultUrls = [
+    'http://localhost:3000/api/health',
+    'http://127.0.0.1:3000/api/health',
+    'http://192.168.1.100:3000/api/health',
+  ];
   
-  for (const url of urls) {
-    const diagnostics: NetworkDiagnostics = {
-      platform: Platform.OS,
-      baseUrl: url,
-      apiUrl: `${url}/api/health`,
-      isConnected: false,
-      timestamp: new Date().toISOString(),
-    };
-
+  const testUrls = urls.length > 0 ? urls : defaultUrls;
+  
+  for (const url of testUrls) {
     try {
-      const startTime = Date.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch(`${url}/api/health`, {
+      console.log(`🔍 Testing connectivity to: ${url}`);
+      const response = await fetch(url, {
         method: 'GET',
-        signal: controller.signal,
+        signal: AbortSignal.timeout(5000), // 5 second timeout
       });
       
-      clearTimeout(timeoutId);
-      const endTime = Date.now();
-      
-      diagnostics.latency = endTime - startTime;
-      diagnostics.isConnected = response.ok;
-      
-      if (!response.ok) {
-        diagnostics.error = `HTTP ${response.status}`;
+      if (response.ok) {
+        console.log(`✅ Successfully connected to: ${url}`);
+        return url;
       }
-      
-    } catch (error: any) {
-      diagnostics.error = error.name === 'AbortError' ? 'Timeout' : error.message;
+    } catch (error) {
+      console.log(`❌ Failed to connect to: ${url}`);
+      continue;
     }
-    
-    results.push(diagnostics);
   }
   
-  return results;
-};
-
-export const getNetworkInfo = () => {
-  const config = Constants.expoConfig?.extra;
-  
-  return {
-    platform: Platform.OS,
-    isDev: __DEV__,
-    config: {
-      baseUrl: config?.backendConfig?.baseUrl,
-      timeout: config?.backendConfig?.timeout,
-      enableMockData: config?.backendConfig?.enableMockData,
-      fallbackUrls: config?.backendConfig?.fallbackUrls,
-    },
-    environment: {
-      EXPO_PUBLIC_RORK_API_BASE_URL: process.env.EXPO_PUBLIC_RORK_API_BASE_URL,
-      LOCAL_IP: process.env.LOCAL_IP,
-      NODE_ENV: process.env.NODE_ENV,
-    }
-  };
+  return null;
 };
