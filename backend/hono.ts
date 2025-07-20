@@ -12,6 +12,7 @@ import {
   securityHeadersMiddleware, 
   requestValidationMiddleware 
 } from "./middleware/security";
+import crypto from "crypto";
 
 // Валидация конфигурации при запуске
 try {
@@ -99,6 +100,68 @@ app.get("/health", async (c) => {
   };
   
   return c.json(health);
+});
+
+// Supabase SMS Webhook endpoint
+app.post("/webhooks/supabase/sms", async (c) => {
+  try {
+    const body = await c.req.text();
+    const signature = c.req.header('x-supabase-signature');
+    
+    // Получаем webhook secret из переменных окружения
+    const webhookSecret = process.env.SUPABASE_WEBHOOK_SECRET || 'v1,whsec_ll6hvMMRV620VYFElyWffcT7PhKszRkpjf/kdVds8VZOWHCwxqFBo18/sle4qvMUxi0nfLO3HkZH2AW';
+    
+    // Верификация подписи webhook
+    if (signature && webhookSecret) {
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret.replace('v1,whsec_', ''))
+        .update(body, 'utf8')
+        .digest('base64');
+      
+      if (signature !== `v1=${expectedSignature}`) {
+        console.error('❌ Invalid webhook signature');
+        return c.json({ error: 'Invalid signature' }, 401);
+      }
+    }
+    
+    const payload = JSON.parse(body);
+    
+    console.log('📱 Supabase SMS Webhook received:', {
+      type: payload.type,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Обработка различных типов событий
+    switch (payload.type) {
+      case 'user.created':
+        console.log('👤 New user created via SMS:', payload.record?.email);
+        break;
+        
+      case 'user.updated':
+        console.log('👤 User updated via SMS:', payload.record?.email);
+        break;
+        
+      case 'user.deleted':
+        console.log('👤 User deleted:', payload.old_record?.email);
+        break;
+        
+      default:
+        console.log(`📱 Unhandled SMS webhook type: ${payload.type}`);
+    }
+
+    return c.json({
+      success: true,
+      message: 'SMS webhook processed successfully',
+      timestamp: new Date().toISOString(),
+    });
+    
+  } catch (error) {
+    console.error('❌ Error processing SMS webhook:', error);
+    return c.json({ 
+      error: 'Failed to process webhook',
+      timestamp: new Date().toISOString(),
+    }, 500);
+  }
 });
 
 // Endpoint для получения конфигурации (только публичные данные)

@@ -22,7 +22,8 @@ import {
   Server,
   Camera,
   Image as ImageIcon,
-  Edit3
+  Edit3,
+  MessageSquare
 } from 'lucide-react-native';
 
 
@@ -313,6 +314,12 @@ export default function ProfileScreen() {
           <Server size={20} color={colors.primary} />,
           'Тест Supabase',
           () => router.push('/settings/supabase-test')
+        )}
+        
+        {renderMenuItem(
+          <MessageSquare size={20} color={colors.primary} />,
+          'Тест SMS',
+          () => router.push('/settings/sms-test')
         )}
         
         {renderMenuItem(
