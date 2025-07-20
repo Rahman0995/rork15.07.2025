@@ -1,51 +1,35 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { spawn } = require('child_process');
 
-console.log('🚀 Запуск приложения с исправлением проблем...');
+console.log('🚀 Запуск приложения...');
 
-// Очищаем кэши
-console.log('🧹 Очищаем кэши...');
-const cacheDirs = [
-  'node_modules/.cache',
-  '.expo',
-  '.metro',
-  '/tmp/metro-cache',
-  '/tmp/haste-map-metro-cache'
-];
+// Запуск только frontend с правильным портом
+console.log('📱 Запуск Expo приложения на порту 8082...');
 
-cacheDirs.forEach(dir => {
-  try {
-    if (fs.existsSync(dir)) {
-      fs.rmSync(dir, { recursive: true, force: true });
-      console.log(`✅ Очищен: ${dir}`);
-    }
-  } catch (error) {
-    console.log(`⚠️  Не удалось очистить ${dir}:`, error.message);
-  }
+const frontendProcess = spawn('npx', ['expo', 'start', '--port', '8082'], {
+  stdio: 'inherit',
+  shell: true
 });
 
-// Устанавливаем переменные окружения
-process.env.WATCHMAN_DISABLE_WATCH = '1';
-process.env.EXPO_NO_DOTENV = '1';
-process.env.EXPO_NO_CACHE = '1';
+frontendProcess.on('error', (error) => {
+  console.error('❌ Ошибка запуска frontend:', error);
+});
 
-console.log('📱 Запускаем Expo...');
+// Обработка сигналов для graceful shutdown
+process.on('SIGINT', () => {
+  console.log('\n🔄 Остановка приложения...');
+  frontendProcess.kill('SIGTERM');
+  process.exit(0);
+});
 
-try {
-  // Запускаем expo с исправлениями
-  execSync('npx expo start --tunnel --port 8081 --clear', {
-    stdio: 'inherit',
-    env: {
-      ...process.env,
-      WATCHMAN_DISABLE_WATCH: '1',
-      EXPO_NO_DOTENV: '1',
-      EXPO_NO_CACHE: '1'
-    }
-  });
-} catch (error) {
-  console.error('❌ Ошибка запуска:', error.message);
-  process.exit(1);
-}
+process.on('SIGTERM', () => {
+  console.log('\n🔄 Остановка приложения...');
+  frontendProcess.kill('SIGTERM');
+  process.exit(0);
+});
+
+console.log('✅ Приложение запущено!');
+console.log('📱 Откройте Expo Go на телефоне и отсканируйте QR код');
+console.log('🌐 Или откройте веб версию в браузере');
+console.log('🛑 Нажмите Ctrl+C для остановки');
