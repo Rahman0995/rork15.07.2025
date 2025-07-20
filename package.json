@@ -114,12 +114,11 @@
     },
     "scripts": {
   "build": "expo export --output-dir web-build"
-}
+},
     "doctor": {
       "reactNativeDirectoryCheck": {
         "listUnknownPackages": false
       }
     }
   }
-}
 }
