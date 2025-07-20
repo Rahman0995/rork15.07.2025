@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useAuthStore } from '@/store/authStore';
+import { useSupabaseAuth } from '@/store/supabaseAuthStore';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { useTheme } from '@/constants/theme';
@@ -14,7 +14,8 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   
-  const { login, isLoading, error, isAuthenticated } = useAuthStore();
+  const { signIn, loading, isAuthenticated } = useSupabaseAuth();
+  const [error, setError] = useState('');
   const { colors } = useTheme();
   const router = useRouter();
   
@@ -62,10 +63,15 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       if (validateForm()) {
-        await login(email, password);
+        setError('');
+        const result = await signIn(email, password);
+        if (result.error) {
+          setError(result.error.message || 'Ошибка входа');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during login:', error);
+      setError(error.message || 'Ошибка входа');
     }
   };
   
@@ -127,7 +133,7 @@ export default function LoginScreen() {
             <Button
               title="Войти"
               onPress={handleLogin}
-              loading={isLoading}
+              loading={loading}
               fullWidth
               style={styles.loginButton}
             />

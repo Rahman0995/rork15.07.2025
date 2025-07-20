@@ -6,7 +6,7 @@ import React, { useEffect, useState, ErrorInfo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useAuthStore } from "@/store/authStore";
+import { useSupabaseAuth } from "@/store/supabaseAuthStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { useTheme } from "@/constants/theme";
 import { Platform, View, Text, TouchableOpacity } from "react-native";
@@ -32,7 +32,7 @@ const queryClient = new QueryClient({
 });
 
 function RootLayoutNav() {
-  const { isAuthenticated, user, isInitialized, initialize } = useAuthStore();
+  const { isAuthenticated, user, initialized } = useSupabaseAuth();
   const { registerForPushNotifications } = useNotificationsStore();
   const { colors, isDark } = useTheme();
   const segments = useSegments();
@@ -41,30 +41,12 @@ function RootLayoutNav() {
   const [hasError, setHasError] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   
-  // Ensure auth store is initialized
+  // Supabase auth is automatically initialized
   useEffect(() => {
-    const initializeAuth = async () => {
-      if (isInitializing) return;
-      
-      try {
-        setIsInitializing(true);
-        if (__DEV__) {
-          console.log('Auth initialization check:', { isInitialized, isAuthenticated, user: !!user });
-        }
-        if (!isInitialized) {
-          if (__DEV__) console.log('Initializing auth store...');
-          await initialize();
-        }
-      } catch (error) {
-        console.error('Error during auth initialization:', error);
-        setHasError(true);
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-    
-    initializeAuth();
-  }, [isInitialized, initialize, isInitializing]);
+    if (__DEV__) {
+      console.log('Supabase Auth state:', { initialized, isAuthenticated, user: !!user });
+    }
+  }, [initialized, isAuthenticated, user]);
 
   useEffect(() => {
     try {
@@ -79,7 +61,7 @@ function RootLayoutNav() {
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!isNavigationReady || !isInitialized) return;
+    if (!isNavigationReady || !initialized) return;
 
     const inProtectedRoute = 
       segments[0] === '(tabs)' || 
@@ -100,7 +82,7 @@ function RootLayoutNav() {
         isAuthenticated,
         inProtectedRoute,
         isNavigationReady,
-        isInitialized,
+        initialized,
         user: !!user,
         currentRoute,
         platform: Platform.OS
@@ -127,11 +109,11 @@ function RootLayoutNav() {
         router.replace('/welcome');
       }
     });
-  }, [isAuthenticated, segments, isNavigationReady, isInitialized]);
+  }, [isAuthenticated, segments, isNavigationReady, initialized]);
 
   useEffect(() => {
     // Set navigation ready after initialization
-    if (isInitialized) {
+    if (initialized) {
       try {
         setIsNavigationReady(true);
         SplashScreen.hideAsync().catch((error) => {
@@ -142,7 +124,7 @@ function RootLayoutNav() {
         setIsNavigationReady(true);
       }
     }
-  }, [isInitialized]);
+  }, [initialized]);
 
   // Show error screen if there's a critical error
   if (hasError) {
@@ -159,7 +141,7 @@ function RootLayoutNav() {
           }}
           onPress={() => {
             setHasError(false);
-            initialize();
+            // Supabase auth will reinitialize automatically
           }}
         >
           <Text style={{ color: 'white', fontWeight: 'bold' }}>Попробовать снова</Text>
