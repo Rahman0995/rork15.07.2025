@@ -97,7 +97,7 @@ export default function LoginScreen() {
             <View style={styles.logoBackground}>
               <Shield size={32} color={colors.primary} />
             </View>
-            <Text style={styles.logoText}>Военная Часть</Text>
+            <Text style={styles.logoText}>СЕВЕР-АХМАТ</Text>
             <Text style={styles.subtitle}>Система управления</Text>
           </View>
           
