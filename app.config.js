@@ -158,6 +158,11 @@ expo: {
     apiUrl: getApiUrl(),
     enableDebugMode: IS_DEV,
     enableAnalytics: !IS_DEV,
+    // Supabase configuration
+    supabase: {
+      url: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      anonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+    },
     // Backend API endpoints configuration
     backendConfig: {
       baseUrl: getBaseUrl(),

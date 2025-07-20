@@ -18,6 +18,7 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
 import { NotificationBadge } from '@/components/NotificationBadge';
 import { NetworkConnectionTest } from '@/components/NetworkConnectionTest';
+import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Platform } from 'react-native';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
@@ -180,6 +181,13 @@ export default function HomeScreen() {
       >
         {/* Network Diagnostics (Development Only) */}
         {__DEV__ && <NetworkConnectionTest />}
+        
+        {/* Supabase Status (Development Only) */}
+        {__DEV__ && (
+          <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
+            <SupabaseStatus />
+          </View>
+        )}
 
         {/* Header Section */}
         <View style={styles.header}>
