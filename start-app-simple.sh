@@ -2,18 +2,33 @@
 
 echo "🚀 Запуск приложения..."
 
-# Увеличиваем лимит файловых наблюдателей
-echo "📁 Увеличиваем лимит файловых наблюдателей..."
-sudo sysctl fs.inotify.max_user_watches=524288 2>/dev/null || echo "Не удалось увеличить лимит (нужны права sudo)"
+# Проверяем лимит файловых наблюдателей
+CURRENT_LIMIT=$(cat /proc/sys/fs/inotify/max_user_watches 2>/dev/null || echo "8192")
+echo "📊 Текущий лимит файловых наблюдателей: $CURRENT_LIMIT"
 
-# Очищаем кэш Metro
+if [ "$CURRENT_LIMIT" -lt 524288 ]; then
+    echo "⚠️  Лимит слишком мал, увеличиваем..."
+    echo 524288 | sudo tee /proc/sys/fs/inotify/max_user_watches
+    echo "✅ Лимит увеличен до 524288"
+fi
+
+# Убиваем старые процессы
+echo "🛑 Останавливаем старые процессы..."
+pkill -f metro 2>/dev/null || true
+pkill -f expo 2>/dev/null || true
+pkill -f "node.*8081" 2>/dev/null || true
+pkill -f "node.*8082" 2>/dev/null || true
+pkill -f "node.*8083" 2>/dev/null || true
+
+# Ждем немного
+sleep 2
+
+# Очищаем кэш
 echo "🧹 Очищаем кэш..."
-npx expo r -c 2>/dev/null || echo "Кэш уже очищен"
+rm -rf .expo 2>/dev/null || true
+rm -rf node_modules/.cache 2>/dev/null || true
+rm -rf /tmp/metro-* 2>/dev/null || true
 
-# Запускаем Expo
-echo "📱 Запускаем Expo на порту 8083..."
-npx expo start --port 8083 --web --tunnel
-
-echo "✅ Приложение запущено!"
-echo "🌐 Web: http://localhost:8083"
-echo "📱 Mobile: Сканируйте QR код в Expo Go"
+# Запускаем приложение
+echo "🚀 Запускаем Expo на порту 8083..."
+npx expo start --clear --port 8083 --web

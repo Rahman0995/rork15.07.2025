@@ -1,16 +1,15 @@
 #!/bin/bash
 
-# Исправление проблемы с файловыми наблюдателями
 echo "🔧 Увеличиваем лимит файловых наблюдателей..."
 
 # Проверяем текущий лимит
 echo "📊 Текущий лимит: $(cat /proc/sys/fs/inotify/max_user_watches)"
 
-# Временное увеличение лимита для текущей сессии
+# Увеличиваем лимит временно
 echo 524288 | sudo tee /proc/sys/fs/inotify/max_user_watches
 
-# Постоянное увеличение лимита (проверяем, не добавлено ли уже)
-if ! grep -q "fs.inotify.max_user_watches" /etc/sysctl.conf; then
+# Делаем изменение постоянным
+if ! grep -q "fs.inotify.max_user_watches" /etc/sysctl.conf 2>/dev/null; then
     echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
     echo "📝 Добавлено в /etc/sysctl.conf"
 else
@@ -18,16 +17,22 @@ else
 fi
 
 # Применяем изменения
-sudo sysctl -p
+sudo sysctl -p 2>/dev/null || true
 
 echo "✅ Новый лимит: $(cat /proc/sys/fs/inotify/max_user_watches)"
 echo "🎉 Лимит файловых наблюдателей увеличен!"
 
-# Очищаем кэш
+# Очищаем кэш Metro и Expo
 echo "🧹 Очищаем кэш..."
 rm -rf node_modules/.cache 2>/dev/null || true
 rm -rf .expo 2>/dev/null || true
-rm -rf dist 2>/dev/null || true
+rm -rf /tmp/metro-* 2>/dev/null || true
+rm -rf /tmp/haste-map-* 2>/dev/null || true
+rm -rf ~/.expo 2>/dev/null || true
 
-echo "✅ Готово! Теперь можно запускать приложение."
-echo "🚀 Запустите: npm start"
+# Убиваем все процессы Metro
+pkill -f metro 2>/dev/null || true
+pkill -f expo 2>/dev/null || true
+
+echo "✅ Кэш очищен!"
+echo "🚀 Теперь можно запускать приложение: npx expo start"
