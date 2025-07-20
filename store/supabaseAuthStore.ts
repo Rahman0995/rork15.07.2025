@@ -46,7 +46,7 @@ export const [SupabaseAuthProvider, useSupabaseAuth] = createContextHook(() => {
     // Получаем текущую сессию
     const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase!.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (mounted) {
           if (error) {
@@ -222,7 +222,7 @@ export const useSupabaseToken = () => {
 
     const getToken = async () => {
       try {
-        const { data: { session } } = await supabase!.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         setToken(session?.access_token || null);
       } catch (error) {
         console.error('Ошибка получения токена:', error);
