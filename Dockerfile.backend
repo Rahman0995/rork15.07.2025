@@ -1,54 +1,38 @@
-# Multi-stage build for production
-FROM oven/bun:1 as base
+# Simple single-stage build for Render
+FROM oven/bun:1
+
 WORKDIR /app
 
-# Install system dependencies for native modules
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     build-essential \
     curl \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-COPY package.production.json ./package.json
-RUN bun install --production
+# Copy package files
+COPY package.json bun.lock* ./
+
+# Install dependencies without better-sqlite3
+RUN bun install --production --ignore-scripts
 
 # Copy source code
 COPY backend/ ./backend/
 COPY types/ ./types/
 COPY utils/ ./utils/
 
-# Production stage
-FROM oven/bun:1 as production
-WORKDIR /app
-
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nodejs
-
-# Copy application files
-COPY --from=base /app/backend ./backend
-COPY --from=base /app/types ./types
-COPY --from=base /app/utils ./utils
-COPY --from=base /app/node_modules ./node_modules
-COPY --from=base /app/package.json ./
-
-# Create uploads directory
-RUN mkdir -p /app/uploads && chown -R nodejs:nodejs /app/uploads
-
-# Switch to non-root user
-USER nodejs
+# Create data directory for SQLite
+RUN mkdir -p /app/data
 
 # Expose port
-EXPOSE 3000
+EXPOSE 10000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
-
-# Set production environment
+# Set environment
 ENV NODE_ENV=production
+ENV PORT=10000
+ENV DATABASE_PATH=/app/data/database.sqlite
 
 # Start the application
-CMD ["bun", "backend/index.ts"]
+CMD ["bun", "run", "backend/index.ts"]
