@@ -310,6 +310,12 @@ export default function ProfileScreen() {
         )}
         
         {renderMenuItem(
+          <Server size={20} color={colors.primary} />,
+          'Тест Supabase',
+          () => router.push('/settings/supabase-test')
+        )}
+        
+        {renderMenuItem(
           <ImageIcon size={20} color={colors.primary} />,
           'Мои фотографии',
           () => router.push('/settings/photos')

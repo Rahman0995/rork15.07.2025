@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/authStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
+import { SupabaseAuthProvider } from "@/store/supabaseAuthStore";
 import { useTheme } from "@/constants/theme";
 import { Platform, View, Text, TouchableOpacity } from "react-native";
 import { BlurView } from "expo-blur";
@@ -264,7 +265,9 @@ function RootLayoutWrapper() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
-        <RootLayoutNav />
+        <SupabaseAuthProvider>
+          <RootLayoutNav />
+        </SupabaseAuthProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
