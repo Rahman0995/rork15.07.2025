@@ -22,7 +22,7 @@ export default {
     ],
     extra: {
       // Production API URL - update this with your actual backend URL
-      apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://your-backend-url.com/api',
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://http://localhost:3000/api',
       backendConfig: {
         baseUrl: process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || 'https://your-backend-url.com',
         trpcEndpoint: '/api/trpc',
