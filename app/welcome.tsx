@@ -21,7 +21,7 @@ export default function WelcomeScreen() {
           <View style={styles.logoBackground}>
             <Shield size={48} color={colors.primary} />
           </View>
-          <Text style={styles.logoText}>Военная Часть</Text>
+          <Text style={styles.logoText}>СЕВЕР-АХМАТ</Text>
           <Text style={styles.subtitle}>Система управления</Text>
           <Text style={styles.description}>
             Добро пожаловать в систему управления военной части. 
