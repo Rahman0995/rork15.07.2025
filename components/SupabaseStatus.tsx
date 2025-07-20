@@ -6,9 +6,17 @@ import { useTheme } from '@/constants/theme';
 export const SupabaseStatus: React.FC = () => {
   const { colors } = useTheme();
   
-  const isConfigured = !!supabase;
   const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
   const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+  
+  // Отладочная информация
+  console.log('🔍 Supabase Status Debug:');
+  console.log('URL:', url);
+  console.log('Key exists:', !!key);
+  console.log('Key length:', key?.length || 0);
+  console.log('Supabase client:', !!supabase);
+  
+  const isConfigured = !!supabase;
   
   return (
     <View style={[styles.container, { backgroundColor: colors.card }]}>
@@ -31,7 +39,14 @@ export const SupabaseStatus: React.FC = () => {
       <View style={styles.statusRow}>
         <Text style={[styles.label, { color: colors.textSecondary }]}>Ключ:</Text>
         <Text style={[styles.value, { color: colors.text }]}>
-          {key ? '✅ НАСТРОЕН' : '❌ НЕ НАСТРОЕН'}
+          {key ? `✅ НАСТРОЕН (${key.length} симв.)` : '❌ НЕ НАСТРОЕН'}
+        </Text>
+      </View>
+      
+      <View style={styles.statusRow}>
+        <Text style={[styles.label, { color: colors.textSecondary }]}>Клиент:</Text>
+        <Text style={[styles.value, { color: colors.text }]}>
+          {supabase ? '✅ СОЗДАН' : '❌ НЕ СОЗДАН'}
         </Text>
       </View>
       

@@ -7,7 +7,9 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 // Проверяем наличие конфигурации Supabase
 const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && 
   supabaseUrl !== 'https://your-project-ref.supabase.co' && 
-  supabaseAnonKey !== 'your-anon-key-here';
+  supabaseAnonKey !== 'your-anon-key-here' &&
+  supabaseUrl.includes('supabase.co') &&
+  supabaseAnonKey.length > 50;
 
 if (!isSupabaseConfigured) {
   console.warn('⚠️ Supabase не настроен. Используется mock режим.');
