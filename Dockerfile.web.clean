@@ -23,7 +23,7 @@ console.log('✅ Cleaned package.json for web build');
 "
 
 # Install dependencies (now without problematic native deps)
-RUN bun install --no-frozen-lockfile
+RUN bun install --frozen-lockfile=false
 
 # Copy source code
 COPY . .
