@@ -5,14 +5,9 @@ const path = require('path');
 
 console.log('🚀 Starting backend server now...');
 
-// Try to start the simple backend first (most reliable)
-const backend = spawn('node', [path.join(__dirname, 'start-backend-simple.js')], {
-  stdio: 'inherit',
-  env: {
-    ...process.env,
-    PORT: '3000',
-    HOST: '0.0.0.0'
-  }
+// Try to start the backend with auto port detection
+const backend = spawn('node', [path.join(__dirname, 'start-backend-auto-port.js')], {
+  stdio: 'inherit'
 });
 
 backend.on('error', (error) => {
