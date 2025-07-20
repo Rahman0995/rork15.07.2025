@@ -94,7 +94,7 @@ export default function SupabaseConnectionTest() {
       if (error) {
         addResult(`❌ Ошибка регистрации: ${error.message}`);
       } else {
-        addResult(`✅ Тестовый пользователь создан: ${data.user?.email}`);
+        addResult(`✅ Тестовый пользователь создан: ${data?.user?.email || 'неизвестно'}`);
         
         // Try to sign out
         const { error: signOutError } = await auth.signOut();
