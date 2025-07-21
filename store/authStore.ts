@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          if (data && data.user) {
+          if (data?.user) {
             // Get user profile from database
             const { data: userProfile, error: profileError } = await database.users.getById(data.user.id);
             
@@ -127,7 +127,7 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          if (authData && authData.user) {
+          if (authData?.user) {
             // Create user profile in database
             const { data: userProfile, error: profileError } = await database.users.create({
               id: authData.user.id,

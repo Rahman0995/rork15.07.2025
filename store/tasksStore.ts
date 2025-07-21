@@ -80,10 +80,10 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       const result = await trpcClient.tasks.create.mutate({
         title: taskData.title,
         description: taskData.description || '',
-        priority: taskData.priority,
-        assignedTo: taskData.assignedTo || '',
-        createdBy: taskData.createdBy || '',
-        dueDate: taskData.dueDate || '',
+        priority: taskData.priority || 'medium',
+        assignedTo: taskData.assignedTo || '550e8400-e29b-41d4-a716-446655440001',
+        createdBy: taskData.createdBy || '550e8400-e29b-41d4-a716-446655440001',
+        dueDate: taskData.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       });
       
       if (result.success && result.task) {
@@ -307,7 +307,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     return tasks.filter(task => 
       task.status !== 'completed' && 
       task.status !== 'cancelled' && 
-      task.dueDate && new Date(task.dueDate) < now
+      task.dueDate && new Date(task.dueDate || '') < now
     );
   },
   
@@ -323,7 +323,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     const lowercaseQuery = query.toLowerCase();
     return tasks.filter(task => 
       task.title.toLowerCase().includes(lowercaseQuery) ||
-      (task.description && task.description.toLowerCase().includes(lowercaseQuery))
+      (task.description?.toLowerCase().includes(lowercaseQuery))
     );
   },
   
@@ -355,7 +355,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       overdue: tasks.filter(t => 
         t.status !== 'completed' && 
         t.status !== 'cancelled' && 
-        t.dueDate && new Date(t.dueDate) < now
+        t.dueDate && new Date(t.dueDate || '') < now
       ).length,
     };
   },
