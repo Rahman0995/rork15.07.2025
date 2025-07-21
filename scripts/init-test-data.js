@@ -9,7 +9,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Конфигурация Supabase
 const supabaseUrl = 'https://qcdqofdmflhgsabyopfe.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjZHFvZmRtZmxoZ3NhYnlvcGZlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjk4OTE1MywiZXhwIjoyMDY4NTY1MTUzfQ.Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7E'; // Замените на ваш service_role ключ
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjZHFvZmRtZmxoZ3NhYnlvcGZlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mjk4OTE1MywiZXhwIjoyMDY4NTY1MTUzfQ.Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7Ej7E';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
@@ -114,11 +114,47 @@ async function createTestData() {
   try {
     console.log('🚀 Создание тестовых данных...');
 
+    // Сначала очищаем существующие данные (в правильном порядке из-за внешних ключей)
+    console.log('\n🧹 Очистка существующих данных...');
+    
+    await supabase.from('tasks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('reports').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('messages').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('chats').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('events').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    await supabase.from('users').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
     // 1. Создание пользователей
     console.log('\n👥 Создание тестовых пользователей...');
+    
+    // Сначала создаем записи в таблице users
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .insert(testUsers.map(user => ({
+        id: user.id,
+        email: user.email,
+        password_hash: '$2b$10$example.hash.for.demo.purposes.only',
+        first_name: user.first_name,
+        last_name: user.last_name,
+        rank: user.rank,
+        role: user.role,
+        unit: user.unit,
+        phone: user.phone,
+        avatar_url: user.avatar_url
+      })))
+      .select();
+
+    if (usersError) {
+      console.error('❌ Ошибка создания пользователей:', usersError);
+      return;
+    } else {
+      console.log(`✅ Создано ${usersData.length} пользователей`);
+    }
+
+    // Затем создаем пользователей в Auth
     for (const user of testUsers) {
       try {
-        // Создаем пользователя в Auth
         const { data: authData, error: authError } = await supabase.auth.admin.createUser({
           email: user.email,
           password: user.password,
@@ -134,73 +170,109 @@ async function createTestData() {
         });
 
         if (authError && !authError.message.includes('already registered')) {
-          console.error(`❌ Ошибка создания пользователя ${user.email}:`, authError.message);
-          continue;
-        }
-
-        // Создаем профиль в таблице users
-        const { error: profileError } = await supabase
-          .from('users')
-          .upsert({
-            id: user.id,
-            email: user.email,
-            password_hash: '',
-            first_name: user.first_name,
-            last_name: user.last_name,
-            rank: user.rank,
-            role: user.role,
-            unit: user.unit,
-            phone: user.phone,
-            avatar_url: user.avatar_url
-          });
-
-        if (profileError) {
-          console.error(`❌ Ошибка создания профиля ${user.email}:`, profileError.message);
+          console.warn(`⚠️ Auth пользователь ${user.email}:`, authError.message);
         } else {
-          console.log(`✅ Пользователь создан: ${user.first_name} ${user.last_name} (${user.role})`);
+          console.log(`✅ Auth пользователь: ${user.first_name} ${user.last_name}`);
         }
       } catch (error) {
-        console.error(`❌ Ошибка при создании пользователя ${user.email}:`, error.message);
+        console.warn(`⚠️ Ошибка Auth для ${user.email}:`, error.message);
       }
     }
 
     // 2. Создание задач
     console.log('\n📋 Создание тестовых задач...');
-    for (const task of testTasks) {
-      try {
-        const { error } = await supabase
-          .from('tasks')
-          .insert(task);
+    const { data: tasksData, error: tasksError } = await supabase
+      .from('tasks')
+      .insert(testTasks)
+      .select();
 
-        if (error) {
-          console.error(`❌ Ошибка создания задачи "${task.title}":`, error.message);
-        } else {
-          console.log(`✅ Задача создана: ${task.title}`);
-        }
-      } catch (error) {
-        console.error(`❌ Ошибка при создании задачи "${task.title}":`, error.message);
-      }
+    if (tasksError) {
+      console.error('❌ Ошибка создания задач:', tasksError);
+    } else {
+      console.log(`✅ Создано ${tasksData.length} задач`);
     }
 
     // 3. Создание отчетов
     console.log('\n📄 Создание тестовых отчетов...');
-    for (const report of testReports) {
-      try {
-        const { error } = await supabase
-          .from('reports')
-          .insert(report);
+    const { data: reportsData, error: reportsError } = await supabase
+      .from('reports')
+      .insert(testReports)
+      .select();
 
-        if (error) {
-          console.error(`❌ Ошибка создания отчета "${report.title}":`, error.message);
-        } else {
-          console.log(`✅ Отчет создан: ${report.title}`);
-        }
-      } catch (error) {
-        console.error(`❌ Ошибка при создании отчета "${report.title}":`, error.message);
+    if (reportsError) {
+      console.error('❌ Ошибка создания отчетов:', reportsError);
+    } else {
+      console.log(`✅ Создано ${reportsData.length} отчетов`);
+    }
+
+    // 4. Создание чатов
+    console.log('\n💬 Создание тестовых чатов...');
+    const testChats = [
+      {
+        name: 'Общий чат',
+        type: 'group',
+        created_by: '550e8400-e29b-41d4-a716-446655440001'
+      },
+      {
+        name: 'Командование',
+        type: 'group',
+        created_by: '550e8400-e29b-41d4-a716-446655440001'
       }
+    ];
+
+    const { data: chatsData, error: chatsError } = await supabase
+      .from('chats')
+      .insert(testChats)
+      .select();
+
+    if (chatsError) {
+      console.error('❌ Ошибка создания чатов:', chatsError);
+    } else {
+      console.log(`✅ Создано ${chatsData.length} чатов`);
+    }
+
+    // 5. Создание событий
+    console.log('\n📅 Создание тестовых событий...');
+    const testEvents = [
+      {
+        title: 'Плановые учения',
+        description: 'Тактические учения подразделения',
+        start_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        end_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        location: 'Полигон №1',
+        type: 'training',
+        created_by: '550e8400-e29b-41d4-a716-446655440001'
+      },
+      {
+        title: 'Совещание командования',
+        description: 'Еженедельное совещание командного состава',
+        start_date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+        end_date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(),
+        location: 'Штаб',
+        type: 'meeting',
+        created_by: '550e8400-e29b-41d4-a716-446655440001'
+      }
+    ];
+
+    const { data: eventsData, error: eventsError } = await supabase
+      .from('events')
+      .insert(testEvents)
+      .select();
+
+    if (eventsError) {
+      console.error('❌ Ошибка создания событий:', eventsError);
+    } else {
+      console.log(`✅ Создано ${eventsData.length} событий`);
     }
 
     console.log('\n🎉 Тестовые данные созданы!');
+    console.log('\n📊 Статистика:');
+    console.log(`👥 Пользователи: ${usersData?.length || 0}`);
+    console.log(`📋 Задачи: ${tasksData?.length || 0}`);
+    console.log(`📄 Отчеты: ${reportsData?.length || 0}`);
+    console.log(`💬 Чаты: ${chatsData?.length || 0}`);
+    console.log(`📅 События: ${eventsData?.length || 0}`);
+    
     console.log('\n📱 Теперь вы можете войти в приложение с любым из следующих аккаунтов:');
     testUsers.forEach(user => {
       console.log(`  - ${user.email} / ${user.password} (${user.role})`);
