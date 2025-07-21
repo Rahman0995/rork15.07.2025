@@ -8,7 +8,7 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOi
 // Проверяем наличие конфигурации Supabase
 const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && 
   supabaseUrl !== 'https://your-project-ref.supabase.co' && 
-  supabaseAnonKey !== 'your-anon-key-here' &&
+  supabaseAnonKey !== 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFjZHFvZmRtZmxoZ3NhYnlvcGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5ODkxNTMsImV4cCI6MjA2ODU2NTE1M30.qYn87AuahL4H9Tin8nVIKlH9-3UnCmtHGEBOA3RhyjU' &&
   supabaseUrl.includes('supabase.co') &&
   supabaseAnonKey.length > 50;
 
