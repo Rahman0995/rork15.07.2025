@@ -213,48 +213,51 @@ export const getTaskStatsProcedure = publicProcedure
     try {
       console.log('Fetching task stats:', input);
       
-      const mockTasks: any[] = [
-        {
-          id: 'task-1',
-          title: 'Mock Task',
-          description: 'Mock description',
-          assignedTo: input?.assignedTo || 'user-2',
-          createdBy: input?.createdBy || 'user-1',
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'pending',
-          priority: 'medium',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: 'task-2',
-          title: 'Completed Task',
-          description: 'This task is completed',
-          assignedTo: input?.assignedTo || 'user-3',
-          createdBy: input?.createdBy || 'user-1',
-          dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'completed',
-          priority: 'high',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
+      let query = database.tasks.getAll();
+      
+      if (input?.assignedTo) {
+        query = database.tasks.getByAssignee(input.assignedTo);
+      }
+      
+      const { data: tasks, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching tasks for stats:', error);
+        return {
+          total: 0,
+          pending: 0,
+          inProgress: 0,
+          completed: 0,
+          cancelled: 0,
+          overdue: 0,
+          byPriority: { high: 0, medium: 0, low: 0 },
+        };
+      }
+      
+      let filteredTasks = tasks || [];
+      
+      if (input?.createdBy) {
+        filteredTasks = filteredTasks.filter(task => task.created_by === input.createdBy);
+      }
+      
+      const now = new Date();
       
       return {
-        total: mockTasks.length,
-        pending: mockTasks.filter((t) => t.status === 'pending').length,
-        inProgress: mockTasks.filter((t) => t.status === 'in_progress').length,
-        completed: mockTasks.filter((t) => t.status === 'completed').length,
-        cancelled: mockTasks.filter((t) => t.status === 'cancelled').length,
-        overdue: mockTasks.filter((t) => 
+        total: filteredTasks.length,
+        pending: filteredTasks.filter((t) => t.status === 'pending').length,
+        inProgress: filteredTasks.filter((t) => t.status === 'in_progress').length,
+        completed: filteredTasks.filter((t) => t.status === 'completed').length,
+        cancelled: filteredTasks.filter((t) => t.status === 'cancelled').length,
+        overdue: filteredTasks.filter((t) => 
           t.status !== 'completed' && 
           t.status !== 'cancelled' && 
-          new Date(t.dueDate) < new Date()
+          t.due_date && 
+          new Date(t.due_date) < now
         ).length,
         byPriority: {
-          high: mockTasks.filter((t) => t.priority === 'high').length,
-          medium: mockTasks.filter((t) => t.priority === 'medium').length,
-          low: mockTasks.filter((t) => t.priority === 'low').length,
+          high: filteredTasks.filter((t) => t.priority === 'high').length,
+          medium: filteredTasks.filter((t) => t.priority === 'medium').length,
+          low: filteredTasks.filter((t) => t.priority === 'low').length,
         },
       };
     } catch (error) {

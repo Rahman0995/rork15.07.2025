@@ -200,6 +200,7 @@ export const deleteReportProcedure = publicProcedure
     }
   });
 
+// Добавим таблицу комментариев в Supabase позже
 export const addReportCommentProcedure = publicProcedure
   .input(z.object({
     reportId: z.string(),
@@ -211,6 +212,7 @@ export const addReportCommentProcedure = publicProcedure
     try {
       console.log('Adding comment to report:', input.reportId);
       
+      // TODO: Создать таблицу report_comments в Supabase
       const commentId = `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
       const newComment = {
@@ -266,27 +268,20 @@ export const getReportsForApprovalProcedure = publicProcedure
     try {
       console.log('Fetching reports for approval:', input.approverId);
       
-      const mockReports: Report[] = [
-        {
-          id: 'report-pending-1',
-          title: 'Отчет на согласование',
-          content: 'Отчет ожидает согласования.',
-          authorId: 'user-2',
-          status: 'draft',
-          type: 'text',
-          unit: '1-я рота',
-          priority: 'medium',
-          currentRevision: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          approvals: [],
-          comments: [],
-          revisions: [],
-          approvers: [input.approverId],
-        },
-      ];
+      // Получаем все отчеты со статусом 'submitted' или 'needs_revision'
+      const { data: reports, error } = await database.reports.getAll();
       
-      return mockReports;
+      if (error) {
+        console.error('Error fetching reports for approval:', error);
+        return [];
+      }
+      
+      // Фильтруем отчеты, которые нуждаются в согласовании
+      const filteredReports = (reports || []).filter(report => 
+        report.status === 'submitted' || report.status === 'draft'
+      );
+      
+      return filteredReports;
     } catch (error) {
       console.error('Error fetching reports for approval:', error);
       throw new Error('Failed to fetch reports for approval');

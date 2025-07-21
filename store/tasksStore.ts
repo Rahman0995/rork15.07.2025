@@ -38,10 +38,31 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   fetchTasks: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await trpcClient.tasks.getAll.query();
-      // Backend returns { tasks, total }, we need just the tasks array
-      const tasks = Array.isArray(response) ? response : ((response as any)?.tasks || []);
-      set({ tasks, isLoading: false });
+      const tasks = await trpcClient.tasks.getAll.query();
+      // Преобразуем данные из Supabase в формат frontend
+      const transformedTasks = (tasks || []).map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description || '',
+        status: task.status,
+        priority: task.priority,
+        assignedTo: task.assigned_to,
+        createdBy: task.created_by,
+        dueDate: task.due_date,
+        createdAt: task.created_at,
+        updatedAt: task.updated_at,
+        assignedUser: task.assigned_to ? {
+          id: task.assigned_to.id,
+          name: `${task.assigned_to.first_name} ${task.assigned_to.last_name}`,
+          avatar: task.assigned_to.avatar_url,
+        } : undefined,
+        createdByUser: task.created_by ? {
+          id: task.created_by.id,
+          name: `${task.created_by.first_name} ${task.created_by.last_name}`,
+          avatar: task.created_by.avatar_url,
+        } : undefined,
+      }));
+      set({ tasks: transformedTasks, isLoading: false });
     } catch (error) {
       console.error('Failed to fetch tasks from backend:', error);
       set({ tasks: [], isLoading: false, error: 'Ошибка при загрузке задач' });
@@ -56,63 +77,69 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     console.log('Creating task:', taskData);
     set({ isLoading: true, error: null });
     try {
-      // Try backend first, fallback to local creation
-      let newTask;
-      try {
-        newTask = await trpcClient.tasks.create.mutate({
-          title: taskData.title,
-          description: taskData.description,
-          priority: taskData.priority,
-          assignedTo: taskData.assignedTo,
-          createdBy: taskData.createdBy,
-          dueDate: taskData.dueDate,
-        });
-      } catch (backendError) {
-        console.warn('Backend task creation failed, creating locally:', backendError);
-        // Create task locally if backend fails
-        newTask = {
-          id: Date.now().toString(),
-          ...taskData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-      
-      set(state => {
-        const currentTasks = Array.isArray(state.tasks) ? state.tasks : [];
-        const taskToAdd = 'success' in newTask && newTask.success ? newTask.task : newTask;
-        return {
-          tasks: [taskToAdd, ...currentTasks],
-          isLoading: false,
-        };
+      const result = await trpcClient.tasks.create.mutate({
+        title: taskData.title,
+        description: taskData.description,
+        priority: taskData.priority,
+        assignedTo: taskData.assignedTo,
+        createdBy: taskData.createdBy,
+        dueDate: taskData.dueDate,
       });
       
-      console.log('Task created successfully:', newTask);
-      
-      // Create notification for assigned user
-      try {
-        const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
-        const taskForNotification = 'success' in newTask && newTask.success ? newTask.task : newTask;
-        await createNotification({
-          type: 'task_assigned',
-          title: 'Новая задача',
-          body: `Вам назначена задача: ${taskForNotification.title}`,
-          userId: taskForNotification.assignedTo,
-          read: false,
-          data: { taskId: taskForNotification.id }
-        });
+      if (result.success && result.task) {
+        // Преобразуем данные из Supabase
+        const transformedTask = {
+          id: result.task.id,
+          title: result.task.title,
+          description: result.task.description || '',
+          status: result.task.status,
+          priority: result.task.priority,
+          assignedTo: result.task.assigned_to,
+          createdBy: result.task.created_by,
+          dueDate: result.task.due_date,
+          createdAt: result.task.created_at,
+          updatedAt: result.task.updated_at,
+          assignedUser: result.task.assigned_to ? {
+            id: result.task.assigned_to.id,
+            name: `${result.task.assigned_to.first_name} ${result.task.assigned_to.last_name}`,
+            avatar: result.task.assigned_to.avatar_url,
+          } : undefined,
+          createdByUser: result.task.created_by ? {
+            id: result.task.created_by.id,
+            name: `${result.task.created_by.first_name} ${result.task.created_by.last_name}`,
+            avatar: result.task.created_by.avatar_url,
+          } : undefined,
+        };
         
-        // Schedule reminder
-        await scheduleTaskReminder(taskForNotification.id, taskForNotification.title, taskForNotification.dueDate);
-      } catch (notificationError) {
-        console.warn('Failed to create notification:', notificationError);
-        // Don't fail the task creation if notification fails
+        set(state => ({
+          tasks: [transformedTask, ...state.tasks],
+          isLoading: false,
+        }));
+        
+        // Create notification for assigned user
+        try {
+          const { createNotification, scheduleTaskReminder } = useNotificationsStore.getState();
+          await createNotification({
+            type: 'task_assigned',
+            title: 'Новая задача',
+            body: `Вам назначена задача: ${transformedTask.title}`,
+            userId: transformedTask.assignedTo,
+            read: false,
+            data: { taskId: transformedTask.id }
+          });
+          
+          await scheduleTaskReminder(transformedTask.id, transformedTask.title, transformedTask.dueDate);
+        } catch (notificationError) {
+          console.warn('Failed to create notification:', notificationError);
+        }
+      } else {
+        throw new Error('Не удалось создать задачу');
       }
       
     } catch (error) {
       console.error('Error creating task:', error);
       set({ error: 'Ошибка при создании задачи', isLoading: false });
-      throw error; // Re-throw to handle in component
+      throw error;
     }
   },
   addTask: (task) => {
@@ -126,39 +153,56 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   updateTaskStatus: async (id: string, status: TaskStatus) => {
     set({ isLoading: true, error: null });
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const currentTasks = get().tasks;
-      if (!Array.isArray(currentTasks)) {
-        set({ error: 'Ошибка: задачи не загружены', isLoading: false });
-        return;
-      }
-      
-      const updatedTasks = currentTasks.map(task => {
-        if (task.id === id) {
-          const updatedTask = { ...task, status };
-          if (status === 'completed' && !task.completedAt) {
-            updatedTask.completedAt = new Date().toISOString();
-          }
-          return updatedTask;
-        }
-        return task;
+      const result = await trpcClient.tasks.update.mutate({
+        id,
+        status,
       });
       
-      set({ tasks: updatedTasks, isLoading: false });
-      
-      // Cancel reminder if task is completed or cancelled
-      if (status === 'completed' || status === 'cancelled') {
-        try {
-          const { cancelTaskReminder } = useNotificationsStore.getState();
-          await cancelTaskReminder(id);
-        } catch (notificationError) {
-          console.warn('Failed to cancel task reminder:', notificationError);
+      if (result.success && result.task) {
+        const transformedTask = {
+          id: result.task.id,
+          title: result.task.title,
+          description: result.task.description || '',
+          status: result.task.status,
+          priority: result.task.priority,
+          assignedTo: result.task.assigned_to,
+          createdBy: result.task.created_by,
+          dueDate: result.task.due_date,
+          createdAt: result.task.created_at,
+          updatedAt: result.task.updated_at,
+          completedAt: status === 'completed' ? new Date().toISOString() : undefined,
+          assignedUser: result.task.assigned_to ? {
+            id: result.task.assigned_to.id,
+            name: `${result.task.assigned_to.first_name} ${result.task.assigned_to.last_name}`,
+            avatar: result.task.assigned_to.avatar_url,
+          } : undefined,
+          createdByUser: result.task.created_by ? {
+            id: result.task.created_by.id,
+            name: `${result.task.created_by.first_name} ${result.task.created_by.last_name}`,
+            avatar: result.task.created_by.avatar_url,
+          } : undefined,
+        };
+        
+        set(state => ({
+          tasks: state.tasks.map(task => 
+            task.id === id ? transformedTask : task
+          ),
+          isLoading: false,
+        }));
+        
+        // Cancel reminder if task is completed or cancelled
+        if (status === 'completed' || status === 'cancelled') {
+          try {
+            const { cancelTaskReminder } = useNotificationsStore.getState();
+            await cancelTaskReminder(id);
+          } catch (notificationError) {
+            console.warn('Failed to cancel task reminder:', notificationError);
+          }
         }
       }
       
     } catch (error) {
+      console.error('Error updating task status:', error);
       set({ error: 'Ошибка при обновлении статуса задачи', isLoading: false });
     }
   },
@@ -171,20 +215,50 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   updateTask: async (id: string, updates: Partial<Task>) => {
     set({ isLoading: true, error: null });
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const updateData: any = {};
+      if (updates.title) updateData.title = updates.title;
+      if (updates.description) updateData.description = updates.description;
+      if (updates.priority) updateData.priority = updates.priority;
+      if (updates.dueDate) updateData.dueDate = updates.dueDate;
       
-      set(state => {
-        if (!Array.isArray(state.tasks)) {
-          return { error: 'Ошибка: задачи не загружены', isLoading: false };
-        }
-        return {
+      const result = await trpcClient.tasks.update.mutate({
+        id,
+        ...updateData,
+      });
+      
+      if (result.success && result.task) {
+        const transformedTask = {
+          id: result.task.id,
+          title: result.task.title,
+          description: result.task.description || '',
+          status: result.task.status,
+          priority: result.task.priority,
+          assignedTo: result.task.assigned_to,
+          createdBy: result.task.created_by,
+          dueDate: result.task.due_date,
+          createdAt: result.task.created_at,
+          updatedAt: result.task.updated_at,
+          assignedUser: result.task.assigned_to ? {
+            id: result.task.assigned_to.id,
+            name: `${result.task.assigned_to.first_name} ${result.task.assigned_to.last_name}`,
+            avatar: result.task.assigned_to.avatar_url,
+          } : undefined,
+          createdByUser: result.task.created_by ? {
+            id: result.task.created_by.id,
+            name: `${result.task.created_by.first_name} ${result.task.created_by.last_name}`,
+            avatar: result.task.created_by.avatar_url,
+          } : undefined,
+        };
+        
+        set(state => ({
           tasks: state.tasks.map(task => 
-            task.id === id ? { ...task, ...updates } : task
+            task.id === id ? transformedTask : task
           ),
           isLoading: false,
-        };
-      });
+        }));
+      }
     } catch (error) {
+      console.error('Error updating task:', error);
       set({ error: 'Ошибка при обновлении задачи', isLoading: false });
     }
   },
@@ -192,26 +266,24 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   deleteTask: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const result = await trpcClient.tasks.delete.mutate({ id });
       
-      set(state => {
-        if (!Array.isArray(state.tasks)) {
-          return { error: 'Ошибка: задачи не загружены', isLoading: false };
-        }
-        return {
+      if (result.success) {
+        set(state => ({
           tasks: state.tasks.filter(task => task.id !== id),
           isLoading: false,
-        };
-      });
-      
-      // Cancel reminder
-      try {
-        const { cancelTaskReminder } = useNotificationsStore.getState();
-        await cancelTaskReminder(id);
-      } catch (notificationError) {
-        console.warn('Failed to cancel task reminder:', notificationError);
+        }));
+        
+        // Cancel reminder
+        try {
+          const { cancelTaskReminder } = useNotificationsStore.getState();
+          await cancelTaskReminder(id);
+        } catch (notificationError) {
+          console.warn('Failed to cancel task reminder:', notificationError);
+        }
       }
     } catch (error) {
+      console.error('Error deleting task:', error);
       set({ error: 'Ошибка при удалении задачи', isLoading: false });
     }
   },

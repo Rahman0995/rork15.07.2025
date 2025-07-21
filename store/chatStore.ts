@@ -6,6 +6,7 @@ import { Audio } from 'expo-av';
 import { Platform } from 'react-native';
 import { trpcClient } from '@/lib/trpc';
 import { useAuthStore } from './authStore';
+import { database, realtime } from '@/lib/supabase';
 
 interface ChatState {
   chats: Chat[];

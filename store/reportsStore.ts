@@ -45,18 +45,29 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const reports = await trpcClient.reports.getAll.query();
-      // Transform backend data to match frontend interface
-      const transformedReports = reports.map((report: Report) => ({
-        ...report,
+      // Преобразуем данные из Supabase в формат frontend
+      const transformedReports = (reports || []).map((report: any) => ({
+        id: report.id,
+        title: report.title,
+        content: report.content || '',
+        authorId: report.created_by,
+        status: report.status,
         type: report.type || 'text' as const,
-        attachments: report.attachments || [],
-        unit: report.unit || 'default',
-        priority: report.priority || 'medium' as const,
-        approvers: report.approvers || [],
-        approvals: report.approvals || [],
-        comments: report.comments || [],
-        revisions: report.revisions || [],
-        currentRevision: report.currentRevision || 1,
+        createdAt: report.created_at,
+        updatedAt: report.updated_at,
+        attachments: [],
+        unit: 'default',
+        priority: 'medium' as const,
+        approvers: [],
+        approvals: [],
+        comments: [],
+        revisions: [],
+        currentRevision: 1,
+        author: report.created_by ? {
+          id: report.created_by.id,
+          name: `${report.created_by.first_name} ${report.created_by.last_name}`,
+          avatar: report.created_by.avatar_url,
+        } : undefined,
       }));
       set({ reports: transformedReports, isLoading: false });
     } catch (error) {
@@ -70,97 +81,63 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
   createReport: async (reportData) => {
     set({ isLoading: true, error: null });
     try {
-      // Try backend first, fallback to local creation
-      let newReport;
-      try {
-        newReport = await trpcClient.reports.create.mutate({
-          title: reportData.title,
-          content: reportData.content,
-          authorId: reportData.authorId,
-          type: reportData.type,
-        });
-      } catch (backendError) {
-        console.warn('Backend report creation failed, creating locally:', backendError);
-        // Create report locally if backend fails
-        newReport = {
-          id: Date.now().toString(),
-          ...reportData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          approvals: [],
-          comments: [],
-          revisions: [],
-          currentRevision: 1,
-        };
-      }
+      const result = await trpcClient.reports.create.mutate({
+        title: reportData.title,
+        content: reportData.content,
+        authorId: reportData.authorId,
+        type: reportData.type,
+      });
       
-      // Transform backend data to match frontend interface
-      let transformedReport: Report;
-      
-      if ('success' in newReport && newReport.success) {
-        // Backend response format
-        const reportData = newReport.report as any;
-        transformedReport = {
-          id: reportData.id || Date.now().toString(),
-          title: reportData.title || reportData.title,
-          content: reportData.content || reportData.content,
-          authorId: reportData.authorId || reportData.authorId,
-          createdAt: reportData.createdAt || new Date().toISOString(),
-          updatedAt: reportData.updatedAt || new Date().toISOString(),
-          status: reportData.status || 'pending',
-          approvals: [],
-          comments: [],
-          revisions: [],
-          currentRevision: 1,
-          type: reportData.type || 'text',
-          unit: reportData.unit || 'default',
-          priority: reportData.priority || 'medium',
+      if (result.success && result.report) {
+        // Преобразуем данные из Supabase
+        const transformedReport: Report = {
+          id: result.report.id,
+          title: result.report.title,
+          content: result.report.content || '',
+          authorId: result.report.created_by,
+          status: result.report.status,
+          type: result.report.type || 'text',
+          createdAt: result.report.created_at,
+          updatedAt: result.report.updated_at,
+          attachments: [],
+          unit: 'default',
+          priority: 'medium',
           approvers: [],
-        };
-      } else {
-        // Direct report object
-        const reportObj = newReport as any;
-        transformedReport = {
-          id: reportObj.id || Date.now().toString(),
-          title: reportObj.title || reportData.title,
-          content: reportObj.content || reportData.content,
-          authorId: reportObj.authorId || reportData.authorId,
-          createdAt: reportObj.createdAt || new Date().toISOString(),
-          updatedAt: reportObj.updatedAt || new Date().toISOString(),
-          status: reportObj.status || 'pending',
           approvals: [],
           comments: [],
           revisions: [],
           currentRevision: 1,
-          type: reportData.type || 'text',
-          unit: reportData.unit || 'default',
-          priority: reportData.priority || 'medium',
-          approvers: [],
+          author: result.report.created_by ? {
+            id: result.report.created_by.id,
+            name: `${result.report.created_by.first_name} ${result.report.created_by.last_name}`,
+            avatar: result.report.created_by.avatar_url,
+          } : undefined,
         };
-      }
-      
-      set(state => ({
-        reports: [transformedReport, ...state.reports],
-        isLoading: false,
-      }));
-      
-      // Create notification for approvers
-      try {
-        const { createNotification } = useNotificationsStore.getState();
         
-        // Notify all approvers
-        for (const approverId of transformedReport.approvers ?? []) {
-          await createNotification({
-            type: 'report_created',
-            title: 'Новый отчет на утверждение',
-            body: `Отчет "${transformedReport.title}" ожидает вашего утверждения`,
-            userId: approverId,
-            read: false,
-            data: { reportId: transformedReport.id }
-          });
+        set(state => ({
+          reports: [transformedReport, ...state.reports],
+          isLoading: false,
+        }));
+        
+        // Create notification for approvers
+        try {
+          const { createNotification } = useNotificationsStore.getState();
+          
+          for (const approverId of transformedReport.approvers ?? []) {
+            await createNotification({
+              type: 'report_created',
+              title: 'Новый отчет на утверждение',
+              body: `Отчет "${transformedReport.title}" ожидает вашего утверждения`,
+              userId: approverId,
+              read: false,
+              data: { reportId: transformedReport.id }
+            });
+          }
+        } catch (notificationError) {
+          console.warn('Failed to create notification:', notificationError);
         }
-      } catch (notificationError) {
-        console.warn('Failed to create notification:', notificationError);
+      } else {
+        throw new Error('Не удалось создать отчет');
       }
       
     } catch (error) {

@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, UserRole } from '@/types';
 import { isDebugMode } from '@/utils/config';
 import { trpcClient } from '@/lib/trpc';
+import { auth, database } from '@/lib/supabase';
 
 interface AuthState {
   user: User | null;
@@ -48,24 +49,41 @@ export const useAuthStore = create<AuthState>()(
         }
         
         try {
-          // Try to authenticate with backend
-          const response = await trpcClient.auth.login.mutate({ email, password });
+          // Authenticate with Supabase
+          const { data, error } = await auth.signIn(email, password);
           
-          if (response.success && response.user) {
+          if (error) {
             if (isDebugMode()) {
-              console.log('Auth: Login successful for user:', response.user.name);
+              console.log('Auth: Login failed -', error.message);
             }
-            // Ensure user has correct role type
+            set({ error: 'Неверный email или пароль', isLoading: false });
+            return;
+          }
+          
+          if (data.user) {
+            // Get user profile from database
+            const { data: userProfile, error: profileError } = await database.users.getById(data.user.id);
+            
+            if (profileError || !userProfile) {
+              set({ error: 'Ошибка загрузки профиля пользователя', isLoading: false });
+              return;
+            }
+            
+            if (isDebugMode()) {
+              console.log('Auth: Login successful for user:', `${userProfile.first_name} ${userProfile.last_name}`);
+            }
+            
             const user: User = {
-              id: response.user.id,
-              email: response.user.email,
-              name: response.user.name,
-              rank: response.user.rank || 'Рядовой',
-              role: response.user.role as UserRole,
-              avatar: response.user.avatar || '',
-              unit: response.user.unit,
-              phone: response.user.phone || '',
+              id: userProfile.id,
+              email: userProfile.email,
+              name: `${userProfile.first_name} ${userProfile.last_name}`,
+              rank: userProfile.rank || 'Рядовой',
+              role: userProfile.role as UserRole,
+              avatar: userProfile.avatar_url || '',
+              unit: userProfile.unit || '',
+              phone: userProfile.phone || '',
             };
+            
             set({ 
               user, 
               currentUser: user, 
@@ -74,10 +92,7 @@ export const useAuthStore = create<AuthState>()(
               error: null 
             });
           } else {
-            if (isDebugMode()) {
-              console.log('Auth: Login failed - invalid credentials');
-            }
-            set({ error: 'Неверный email или пароль', isLoading: false });
+            set({ error: 'Ошибка аутентификации', isLoading: false });
           }
         } catch (error) {
           if (isDebugMode()) {
@@ -94,24 +109,58 @@ export const useAuthStore = create<AuthState>()(
         }
         
         try {
-          // Try to register with backend
-          const response = await trpcClient.auth.register.mutate(data);
+          // Register with Supabase Auth
+          const { data: authData, error } = await auth.signUp(data.email, data.password, {
+            first_name: data.name.split(' ')[0],
+            last_name: data.name.split(' ').slice(1).join(' ') || '',
+            rank: data.rank,
+            role: data.role || 'soldier',
+            unit: data.unit,
+            phone: data.phone,
+          });
           
-          if (response.success && response.user) {
+          if (error) {
             if (isDebugMode()) {
-              console.log('Auth: Registration successful for user:', response.user.name);
+              console.log('Auth: Registration failed -', error.message);
             }
-            // Ensure user has correct role type
+            set({ error: error.message || 'Ошибка при регистрации', isLoading: false });
+            return;
+          }
+          
+          if (authData.user) {
+            // Create user profile in database
+            const { data: userProfile, error: profileError } = await database.users.create({
+              id: authData.user.id,
+              email: data.email,
+              first_name: data.name.split(' ')[0],
+              last_name: data.name.split(' ').slice(1).join(' ') || '',
+              rank: data.rank,
+              role: data.role || 'soldier',
+              unit: data.unit,
+              phone: data.phone,
+              password_hash: '', // This will be handled by Supabase Auth
+            });
+            
+            if (profileError) {
+              console.error('Error creating user profile:', profileError);
+              // Continue with registration even if profile creation fails
+            }
+            
+            if (isDebugMode()) {
+              console.log('Auth: Registration successful for user:', data.name);
+            }
+            
             const user: User = {
-              id: response.user.id,
-              email: response.user.email,
-              name: response.user.name,
-              rank: response.user.rank || 'Рядовой',
-              role: response.user.role as UserRole,
-              avatar: response.user.avatar || '',
-              unit: response.user.unit,
-              phone: response.user.phone || '',
+              id: authData.user.id,
+              email: data.email,
+              name: data.name,
+              rank: data.rank,
+              role: data.role as UserRole || 'soldier',
+              avatar: '',
+              unit: data.unit,
+              phone: data.phone || '',
             };
+            
             set({ 
               user, 
               currentUser: user, 
@@ -120,10 +169,7 @@ export const useAuthStore = create<AuthState>()(
               error: null 
             });
           } else {
-            if (isDebugMode()) {
-              console.log('Auth: Registration failed');
-            }
-            set({ error: 'Ошибка при регистрации', isLoading: false });
+            set({ error: 'Ошибка регистрации', isLoading: false });
           }
         } catch (error) {
           if (isDebugMode()) {
@@ -140,8 +186,13 @@ export const useAuthStore = create<AuthState>()(
         }
         
         try {
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Sign out from Supabase
+          const { error } = await auth.signOut();
+          
+          if (error) {
+            console.warn('Auth: Logout warning:', error.message);
+          }
+          
           set({ user: null, currentUser: null, isAuthenticated: false, isLoading: false, error: null });
           
           if (isDebugMode()) {
@@ -151,7 +202,8 @@ export const useAuthStore = create<AuthState>()(
           if (isDebugMode()) {
             console.error('Auth: Logout error:', error);
           }
-          set({ error: 'Ошибка при выходе из системы', isLoading: false });
+          // Force logout even if there's an error
+          set({ user: null, currentUser: null, isAuthenticated: false, isLoading: false, error: null });
         }
       },
       updateUser: (updatedUser: User) => {
@@ -173,12 +225,12 @@ export const useAuthStore = create<AuthState>()(
           // Always set initialized to true first to prevent loops
           set({ isInitialized: true });
           
-          // If user is authenticated but we need to verify with backend
+          // If user is authenticated but we need to verify with Supabase
           if (state.user && state.isAuthenticated) {
             try {
-              // Verify user session with backend
-              const response = await trpcClient.auth.verify.query();
-              if (!response.success) {
+              // Verify user session with Supabase
+              const { user, error } = await auth.getCurrentUser();
+              if (error || !user) {
                 // Session invalid, logout
                 set({ user: null, currentUser: null, isAuthenticated: false });
               }
@@ -187,7 +239,6 @@ export const useAuthStore = create<AuthState>()(
                 console.warn('Auth: Session verification failed, but continuing with stored session');
               }
               // Don't logout on verification failure - could be network issue
-              // set({ user: null, currentUser: null, isAuthenticated: false });
             }
           }
         } catch (error) {
