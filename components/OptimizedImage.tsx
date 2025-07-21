@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text as RNText, StyleSheet, Animated } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/constants/theme';
 import { SkeletonLoader } from './SkeletonLoader';
@@ -108,7 +108,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <Image
           source={imageSource}
           style={imageStyle}
-          contentFit={resizeMode}
+          contentFit={resizeMode as any}
           placeholder={placeholder || blurhash}
           priority={priority}
           cachePolicy={cachePolicy}
@@ -159,9 +159,9 @@ export const AvatarImage: React.FC<AvatarImageProps> = ({
   if (!uri) {
     return (
       <View style={avatarStyle}>
-        <Text style={[styles.initials, { fontSize: size * 0.4, color: colors.white }]}>
+        <RNText style={[styles.initials, { fontSize: size * 0.4, color: colors.white }]}>
           {initials}
-        </Text>
+        </RNText>
       </View>
     );
   }

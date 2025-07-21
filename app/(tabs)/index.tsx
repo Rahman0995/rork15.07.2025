@@ -4,15 +4,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSupabaseAuth } from '@/store/supabaseAuthStore';
 import { useTasks, useReports, useUserTasks, useUserReports } from '@/lib/supabaseHooks';
-import { OptimizedTaskCard } from '@/components/OptimizedTaskCard';
-import { OptimizedReportCard } from '@/components/OptimizedReportCard';
+import { SimpleTaskCard } from '@/components/SimpleTaskCard';
+import { SimpleReportCard } from '@/components/SimpleReportCard';
 import { TaskCardSkeleton, ReportCardSkeleton, StatCardSkeleton } from '@/components/SkeletonLoader';
 import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
-import { useBatchOptimizedQueries } from '@/hooks/useOptimizedQuery';
+import { PerformanceOptimizer } from '@/components/PerformanceOptimizer';
+import { SimpleLoading } from '@/components/SimpleLoadingStates';
+import { optimizeForWeb, measurePerformance } from '@/utils/performanceUtils';
 import { Platform } from 'react-native';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
@@ -27,49 +29,11 @@ export default function HomeScreen() {
   const { colors, isDark } = useTheme();
   const styles = createStyles(colors);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const fadeAnim = useState(new Animated.Value(0))[0];
-  const slideAnim = useState(new Animated.Value(50))[0];
+  // Optimize animations for web
+  const fadeAnim = useState(new Animated.Value(optimizeForWeb(1, 0)))[0];
+  const slideAnim = useState(new Animated.Value(optimizeForWeb(0, 50)))[0];
 
-  // Optimized batch data fetching
-  const { data, isLoading, refetchAll } = useBatchOptimizedQueries([
-    {
-      key: 'allTasks',
-      queryKey: ['tasks'],
-      queryFn: async () => {
-        // Simulate API call - replace with actual Supabase call
-        const { data: allTasks } = await useTasks();
-        return allTasks;
-      },
-      options: { enabled: !!user }
-    },
-    {
-      key: 'allReports', 
-      queryKey: ['reports'],
-      queryFn: async () => {
-        const { data: allReports } = await useReports();
-        return allReports;
-      },
-      options: { enabled: !!user }
-    },
-    {
-      key: 'userTasks',
-      queryKey: ['userTasks', user?.id || ''],
-      queryFn: async () => {
-        const { data: userTasks } = await useUserTasks(user?.id || '');
-        return userTasks;
-      },
-      options: { enabled: !!user?.id }
-    },
-    {
-      key: 'userReports',
-      queryKey: ['userReports', user?.id || ''],
-      queryFn: async () => {
-        const { data: userReports } = await useUserReports(user?.id || '');
-        return userReports;
-      },
-      options: { enabled: !!user?.id }
-    }
-  ]);
+  // Use individual hooks for better stability
 
   // Fallback to individual hooks for now (until batch optimization is fully implemented)
   const { data: allTasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
@@ -98,19 +62,21 @@ export default function HomeScreen() {
     if (isAuthenticated && user) {
       if (__DEV__) console.log('Home: User authenticated, data will be fetched automatically by React Query');
       
-      // Animate content appearance
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      // Animate content appearance (skip on web for performance)
+      if (!optimizeForWeb(true, false)) {
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
     }
   }, [isAuthenticated, user]);
   
@@ -180,7 +146,8 @@ export default function HomeScreen() {
   }
   
   return (
-    <View style={styles.container}>
+    <PerformanceOptimizer>
+      <View style={styles.container}>
       <ScrollView 
         style={styles.scrollContainer}
         contentContainerStyle={styles.contentContainer}
@@ -318,8 +285,8 @@ export default function HomeScreen() {
           </View>
         ) : displayTasks.length > 0 ? (
           <View style={styles.cardsContainer}>
-            {displayTasks.map((task, index) => (
-              <OptimizedTaskCard key={task.id} task={task} onPress={navigateToTask} index={index} />
+            {displayTasks.map((task) => (
+              <SimpleTaskCard key={task.id} task={task} onPress={navigateToTask} />
             ))}
           </View>
         ) : (
@@ -359,8 +326,8 @@ export default function HomeScreen() {
           </View>
         ) : recentReports.length > 0 ? (
           <View style={styles.cardsContainer}>
-            {recentReports.map((report, index) => (
-              <OptimizedReportCard key={report.id} report={report} onPress={navigateToReport} index={index} />
+            {recentReports.map((report) => (
+              <SimpleReportCard key={report.id} report={report} onPress={navigateToReport} />
             ))}
           </View>
         ) : (
@@ -383,7 +350,8 @@ export default function HomeScreen() {
         visible={isMenuVisible} 
         onClose={() => setIsMenuVisible(false)} 
       />
-    </View>
+      </View>
+    </PerformanceOptimizer>
   );
 }
 
