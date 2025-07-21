@@ -97,7 +97,7 @@ export default function IntegrationTester() {
       name: 'Backend API (tRPC)',
       description: 'Проверка работы Backend API через tRPC',
       test: async () => {
-        const response = await trpcClient.example.hi.query();
+        const response = await trpcClient.example.hi.query(undefined);
         if (!response || !response.message) {
           throw new Error('Некорректный ответ от API');
         }
@@ -137,14 +137,14 @@ export default function IntegrationTester() {
             reject(new Error('Timeout: Real-time подключение не установлено'));
           }, 10000);
           
-          const channel = supabase.channel('test-integration-' + Date.now());
+          const channel = supabase!.channel('test-integration-' + Date.now());
           
           channel
             .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {})
             .subscribe((status) => {
               clearTimeout(timeout);
               if (status === 'SUBSCRIBED') {
-                supabase.removeChannel(channel);
+                supabase!.removeChannel(channel);
                 resolve(undefined);
               } else if (status === 'CHANNEL_ERROR') {
                 reject(new Error('Ошибка подключения к real-time каналу'));
@@ -166,10 +166,16 @@ export default function IntegrationTester() {
           description: 'Задача для тестирования полной интеграции',
           priority: 'medium' as const,
           assignedTo: user.id,
+          createdBy: user.id,
+          dueDate: new Date(Date.now() + 86400000).toISOString(),
         };
         
-        const createdTask = await trpcClient.tasks.create.mutate(newTask);
-        if (!createdTask) throw new Error('Задача не была создана через Backend API');
+        const createdTaskResponse = await trpcClient.tasks.create.mutate(newTask);
+        if (!createdTaskResponse.success || !createdTaskResponse.task) {
+          throw new Error('Задача не была создана через Backend API');
+        }
+        
+        const createdTask = createdTaskResponse.task;
         
         // Проверка, что задача появилась в Supabase
         const { data: supabaseTask, error } = await database.tasks.getById(createdTask.id);
@@ -177,10 +183,14 @@ export default function IntegrationTester() {
         if (!supabaseTask) throw new Error('Задача не найдена в Supabase');
         
         // Обновление через Backend API
-        const updatedTask = await trpcClient.tasks.update.mutate({
+        const updatedTaskResponse = await trpcClient.tasks.update.mutate({
           id: createdTask.id,
           status: 'in_progress' as const,
         });
+        
+        if (!updatedTaskResponse.success) {
+          throw new Error('Не удалось обновить задачу через Backend API');
+        }
         
         // Проверка обновления в Supabase
         const { data: updatedSupabaseTask, error: updateError } = await database.tasks.getById(createdTask.id);
@@ -190,7 +200,10 @@ export default function IntegrationTester() {
         }
         
         // Удаление через Backend API
-        await trpcClient.tasks.delete.mutate({ id: createdTask.id });
+        const deleteResponse = await trpcClient.tasks.delete.mutate({ id: createdTask.id });
+        if (!deleteResponse.success) {
+          throw new Error('Не удалось удалить задачу через Backend API');
+        }
         
         // Проверка удаления в Supabase
         const { data: deletedTask, error: deleteError } = await database.tasks.getById(createdTask.id);

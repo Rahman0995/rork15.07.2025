@@ -45,7 +45,7 @@ export default function IntegrationStatus({ compact = false }: IntegrationStatus
 
       // Проверка Backend API
       try {
-        await trpcClient.example.hi.query();
+        await trpcClient.example.hi.query(undefined);
         statusDetails.push('Backend API: OK');
       } catch (error) {
         hasWarnings = true;
