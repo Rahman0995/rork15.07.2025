@@ -307,7 +307,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     return tasks.filter(task => 
       task.status !== 'completed' && 
       task.status !== 'cancelled' && 
-      task.dueDate && new Date(task.dueDate) < now
+      task.dueDate && new Date(task.dueDate || '') < now
     );
   },
   
@@ -323,7 +323,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
     const lowercaseQuery = query.toLowerCase();
     return tasks.filter(task => 
       task.title.toLowerCase().includes(lowercaseQuery) ||
-      (task.description && task.description.toLowerCase().includes(lowercaseQuery))
+      (task.description?.toLowerCase().includes(lowercaseQuery))
     );
   },
   
@@ -355,7 +355,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
       overdue: tasks.filter(t => 
         t.status !== 'completed' && 
         t.status !== 'cancelled' && 
-        t.dueDate && new Date(t.dueDate) < now
+        t.dueDate && new Date(t.dueDate || '') < now
       ).length,
     };
   },
