@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
   rank TEXT,
-  role TEXT DEFAULT 'soldier' CHECK (role IN ('admin', 'officer', 'soldier')),
+  role TEXT DEFAULT 'soldier' CHECK (role IN ('admin', 'battalion_commander', 'company_commander', 'officer', 'soldier')),
   avatar_url TEXT,
   unit TEXT,
   phone TEXT,

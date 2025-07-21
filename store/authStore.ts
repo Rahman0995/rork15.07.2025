@@ -65,6 +65,9 @@ export const useAuthStore = create<AuthState>()(
             const { data: userProfile, error: profileError } = await database.users.getById(data.user.id);
             
             if (profileError || !userProfile) {
+              if (isDebugMode()) {
+                console.log('Auth: Profile error:', profileError);
+              }
               set({ error: 'Ошибка загрузки профиля пользователя', isLoading: false });
               return;
             }
@@ -137,13 +140,16 @@ export const useAuthStore = create<AuthState>()(
               rank: data.rank,
               role: data.role || 'soldier',
               unit: data.unit,
-              phone: data.phone,
+              phone: data.phone || '',
               password_hash: '', // This will be handled by Supabase Auth
             });
             
             if (profileError) {
-              console.error('Error creating user profile:', profileError);
-              // Continue with registration even if profile creation fails
+              if (isDebugMode()) {
+                console.error('Error creating user profile:', profileError);
+              }
+              set({ error: `Ошибка создания профиля: ${profileError.message || 'Неизвестная ошибка'}`, isLoading: false });
+              return;
             }
             
             if (isDebugMode()) {

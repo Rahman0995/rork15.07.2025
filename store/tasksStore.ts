@@ -123,7 +123,7 @@ export const useTasksStore = create<TasksState>((set, get) => ({
             type: 'task_assigned',
             title: 'Новая задача',
             body: `Вам назначена задача: ${transformedTask.title}`,
-            userId: transformedTask.assignedTo,
+            userId: transformedTask.assignedTo || '',
             read: false,
             data: { taskId: transformedTask.id }
           });
