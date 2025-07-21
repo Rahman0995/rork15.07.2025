@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          if (data.user) {
+          if (data && data.user) {
             // Get user profile from database
             const { data: userProfile, error: profileError } = await database.users.getById(data.user.id);
             
@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>()(
             const user: User = {
               id: userProfile.id,
               email: userProfile.email,
-              name: `${userProfile.first_name} ${userProfile.last_name}`,
+              name: `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim(),
               rank: userProfile.rank || 'Рядовой',
               role: userProfile.role as UserRole,
               avatar: userProfile.avatar_url || '',
@@ -127,7 +127,7 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          if (authData.user) {
+          if (authData && authData.user) {
             // Create user profile in database
             const { data: userProfile, error: profileError } = await database.users.create({
               id: authData.user.id,
@@ -155,7 +155,7 @@ export const useAuthStore = create<AuthState>()(
               email: data.email,
               name: data.name,
               rank: data.rank,
-              role: data.role as UserRole || 'soldier',
+              role: (data.role as UserRole) || 'soldier',
               avatar: '',
               unit: data.unit,
               phone: data.phone || '',

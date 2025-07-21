@@ -6,6 +6,7 @@ export const mockChats: any[] = [];
 export const mockChatMessages: any[] = [];
 export const mockReports: any[] = [];
 export const mockTasks: any[] = [];
+export const mockReportComments: any[] = [];
 
 export const getUser = (id: string) => {
   // Return null since we're not using mock data anymore

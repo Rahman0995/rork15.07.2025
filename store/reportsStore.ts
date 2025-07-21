@@ -63,11 +63,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
         comments: [],
         revisions: [],
         currentRevision: 1,
-        author: report.created_by ? {
-          id: report.created_by.id,
-          name: `${report.created_by.first_name} ${report.created_by.last_name}`,
-          avatar: report.created_by.avatar_url,
-        } : undefined,
+
       }));
       set({ reports: transformedReports, isLoading: false });
     } catch (error) {
@@ -107,11 +103,7 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           comments: [],
           revisions: [],
           currentRevision: 1,
-          author: result.report.created_by ? {
-            id: result.report.created_by.id,
-            name: `${result.report.created_by.first_name} ${result.report.created_by.last_name}`,
-            avatar: result.report.created_by.avatar_url,
-          } : undefined,
+
         };
         
         set(state => ({
