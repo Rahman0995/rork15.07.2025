@@ -1,16 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, TouchableOpacity, Animated, Dimensions, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSupabaseAuth } from '@/store/supabaseAuthStore';
 import { useTasks, useReports, useUserTasks, useUserReports } from '@/lib/supabaseHooks';
-import { TaskCard } from '@/components/TaskCard';
-import { ReportCard } from '@/components/ReportCard';
+import { OptimizedTaskCard } from '@/components/OptimizedTaskCard';
+import { OptimizedReportCard } from '@/components/OptimizedReportCard';
+import { TaskCardSkeleton, ReportCardSkeleton, StatCardSkeleton } from '@/components/SkeletonLoader';
 import { Button } from '@/components/Button';
 import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
+import { useBatchOptimizedQueries } from '@/hooks/useOptimizedQuery';
 import { Platform } from 'react-native';
 import { useTheme } from '@/constants/theme';
 import { formatDate } from '@/utils/dateUtils';
@@ -28,7 +30,48 @@ export default function HomeScreen() {
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
 
-  // Fetch data using Supabase hooks
+  // Optimized batch data fetching
+  const { data, isLoading, refetchAll } = useBatchOptimizedQueries([
+    {
+      key: 'allTasks',
+      queryKey: ['tasks'],
+      queryFn: async () => {
+        // Simulate API call - replace with actual Supabase call
+        const { data: allTasks } = await useTasks();
+        return allTasks;
+      },
+      options: { enabled: !!user }
+    },
+    {
+      key: 'allReports', 
+      queryKey: ['reports'],
+      queryFn: async () => {
+        const { data: allReports } = await useReports();
+        return allReports;
+      },
+      options: { enabled: !!user }
+    },
+    {
+      key: 'userTasks',
+      queryKey: ['userTasks', user?.id],
+      queryFn: async () => {
+        const { data: userTasks } = await useUserTasks(user?.id || '');
+        return userTasks;
+      },
+      options: { enabled: !!user?.id }
+    },
+    {
+      key: 'userReports',
+      queryKey: ['userReports', user?.id],
+      queryFn: async () => {
+        const { data: userReports } = await useUserReports(user?.id || '');
+        return userReports;
+      },
+      options: { enabled: !!user?.id }
+    }
+  ]);
+
+  // Fallback to individual hooks for now (until batch optimization is fully implemented)
   const { data: allTasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
   const { data: allReports, isLoading: reportsLoading, refetch: refetchReports } = useReports();
   const { data: userTasks, refetch: refetchUserTasks } = useUserTasks(user?.id || '');
@@ -85,7 +128,7 @@ export default function HomeScreen() {
       .slice(0, 3);
   }, [userReports]);
   
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     try {
       await Promise.all([
         refetchTasks(),
@@ -97,16 +140,16 @@ export default function HomeScreen() {
       console.error('Error refreshing data:', error);
       Alert.alert('Ошибка', 'Не удалось обновить данные');
     }
-  };
+  }, [refetchTasks, refetchReports, refetchUserTasks, refetchUserReports]);
   
 
-  const navigateToTask = (task: any) => {
+  const navigateToTask = useCallback((task: any) => {
     router.push(`/task/${task.id}`);
-  };
+  }, [router]);
   
-  const navigateToReport = (report: any) => {
+  const navigateToReport = useCallback((report: any) => {
     router.push(`/report/${report.id}`);
-  };
+  }, [router]);
 
   // Show loading only if not initialized
   if (!initialized || loading) {
@@ -199,44 +242,54 @@ export default function HomeScreen() {
           },
         ]}
       >
-        <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
-          <View style={[styles.statIconContainer, { backgroundColor: colors.primarySoft }]}>
-            <CheckSquare size={20} color={colors.primary} />
-          </View>
-          <View style={styles.statContent}>
-            <Text style={styles.statNumber}>{displayTasks.length}</Text>
-            <Text style={styles.statLabel}>Активных задач</Text>
-          </View>
-          <View style={styles.statTrend}>
-            <Clock size={14} color={colors.textTertiary} />
-          </View>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
-          <View style={[styles.statIconContainer, { backgroundColor: colors.secondarySoft }]}>
-            <FileText size={20} color={colors.secondary} />
-          </View>
-          <View style={styles.statContent}>
-            <Text style={styles.statNumber}>{recentReports?.length || 0}</Text>
-            <Text style={styles.statLabel}>Отчетов</Text>
-          </View>
-          <View style={styles.statTrend}>
-            <TrendingUp size={14} color={colors.success} />
-          </View>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/analytics')}>
-          <View style={[styles.statIconContainer, { backgroundColor: colors.successSoft }]}>
-            <TrendingUp size={20} color={colors.success} />
-          </View>
-          <View style={styles.statContent}>
-            <Text style={styles.statNumber}>85%</Text>
-            <Text style={styles.statLabel}>Выполнено</Text>
-          </View>
-          <View style={styles.statTrend}>
-            <ArrowRight size={14} color={colors.textTertiary} />
-          </View>
-        </TouchableOpacity>
+        {(tasksLoading || reportsLoading) ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
+              <View style={[styles.statIconContainer, { backgroundColor: colors.primarySoft }]}>
+                <CheckSquare size={20} color={colors.primary} />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={styles.statNumber}>{displayTasks.length}</Text>
+                <Text style={styles.statLabel}>Активных задач</Text>
+              </View>
+              <View style={styles.statTrend}>
+                <Clock size={14} color={colors.textTertiary} />
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/reports')}>
+              <View style={[styles.statIconContainer, { backgroundColor: colors.secondarySoft }]}>
+                <FileText size={20} color={colors.secondary} />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={styles.statNumber}>{recentReports?.length || 0}</Text>
+                <Text style={styles.statLabel}>Отчетов</Text>
+              </View>
+              <View style={styles.statTrend}>
+                <TrendingUp size={14} color={colors.success} />
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.statCard} onPress={() => router.push('/analytics')}>
+              <View style={[styles.statIconContainer, { backgroundColor: colors.successSoft }]}>
+                <TrendingUp size={20} color={colors.success} />
+              </View>
+              <View style={styles.statContent}>
+                <Text style={styles.statNumber}>85%</Text>
+                <Text style={styles.statLabel}>Выполнено</Text>
+              </View>
+              <View style={styles.statTrend}>
+                <ArrowRight size={14} color={colors.textTertiary} />
+              </View>
+            </TouchableOpacity>
+          </>
+        )}
       </Animated.View>
       
       {/* Tasks Section */}
@@ -257,10 +310,16 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         
-        {displayTasks.length > 0 ? (
+        {tasksLoading ? (
           <View style={styles.cardsContainer}>
-            {displayTasks.map(task => (
-              <TaskCard key={task.id} task={task} onPress={navigateToTask} />
+            {[...Array(3)].map((_, index) => (
+              <TaskCardSkeleton key={`task-skeleton-${index}`} />
+            ))}
+          </View>
+        ) : displayTasks.length > 0 ? (
+          <View style={styles.cardsContainer}>
+            {displayTasks.map((task, index) => (
+              <OptimizedTaskCard key={task.id} task={task} onPress={navigateToTask} index={index} />
             ))}
           </View>
         ) : (
@@ -292,10 +351,16 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         
-        {recentReports.length > 0 ? (
+        {reportsLoading ? (
           <View style={styles.cardsContainer}>
-            {recentReports.map(report => (
-              <ReportCard key={report.id} report={report} onPress={navigateToReport} />
+            {[...Array(3)].map((_, index) => (
+              <ReportCardSkeleton key={`report-skeleton-${index}`} />
+            ))}
+          </View>
+        ) : recentReports.length > 0 ? (
+          <View style={styles.cardsContainer}>
+            {recentReports.map((report, index) => (
+              <OptimizedReportCard key={report.id} report={report} onPress={navigateToReport} index={index} />
             ))}
           </View>
         ) : (
