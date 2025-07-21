@@ -59,7 +59,7 @@ export default function IntegrationDiagnostics() {
 
     // 4. Проверка Backend API (tRPC)
     try {
-      const response = await trpcClient.example.hi.query();
+      const response = await trpcClient.example.hi.query({});
       results.push({
         name: 'Backend API (tRPC)',
         status: 'success',
