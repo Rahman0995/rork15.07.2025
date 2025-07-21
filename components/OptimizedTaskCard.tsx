@@ -18,8 +18,14 @@ const OptimizedTaskCardComponent: React.FC<OptimizedTaskCardProps> = ({ task, on
   const styles = useMemo(() => createStyles(colors), [colors]);
   
   // Memoize expensive calculations
-  const assignedTo = useMemo(() => getUser(task.assignedTo || '') || undefined, [task.assignedTo]);
-  const assignedBy = useMemo(() => getUser(task.createdBy || '') || undefined, [task.createdBy]);
+  const assignedTo = useMemo(() => {
+    const user = getUser(task.assignedTo || '');
+    return user || { name: 'Неизвестный' };
+  }, [task.assignedTo]);
+  const assignedBy = useMemo(() => {
+    const user = getUser(task.createdBy || '');
+    return user || { name: 'Неизвестный' };
+  }, [task.createdBy]);
   
   const daysUntil = useMemo(() => {
     const date = new Date(task.dueDate || '');
@@ -117,10 +123,10 @@ const OptimizedTaskCardComponent: React.FC<OptimizedTaskCardProps> = ({ task, on
           <View style={styles.assigneeInfo}>
             <View style={styles.assigneeContainer}>
               <Text style={styles.assigneeLabel}>Исполнитель:</Text>
-              <Text style={styles.assigneeName}>{assignedTo?.name || 'Неизвестный'}</Text>
+              <Text style={styles.assigneeName}>{assignedTo.name}</Text>
             </View>
             <Text style={styles.assignedByText}>
-              Назначил: {assignedBy?.name || 'Неизвестный'}
+              Назначил: {assignedBy.name}
             </Text>
           </View>
         </View>

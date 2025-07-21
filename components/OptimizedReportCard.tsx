@@ -19,7 +19,10 @@ const OptimizedReportCardComponent: React.FC<OptimizedReportCardProps> = ({ repo
   const styles = useMemo(() => createStyles(colors), [colors]);
   
   // Memoize expensive calculations
-  const author = useMemo(() => getUser(report.authorId || '') || undefined, [report.authorId]);
+  const author = useMemo(() => {
+    const user = getUser(report.authorId || '');
+    return user || { name: 'Неизвестный', avatar: undefined };
+  }, [report.authorId]);
   const formattedDate = useMemo(() => formatDate(report.createdAt || ''), [report.createdAt]);
   const hasAttachments = useMemo(() => report.attachments && report.attachments.length > 0, [report.attachments]);
 
@@ -66,12 +69,12 @@ const OptimizedReportCardComponent: React.FC<OptimizedReportCardProps> = ({ repo
         <View style={styles.header}>
           <View style={styles.authorContainer}>
             <Avatar 
-              uri={author?.avatar} 
-              name={author?.name || 'Неизвестный'} 
+              uri={author.avatar} 
+              name={author.name} 
               size={40} 
             />
             <View style={styles.authorInfo}>
-              <Text style={styles.authorName}>{author?.name || 'Неизвестный'}</Text>
+              <Text style={styles.authorName}>{author.name}</Text>
               <Text style={styles.date}>{formattedDate}</Text>
             </View>
           </View>

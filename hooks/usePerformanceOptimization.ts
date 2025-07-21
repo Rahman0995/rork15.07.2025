@@ -15,7 +15,7 @@ export const useDeferredValue = <T>(value: T, delay: number = 0): T => {
       InteractionManager.runAfterInteractions(() => {
         setDeferredValue(value);
       });
-    }, delay) as NodeJS.Timeout;
+    }, delay) as any;
 
     return () => {
       if (timeoutRef.current) {
@@ -60,7 +60,7 @@ export const useDebounce = <T extends (...args: any[]) => any>(
       
       timeoutRef.current = setTimeout(() => {
         callback(...args);
-      }, delay) as NodeJS.Timeout;
+      }, delay) as any;
     }) as T,
     [callback, delay]
   );

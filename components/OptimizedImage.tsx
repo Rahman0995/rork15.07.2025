@@ -16,7 +16,7 @@ interface OptimizedImageProps {
   cachePolicy?: 'memory' | 'disk' | 'memory-disk';
   onLoad?: () => void;
   onError?: (error: any) => void;
-  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
+  resizeMode?: 'cover' | 'contain' | 'stretch';
 }
 
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({

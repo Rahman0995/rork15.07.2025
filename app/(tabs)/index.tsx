@@ -53,18 +53,18 @@ export default function HomeScreen() {
     },
     {
       key: 'userTasks',
-      queryKey: ['userTasks', user?.id],
+      queryKey: ['userTasks', user?.id || ''],
       queryFn: async () => {
-        const { data: userTasks } = await useUserTasks(user?.id ?? '');
+        const { data: userTasks } = await useUserTasks(user?.id || '');
         return userTasks;
       },
       options: { enabled: !!user?.id }
     },
     {
       key: 'userReports',
-      queryKey: ['userReports', user?.id],
+      queryKey: ['userReports', user?.id || ''],
       queryFn: async () => {
-        const { data: userReports } = await useUserReports(user?.id ?? '');
+        const { data: userReports } = await useUserReports(user?.id || '');
         return userReports;
       },
       options: { enabled: !!user?.id }
