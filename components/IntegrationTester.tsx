@@ -97,7 +97,7 @@ export default function IntegrationTester() {
       name: 'Backend API (tRPC)',
       description: 'Проверка работы Backend API через tRPC',
       test: async () => {
-        const response = await trpcClient.example.hi.query(undefined);
+        const response = await trpcClient.example.hi.query({});
         if (!response || !response.message) {
           throw new Error('Некорректный ответ от API');
         }
