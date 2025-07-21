@@ -12,6 +12,7 @@ import { FloatingMenu, FloatingActionButton } from '@/components/FloatingMenu';
 import { QuickActions } from '@/components/QuickActions';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
+import IntegrationStatus from '@/components/IntegrationStatus';
 import { PerformanceOptimizer } from '@/components/PerformanceOptimizer';
 import { SimpleLoading } from '@/components/SimpleLoadingStates';
 import { optimizeForWeb, measurePerformance } from '@/utils/performanceUtils';
@@ -161,10 +162,10 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* Supabase Status (Development Only) */}
+        {/* Integration Status (Development Only) */}
         {__DEV__ && (
           <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
-            <SupabaseStatus />
+            <IntegrationStatus />
           </View>
         )}
 

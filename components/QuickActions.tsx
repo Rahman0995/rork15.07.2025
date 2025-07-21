@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Users, FolderOpen, Calendar, Settings, Shield, FileText } from 'lucide-react-native';
+import { Users, FolderOpen, Calendar, Settings, Shield, FileText, Activity } from 'lucide-react-native';
 import { useTheme } from '@/constants/theme';
 
 interface QuickAction {
@@ -35,6 +35,14 @@ export const QuickActions: React.FC = () => {
       route: '/calendar',
       color: colors.success,
     },
+    ...__DEV__ ? [{
+      id: 'diagnostics',
+      title: 'Диагностика',
+      subtitle: 'Статус интеграции',
+      icon: Activity,
+      route: '/integration-diagnostics',
+      color: colors.warning,
+    }] : [],
   ];
 
   const handleActionPress = (action: QuickAction) => {

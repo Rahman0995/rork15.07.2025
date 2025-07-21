@@ -45,6 +45,7 @@ export default function RootLayout() {
           <Stack.Screen name="settings/photos" options={{ title: 'Photo Settings' }} />
           <Stack.Screen name="settings/privacy" options={{ title: 'Privacy Settings' }} />
           <Stack.Screen name="settings/profile-edit" options={{ title: 'Edit Profile' }} />
+          <Stack.Screen name="integration-diagnostics" options={{ title: 'Integration Diagnostics' }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         </SupabaseAuthProvider>
