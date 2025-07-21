@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { FlatList, View, StyleSheet, RefreshControl, ListRenderItem } from 'react-native';
+import { FlatList, View, StyleSheet, RefreshControl, ListRenderItem, ListRenderItemInfo } from 'react-native';
 import { useTheme } from '@/constants/theme';
 
 interface LazyLoadingListProps<T> {
@@ -17,7 +17,7 @@ interface LazyLoadingListProps<T> {
   maxToRenderPerBatch?: number;
   windowSize?: number;
   removeClippedSubviews?: boolean;
-  getItemLayout?: (data: T[] | null | undefined, index: number) => { length: number; offset: number; index: number };
+  getItemLayout?: (data: ArrayLike<T> | null | undefined, index: number) => { length: number; offset: number; index: number };
 }
 
 export function LazyLoadingList<T>({
@@ -66,7 +66,7 @@ export function LazyLoadingList<T>({
   }, [refreshing, isRefreshing, handleRefresh, colors]);
 
   const memoizedRenderItem = useCallback(
-    (info: { item: T; index: number }) => renderItem(info),
+    (info: ListRenderItemInfo<T>) => renderItem(info),
     [renderItem]
   );
 

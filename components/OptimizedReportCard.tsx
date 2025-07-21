@@ -14,13 +14,13 @@ interface OptimizedReportCardProps {
   index?: number;
 }
 
-const OptimizedReportCard: React.FC<OptimizedReportCardProps> = ({ report, onPress, index = 0 }) => {
+const OptimizedReportCardComponent: React.FC<OptimizedReportCardProps> = ({ report, onPress, index = 0 }) => {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   
   // Memoize expensive calculations
-  const author = useMemo(() => getUser(report.authorId), [report.authorId]);
-  const formattedDate = useMemo(() => formatDate(report.createdAt), [report.createdAt]);
+  const author = useMemo(() => getUser(report.authorId || '') || undefined, [report.authorId]);
+  const formattedDate = useMemo(() => formatDate(report.createdAt || ''), [report.createdAt]);
   const hasAttachments = useMemo(() => report.attachments && report.attachments.length > 0, [report.attachments]);
 
   const handlePress = useCallback(() => {
@@ -212,4 +212,4 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
 });
 
-export const OptimizedReportCard = memo(OptimizedReportCard);
+export const OptimizedReportCard = memo(OptimizedReportCardComponent);

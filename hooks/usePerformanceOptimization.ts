@@ -4,7 +4,7 @@ import { InteractionManager, Platform } from 'react-native';
 // Hook for deferring expensive operations until after interactions
 export const useDeferredValue = <T>(value: T, delay: number = 0): T => {
   const [deferredValue, setDeferredValue] = useState(value);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (timeoutRef.current) {
@@ -15,7 +15,7 @@ export const useDeferredValue = <T>(value: T, delay: number = 0): T => {
       InteractionManager.runAfterInteractions(() => {
         setDeferredValue(value);
       });
-    }, delay);
+    }, delay) as NodeJS.Timeout;
 
     return () => {
       if (timeoutRef.current) {
@@ -50,7 +50,7 @@ export const useDebounce = <T extends (...args: any[]) => any>(
   callback: T,
   delay: number
 ): T => {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   return useCallback(
     ((...args) => {
@@ -60,7 +60,7 @@ export const useDebounce = <T extends (...args: any[]) => any>(
       
       timeoutRef.current = setTimeout(() => {
         callback(...args);
-      }, delay);
+      }, delay) as NodeJS.Timeout;
     }) as T,
     [callback, delay]
   );

@@ -13,16 +13,16 @@ interface OptimizedTaskCardProps {
   index?: number;
 }
 
-const OptimizedTaskCard: React.FC<OptimizedTaskCardProps> = ({ task, onPress, index = 0 }) => {
+const OptimizedTaskCardComponent: React.FC<OptimizedTaskCardProps> = ({ task, onPress, index = 0 }) => {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   
   // Memoize expensive calculations
-  const assignedTo = useMemo(() => getUser(task.assignedTo), [task.assignedTo]);
-  const assignedBy = useMemo(() => getUser(task.createdBy), [task.createdBy]);
+  const assignedTo = useMemo(() => getUser(task.assignedTo || '') || undefined, [task.assignedTo]);
+  const assignedBy = useMemo(() => getUser(task.createdBy || '') || undefined, [task.createdBy]);
   
   const daysUntil = useMemo(() => {
-    const date = new Date(task.dueDate);
+    const date = new Date(task.dueDate || '');
     const today = new Date();
     const diffTime = date.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -95,7 +95,7 @@ const OptimizedTaskCard: React.FC<OptimizedTaskCardProps> = ({ task, onPress, in
               daysUntil < 0 ? styles.overdue : 
               daysUntil <= 2 ? styles.urgent : null
             ]}>
-              {formatDueDate(task.dueDate)}
+              {formatDueDate(task.dueDate || '')}
             </Text>
           </View>
         </View>
@@ -227,4 +227,4 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
 });
 
-export const OptimizedTaskCard = memo(OptimizedTaskCard);
+export const OptimizedTaskCard = memo(OptimizedTaskCardComponent);

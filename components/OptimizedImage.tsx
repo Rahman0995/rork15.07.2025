@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/constants/theme';
 import { SkeletonLoader } from './SkeletonLoader';
@@ -16,7 +16,7 @@ interface OptimizedImageProps {
   cachePolicy?: 'memory' | 'disk' | 'memory-disk';
   onLoad?: () => void;
   onError?: (error: any) => void;
-  resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
 }
 
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({

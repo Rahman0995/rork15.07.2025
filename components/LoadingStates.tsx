@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/constants/theme';
 import { Loader2, Wifi, WifiOff, AlertCircle, CheckCircle } from 'lucide-react-native';
 

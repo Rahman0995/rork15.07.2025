@@ -55,7 +55,7 @@ export default function HomeScreen() {
       key: 'userTasks',
       queryKey: ['userTasks', user?.id],
       queryFn: async () => {
-        const { data: userTasks } = await useUserTasks(user?.id || '');
+        const { data: userTasks } = await useUserTasks(user?.id ?? '');
         return userTasks;
       },
       options: { enabled: !!user?.id }
@@ -64,7 +64,7 @@ export default function HomeScreen() {
       key: 'userReports',
       queryKey: ['userReports', user?.id],
       queryFn: async () => {
-        const { data: userReports } = await useUserReports(user?.id || '');
+        const { data: userReports } = await useUserReports(user?.id ?? '');
         return userReports;
       },
       options: { enabled: !!user?.id }
@@ -74,8 +74,8 @@ export default function HomeScreen() {
   // Fallback to individual hooks for now (until batch optimization is fully implemented)
   const { data: allTasks, isLoading: tasksLoading, refetch: refetchTasks } = useTasks();
   const { data: allReports, isLoading: reportsLoading, refetch: refetchReports } = useReports();
-  const { data: userTasks, refetch: refetchUserTasks } = useUserTasks(user?.id || '');
-  const { data: userReports, refetch: refetchUserReports } = useUserReports(user?.id || '');
+  const { data: userTasks, refetch: refetchUserTasks } = useUserTasks(user?.id ?? '');
+  const { data: userReports, refetch: refetchUserReports } = useUserReports(user?.id ?? '');
   
   // Debug logging
   if (__DEV__) {

@@ -81,14 +81,14 @@ export type TaskPriority = 'low' | 'medium' | 'high';
 export interface Task {
   id: string;
   title: string;
-  description: string;
-  assignedTo: string;
-  createdBy: string; // Changed from 'assignedBy' to 'createdBy' to match backend
-  dueDate: string;
+  description?: string;
+  assignedTo?: string;
+  createdBy?: string; // Changed from 'assignedBy' to 'createdBy' to match backend
+  dueDate?: string;
   status: TaskStatus;
   priority: TaskPriority;
-  createdAt: string;
-  updatedAt: string; // Added to match backend
+  createdAt?: string;
+  updatedAt?: string; // Added to match backend
   completedAt?: string;
 }
 
