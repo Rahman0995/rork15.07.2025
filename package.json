@@ -21,7 +21,9 @@
     "backend:dev": "cd backend && bun run dev",
     "backend:build": "cd backend && bun run build",
     "backend:start": "cd backend && bun run start",
-    "dev": "concurrently \"npm run backend:dev\" \"npm run start\"",
+    "dev": "echo 'Run backend and frontend separately: 1) node start-backend-simple.js 2) npm start'",
+    "dev:backend": "node start-backend-simple.js",
+    "dev:frontend": "npm start",
     "fix-text-nodes": "node fix-text-nodes.js",
     "check-config": "node -e \"console.log(require('./app.config.js').default)\""
   },
