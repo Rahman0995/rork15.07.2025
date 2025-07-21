@@ -103,7 +103,6 @@ export const useReportsStore = create<ReportsState>((set, get) => ({
           comments: [],
           revisions: [],
           currentRevision: 1,
-
         };
         
         set(state => ({

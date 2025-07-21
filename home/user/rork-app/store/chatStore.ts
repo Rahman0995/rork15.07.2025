@@ -67,7 +67,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const chatMessages: ChatMessage[] = [];
+      const chatMessages: ChatMessage[] = mockChatMessages.filter(msg => msg.chatId === chatId) || [];
       
       set(state => ({
         messages: {
